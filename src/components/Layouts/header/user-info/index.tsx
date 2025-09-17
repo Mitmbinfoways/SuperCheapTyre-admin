@@ -18,7 +18,7 @@ export function UserInfo() {
   const USER = {
     name: "John Smith",
     email: "johnson@nextadmin.com",
-    img: "/images/logo/facebook.svg",
+    img: "/profile.png",
   };
 
   return (

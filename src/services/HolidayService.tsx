@@ -9,6 +9,18 @@ export interface Holiday {
   createdBy?: string;
 }
 
+type Pagination = {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+};
+
+type HolidayResponse = {
+  items: Holiday[];
+  pagination: Pagination;
+};
+
 export interface ApiResponse<T> {
   statusCode: number;
   data: T;
@@ -21,12 +33,20 @@ interface HolidayPayload {
   reason: string;
 }
 
+interface HolidayFilter {
+  currentPage?: number;
+  itemsPerPage?: number;
+  search?: string;
+  from?: string;
+  to?: string;
+}
+
 export const AddHoliday = async (
   payload: HolidayPayload,
-): Promise<ApiResponse<Holiday>> => {
+): Promise<ApiResponse<HolidayResponse>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/holiday`;
   try {
-    const response = await postMethod<ApiResponse<Holiday>, HolidayPayload>(
+    const response = await postMethod<ApiResponse<HolidayResponse>, HolidayPayload>(
       url,
       payload,
     );
@@ -37,10 +57,21 @@ export const AddHoliday = async (
   }
 };
 
-export const GetHolidays = async (): Promise<ApiResponse<Holiday[]>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/holiday`;
+export const GetHolidays = async (
+  filter: HolidayFilter = {},
+): Promise<ApiResponse<HolidayResponse>> => {
+  const { currentPage, itemsPerPage, search, from, to } = filter;
+  const params: string[] = [];
+  if (currentPage !== undefined) params.push(`page=${currentPage}`);
+  if (itemsPerPage !== undefined) params.push(`limit=${itemsPerPage}`);
+  if (search) params.push(`search=${encodeURIComponent(search)}`);
+  if (from) params.push(`from=${encodeURIComponent(from)}`);
+  if (to) params.push(`to=${encodeURIComponent(to)}`);
+
+  const url = `${AUTH_SERVICE_BASE_URL}/holiday${params.length ? `?${params.join("&")}` : ""}`;
+
   try {
-    const response = await getMethod<ApiResponse<Holiday[]>>(url);
+    const response = await getMethod<ApiResponse<HolidayResponse>>(url);
     return response.data;
   } catch (error: any) {
     console.error("Failed to fetch holidays:", error);

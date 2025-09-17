@@ -12,6 +12,7 @@ import {
   DeleteHoliday,
 } from "@/services/HolidayService";
 import { Toast } from "@/components/ui/Toast";
+import Pagination from "@/components/ui/Pagination";
 
 type Holiday = {
   _id: string;
@@ -20,21 +21,40 @@ type Holiday = {
   createdBy?: string;
 };
 
-// Updated Holiday type for table compatibility
 type HolidayWithId = Holiday & { id: string };
+
+type LoadingStates = {
+  fetchingHolidays: boolean;
+  submittingForm: boolean;
+  deletingHoliday: boolean;
+};
 
 const AddHolidayPage: React.FC = () => {
   const [date, setDate] = useState<string>("");
   const [reason, setReason] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [fetching, setFetching] = useState<boolean>(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteHolidayId, setDeleteHolidayId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const itemsPerPage = 10;
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    fetchingHolidays: false,
+    submittingForm: false,
+    deletingHoliday: false,
+  });
+
+  const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
+    setLoadingStates((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const getTodayDate = (): string => {
+    const TodayDate = new Date();
+    return TodayDate.toISOString().split("T")[0];
+  };
 
   const tableData: HolidayWithId[] = holidays?.map((h) => ({
     ...h,
@@ -42,66 +62,75 @@ const AddHolidayPage: React.FC = () => {
   }));
 
   const loadHolidays = async () => {
-    setFetching(true);
+    updateLoadingState("fetchingHolidays", true);
     setError(null);
     try {
-      const data = await GetHolidays();
-      setHolidays(data.data);
+      const filter = {
+        currentPage,
+        itemsPerPage,
+      };
+      const data = await GetHolidays(filter);
+      const { items, pagination } = data.data;
+      setHolidays(items);
+      setTotalPages(pagination.totalPages);
     } catch (e: any) {
-      setError(e?.message || "Failed to load holidays");
+      setError(e?.response?.data?.errorData || "Failed to load holidays");
     } finally {
-      setFetching(false);
+      updateLoadingState("fetchingHolidays", false);
     }
   };
 
   useEffect(() => {
     loadHolidays();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const handleAddHoliday = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!date || !reason) return;
-    setLoading(true);
+    updateLoadingState("submittingForm", true);
     setError(null);
-    setMessage(null);
 
     try {
       if (editingHoliday) {
         await AddHoliday({ id: editingHoliday._id, date, reason });
-        Toast({ type: "success", message: "Holiday updated successfully" });
+        Toast({
+          type: "success",
+          message: "Holiday updated successfully!",
+        });
       } else {
         await AddHoliday({ date, reason });
-        Toast({ type: "success", message: "Holiday added successfully" });
+        Toast({
+          type: "success",
+          message: "Holiday added successfully!",
+        });
       }
-      setShowForm(false);
-      setDate("");
-      setReason("");
-      setEditingHoliday(null);
+      handleCloseForm();
       await loadHolidays();
     } catch (e: any) {
-      console.log(e);
       setError(
         e?.response?.data?.errorData || "Failed to create/update holiday",
       );
     } finally {
-      setLoading(false);
+      updateLoadingState("submittingForm", false);
     }
   };
 
   const confirmDeleteHoliday = async () => {
     if (!deleteHolidayId) return;
-    setFetching(true);
+    updateLoadingState("deletingHoliday", true);
     setError(null);
     try {
       await DeleteHoliday(deleteHolidayId);
+      Toast({
+        type: "success",
+        message: "Holiday deleted successfully!",
+      });
+      handleCloseDeleteDialog();
       await loadHolidays();
-      Toast({ type: "success", message: "Holiday deleted successfully" });
     } catch (e: any) {
       setError(e.response?.data?.errorData || "Failed to delete holiday");
     } finally {
-      setFetching(false);
-      setShowDeleteDialog(false);
-      setDeleteHolidayId(null);
+      updateLoadingState("deletingHoliday", false);
     }
   };
 
@@ -110,7 +139,36 @@ const AddHolidayPage: React.FC = () => {
     setDate(holiday.date.split("T")[0]);
     setReason(holiday.reason);
     setShowForm(true);
+    setError(null);
   };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingHoliday(null);
+    setDate("");
+    setReason("");
+    setError(null);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setDeleteHolidayId(null);
+    setError(null);
+  };
+
+  // Loading component for table
+  const LoadingTable = () => (
+    <div className="animate-pulse space-y-4">
+      <div className="h-10 rounded bg-gray-200 dark:bg-gray-700"></div>
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-8 rounded bg-gray-100 dark:bg-gray-800"></div>
+      ))}
+    </div>
+  );
 
   const columns: Column<HolidayWithId>[] = [
     {
@@ -140,17 +198,37 @@ const AddHolidayPage: React.FC = () => {
         <div className="flex items-center justify-end space-x-3">
           <MdModeEdit
             size={16}
-            className="cursor-pointer text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            className={`cursor-pointer transition-colors ${
+              loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+                ? "cursor-not-allowed text-gray-400"
+                : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            }`}
             title="Edit holiday"
-            onClick={() => handleEditHoliday(item)}
+            onClick={() => {
+              if (
+                !loadingStates.fetchingHolidays &&
+                !loadingStates.deletingHoliday
+              ) {
+                handleEditHoliday(item);
+              }
+            }}
           />
           <FiTrash2
             size={16}
-            className="cursor-pointer text-red-600 transition-colors hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+            className={`cursor-pointer transition-colors ${
+              loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+                ? "cursor-not-allowed text-gray-400"
+                : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+            }`}
             title="Delete holiday"
             onClick={() => {
-              setDeleteHolidayId(item._id);
-              setShowDeleteDialog(true);
+              if (
+                !loadingStates.fetchingHolidays &&
+                !loadingStates.deletingHoliday
+              ) {
+                setDeleteHolidayId(item._id);
+                setShowDeleteDialog(true);
+              }
             }}
           />
         </div>
@@ -170,43 +248,52 @@ const AddHolidayPage: React.FC = () => {
               setEditingHoliday(null);
               setDate("");
               setReason("");
+              setError(null);
               setShowForm(true);
             }}
+            disabled={loadingStates.fetchingHolidays}
           >
-            Add Holiday
+            {loadingStates.fetchingHolidays ? "Loading..." : "Add Holiday"}
           </Button>
         </div>
       </div>
 
       <CommonDialog
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={handleCloseForm}
         title={editingHoliday ? "Edit Holiday" : "Add Holiday"}
       >
         {error && (
-          <div className="mb-2 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
+          <div className="mb-4 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
             {error}
           </div>
         )}
         <form className="space-y-4" onSubmit={handleAddHoliday}>
           <div>
             <label className="mb-1 block text-sm font-medium dark:text-gray-200">
-              Date
+              Date *
             </label>
             <input
               type="date"
               value={date}
+              min={editingHoliday ? undefined : getTodayDate()}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setDate(e.target.value)
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              disabled={loadingStates.submittingForm}
               required
             />
+            {!editingHoliday && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Only future dates are allowed
+              </p>
+            )}
           </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium dark:text-gray-200">
-              Reason
+              Reason *
             </label>
             <input
               type="text"
@@ -216,15 +303,34 @@ const AddHolidayPage: React.FC = () => {
                 setReason(e.target.value)
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              disabled={loadingStates.submittingForm}
+              required
             />
           </div>
-          <div className="flex items-center justify-end">
-            <Button variant="primary" type="submit">
-              {loading
-                ? "Saving..."
-                : editingHoliday
-                  ? "Update Holiday"
-                  : "Add Holiday"}
+          <div className="flex items-center justify-end space-x-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCloseForm}
+              disabled={loadingStates.submittingForm}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={loadingStates.submittingForm || !date || !reason}
+            >
+              {loadingStates.submittingForm ? (
+                <div className="flex items-center space-x-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <span>Saving...</span>
+                </div>
+              ) : editingHoliday ? (
+                "Update Holiday"
+              ) : (
+                "Add Holiday"
+              )}
             </Button>
           </div>
         </form>
@@ -232,26 +338,32 @@ const AddHolidayPage: React.FC = () => {
 
       <CommonDialog
         isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
+        onClose={handleCloseDeleteDialog}
         title="Confirm Delete"
         footer={
           <div className="flex justify-end space-x-3">
             <Button
               variant="secondary"
-              onClick={() => setShowDeleteDialog(false)}
+              onClick={handleCloseDeleteDialog}
+              disabled={loadingStates.deletingHoliday}
             >
               Cancel
             </Button>
             <Button
               variant="danger"
               onClick={confirmDeleteHoliday}
-              disabled={fetching}
+              disabled={loadingStates.deletingHoliday}
             >
-              {fetching ? "Deleting..." : "Delete"}
+              Delete
             </Button>
           </div>
         }
       >
+        {error && (
+          <div className="mb-4 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
+            {error}
+          </div>
+        )}
         <p className="text-gray-700 dark:text-gray-300">
           Are you sure you want to delete this holiday? This action cannot be
           undone.
@@ -259,18 +371,36 @@ const AddHolidayPage: React.FC = () => {
       </CommonDialog>
 
       <div className="mt-8">
-        {fetching ? (
-          <p className="text-gray-500 dark:text-gray-400">
-            Loading holidays...
-          </p>
+        {loadingStates.fetchingHolidays ? (
+          <LoadingTable />
         ) : tableData.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">No data found.</p>
+          <div className="py-8 text-center">
+            <p className="text-lg text-gray-500 dark:text-gray-400">
+              No holidays found.
+            </p>
+          </div>
         ) : (
-          <Table
-            columns={columns}
-            data={tableData}
-            className="dark:divide-gray-700"
-          />
+          <div
+            className={
+              loadingStates.deletingHoliday
+                ? "pointer-events-none opacity-50"
+                : ""
+            }
+          >
+            <Table
+              columns={columns}
+              data={tableData}
+              className="dark:divide-gray-700"
+            />
+
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          </div>
         )}
       </div>
     </div>

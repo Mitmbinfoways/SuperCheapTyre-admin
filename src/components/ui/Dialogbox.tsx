@@ -1,5 +1,5 @@
 // components/CommonDialog.tsx
-import React, { ReactNode } from "react";
+import React, { ReactNode, MouseEvent } from "react";
 import { IoMdClose } from "react-icons/io";
 
 interface CommonDialogProps {
@@ -25,10 +25,19 @@ const CommonDialog: React.FC<CommonDialogProps> = ({
   const sizeClass =
     size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-3xl" : "max-w-md"; // default md
 
+  // Prevent closing when clicking inside the dialog
+  const handleDialogClick = (e: MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose} // click outside closes dialog
+    >
       <div
         className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative p-6`}
+        onClick={handleDialogClick} // prevent bubbling inside
       >
         {/* Title */}
         <div className="mb-4 flex items-center justify-between">
