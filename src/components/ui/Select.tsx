@@ -48,17 +48,14 @@ const Select: React.FC<SelectProps> = ({
   );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Filter options based on search term
   const filteredOptions = options.filter(
     (option) =>
       option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
       option.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Find selected option
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

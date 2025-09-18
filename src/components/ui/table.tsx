@@ -13,10 +13,14 @@ interface TableProps<T> {
   className?: string;
 }
 
-function Table<T extends { id?: string | number }>({ columns, data, className = "" }: TableProps<T>) {
+function Table<T extends { id?: string | number }>({
+  columns,
+  data,
+  className = "",
+}: TableProps<T>) {
   return (
     <div className={`overflow-x-auto rounded-lg ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden rounded-lg">
+      <table className="min-w-full divide-y divide-gray-200 overflow-hidden rounded-lg dark:divide-gray-700">
         <thead className="bg-lightblue dark:bg-gray-800">
           <tr>
             {columns.map((col) => (
@@ -31,24 +35,33 @@ function Table<T extends { id?: string | number }>({ columns, data, className = 
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-          {data.map((item, index) => (
-            <tr
-              key={item.id || index}
-              className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-            >
-              {columns.map((col) => (
-                <td
-                  key={col.key as string}
-                  className={`whitespace-nowrap px-6 py-4 text-sm ${
-                    col.align === "right" ? "text-right" : "text-gray-900 dark:text-gray-200"
-                  }`}
-                >
-                  {col.render ? col.render(item, index) : (item as any)[col.key]}
-                </td>
-              ))}
-            </tr>
-          ))}
+        <tbody className="bg-white dark:bg-gray-900">
+          {data.map((item, index) => {
+            const isLastRow = index === data.length - 1;
+            return (
+              <tr
+                key={item.id || index}
+                className={`border-b transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                  isLastRow ? "border-gray-200 dark:border-gray-700" : ""
+                }`}
+              >
+                {columns.map((col) => (
+                  <td
+                    key={col.key as string}
+                    className={`whitespace-nowrap px-6 py-4 text-sm ${
+                      col.align === "right"
+                        ? "text-right"
+                        : "text-gray-900 dark:text-gray-200"
+                    }`}
+                  >
+                    {col.render
+                      ? col.render(item, index)
+                      : (item as any)[col.key]}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

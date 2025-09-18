@@ -44,7 +44,7 @@ interface HolidayFilter {
 export const AddHoliday = async (
   payload: HolidayPayload,
 ): Promise<ApiResponse<HolidayResponse>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/holiday`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/holiday`;
   try {
     const response = await postMethod<ApiResponse<HolidayResponse>, HolidayPayload>(
       url,
@@ -68,7 +68,7 @@ export const GetHolidays = async (
   if (from) params.push(`from=${encodeURIComponent(from)}`);
   if (to) params.push(`to=${encodeURIComponent(to)}`);
 
-  const url = `${AUTH_SERVICE_BASE_URL}/holiday${params.length ? `?${params.join("&")}` : ""}`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/holiday${params.length ? `?${params.join("&")}` : ""}`;
 
   try {
     const response = await getMethod<ApiResponse<HolidayResponse>>(url);
@@ -80,7 +80,7 @@ export const GetHolidays = async (
 };
 
 export const DeleteHoliday = async (id: string): Promise<ApiResponse<null>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/holiday/${id}`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/holiday/${id}`;
   try {
     const response = await deleteMethod<ApiResponse<null>>(url);
     return response.data;
