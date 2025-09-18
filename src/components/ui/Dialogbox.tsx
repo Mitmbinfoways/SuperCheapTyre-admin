@@ -1,5 +1,5 @@
-// components/CommonDialog.tsx
-import React, { ReactNode, MouseEvent } from "react";
+import { createPortal } from "react-dom";
+import { MouseEvent, ReactNode } from "react";
 import { IoMdClose } from "react-icons/io";
 
 interface CommonDialogProps {
@@ -8,38 +8,33 @@ interface CommonDialogProps {
   title?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg"; // optional sizes
+  size?: "sm" | "md" | "lg";
 }
 
-const CommonDialog: React.FC<CommonDialogProps> = ({
+export default function CommonDialog({
   isOpen,
   onClose,
   title,
   children,
   footer,
   size = "md",
-}) => {
+}: CommonDialogProps) {
   if (!isOpen) return null;
 
-  // Width based on size
   const sizeClass =
-    size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-3xl" : "max-w-md"; // default md
+    size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-3xl" : "max-w-md";
 
-  // Prevent closing when clicking inside the dialog
-  const handleDialogClick = (e: MouseEvent) => {
-    e.stopPropagation();
-  };
+  const handleDialogClick = (e: MouseEvent) => e.stopPropagation();
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose} // click outside closes dialog
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+      onClick={onClose}
     >
       <div
         className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative p-6`}
-        onClick={handleDialogClick} // prevent bubbling inside
+        onClick={handleDialogClick}
       >
-        {/* Title */}
         <div className="mb-4 flex items-center justify-between">
           {title && (
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -54,14 +49,11 @@ const CommonDialog: React.FC<CommonDialogProps> = ({
           </button>
         </div>
 
-        {/* Content */}
         <div className="mb-4 text-gray-800 dark:text-gray-200">{children}</div>
 
-        {/* Footer */}
         {footer && <div className="flex justify-end space-x-2">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};
-
-export default CommonDialog;
+}

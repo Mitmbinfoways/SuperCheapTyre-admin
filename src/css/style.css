@@ -43,6 +43,32 @@
   .inbox-height {
     @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
   }
+
+  /* Hide number input spinners */
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+  }
+
+  .no-spinner[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+  }
+
+  /* Additional selectors for better browser support */
+  input.no-spinner[type="number"]::-webkit-outer-spin-button,
+  input.no-spinner[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+  }
+
+  input.no-spinner[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+  }
 }
 
 /* third-party libraries CSS */
