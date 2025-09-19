@@ -13,6 +13,8 @@ import {
 } from "@/services/HolidayService";
 import { Toast } from "@/components/ui/Toast";
 import Pagination from "@/components/ui/Pagination";
+import { FormLabel } from "@/components/ui/FormLabel";
+import TextField from "@/components/ui/TextField";
 
 type Holiday = {
   _id: string;
@@ -290,22 +292,19 @@ const AddHolidayPage: React.FC = () => {
               </p>
             )}
           </div>
-
           <div>
-            <label className="mb-1 block text-sm font-medium dark:text-gray-200">
-              Reason *
-            </label>
-            <input
-              type="text"
-              value={reason}
-              placeholder="E.g. Independence Day"
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setReason(e.target.value)
-              }
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-              disabled={loadingStates.submittingForm}
-              required
-            />
+            <FormLabel label="Reason" required />
+            <div className="relative">
+              <TextField
+                type="text"
+                name="price"
+                value={reason}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setReason(e.target.value)
+                }
+                placeholder="E.g. Independence Day"
+              />
+            </div>
           </div>
           <div className="flex items-center justify-end space-x-3">
             <Button

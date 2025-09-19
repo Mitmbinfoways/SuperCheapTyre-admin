@@ -25,27 +25,8 @@ import {
   wheelSizes,
   width,
 } from "./constant";
-
-interface FormLabelProps {
-  label: string;
-  required?: boolean;
-  htmlFor?: string;
-}
-
-const FormLabel: React.FC<FormLabelProps> = ({
-  label,
-  required = false,
-  htmlFor,
-}) => {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="mb-2 block text-sm font-medium text-gray-700 dark:text-white"
-    >
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-  );
-};
+import { FormLabel } from "@/components/ui/FormLabel";
+import Button from "@/components/ui/Button";
 
 const Page = () => {
   const router = useRouter();
@@ -618,13 +599,17 @@ const Page = () => {
             )}
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end pt-6">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`rounded-lg px-8 py-3 font-semibold text-white shadow-sm transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? "cursor-not-allowed bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
-            >
+          <div className="mt-4 flex justify-end gap-2">
+            {isEdit && (
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => router.push("/products")}
+              >
+                Cancel
+              </Button>
+            )}
+            <Button variant="primary" disabled={isSubmitting}>
               {isEdit
                 ? isSubmitting
                   ? "Update..."
@@ -632,7 +617,7 @@ const Page = () => {
                 : isSubmitting
                   ? "Create..."
                   : "Create Product"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

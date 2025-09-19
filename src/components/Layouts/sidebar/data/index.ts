@@ -40,6 +40,12 @@ export const NAV_DATA = [
         icon: Icons.UserPlusIcon,
         items: [],
       },
+      {
+        title: "Add TimeSlot",
+        url: "/add-timeslot",
+        icon: Icons.UserPlusIcon,
+        items: [],
+      },
     ],
   },
 ];
