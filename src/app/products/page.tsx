@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
@@ -8,10 +8,11 @@ import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
-import { deleteProduct, getAllProducts } from "@/services/CreateProductService";
+import { deleteProduct, getAllProducts, updateProduct } from "@/services/CreateProductService";
 import Image from "next/image";
 import { getProductImageUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import ToggleSwitch from "@/components/ui/Toggle";
 
 type Product = {
   _id: string;
@@ -54,7 +55,7 @@ const ProductListPage: React.FC = () => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
     try {
       const filter = { page: currentPage, limit: itemsPerPage };
@@ -63,15 +64,18 @@ const ProductListPage: React.FC = () => {
       setProducts(items as Product[]);
       setTotalPages(pagination.totalPages);
     } catch (e: any) {
-      Toast({ type: "error", message: e?.response?.data?.errorData || "Failed to load products" });
+      Toast({
+        type: "error",
+        message: e?.response?.data?.errorData || "Failed to load products",
+      });
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     loadProducts();
-  }, [currentPage, itemsPerPage]);
+  }, [loadProducts]);
 
   // confirm delete
   const confirmDeleteProduct = async () => {
@@ -83,14 +87,16 @@ const ProductListPage: React.FC = () => {
       handleCloseDeleteDialog();
       await loadProducts();
     } catch (e: any) {
-      Toast({ type: "error", message: e?.response?.data?.errorData || "Failed to delete product" });
+      Toast({
+        type: "error",
+        message: e?.response?.data?.errorData || "Failed to delete product",
+      });
     } finally {
       updateLoadingState("deletingProduct", false);
     }
   };
 
   const handleEditProduct = (product: Product) => {
-    // Redirect to create-product page with id for editing
     router.push(`/create-product?id=${product._id}`);
   };
 
@@ -103,13 +109,43 @@ const ProductListPage: React.FC = () => {
 
   const tableData: ProductWithId[] = products.map((p) => ({ ...p, id: p._id }));
 
+  const handleToggleActive = async (product: Product) => {
+    const updatedStatus = !product.isActive;
+
+    try {
+      await updateProduct(product._id, { isActive: updatedStatus });
+      setProducts((prev) =>
+        prev.map((p) =>
+          p._id === product._id ? { ...p, isActive: updatedStatus } : p,
+        ),
+      );
+
+      Toast({
+        type: "success",
+        message: `Product ${updatedStatus ? "activated" : "deactivated"} successfully!`,
+      });
+    } catch (e: any) {
+      Toast({
+        type: "error",
+        message:
+          e?.response?.data?.errorData || "Failed to update product status",
+      });
+    }
+  };
+
   const columns: Column<ProductWithId>[] = [
-    { title: "Index", key: "index", render: (_, i) => i + 1 },
+    { 
+      title: "Sr.No", 
+      key: "index", 
+      width: "60px",
+      render: (_, i) => i + 1 
+    },
     {
       title: "Image",
       key: "images",
+      width: "80px",
       render: (item) => (
-        <div className="h-16 w-16">
+        <div className="h-12 w-12 sm:h-16 sm:w-16">
           <Image
             src={getProductImageUrl(item.images?.[0])}
             alt={item.name}
@@ -120,26 +156,86 @@ const ProductListPage: React.FC = () => {
         </div>
       ),
     },
-    { title: "Name", key: "name" },
+    { 
+      title: "Name", 
+      key: "name",
+      width: "150px",
+      render: (item) => (
+        <div className="truncate max-w-[150px]" title={item.name}>
+          {item.name}
+        </div>
+      )
+    },
     {
       title: "Category",
       key: "category",
-      render: (item) => item.category?.toUpperCase() || "",
+      width: "100px",
+      render: (item) => (
+        <span className="text-xs sm:text-sm">
+          {item.category?.toUpperCase() || ""}
+        </span>
+      ),
     },
-    { title: "Brand", key: "brand" },
-    { title: "SKU", key: "sku" },
-    { title: "Price", key: "price", render: (item) => `$${item.price}` },
-    { title: "Stock", key: "stock" },
+    { 
+      title: "Brand", 
+      key: "brand",
+      width: "100px",
+      render: (item) => (
+        <div className="truncate max-w-[100px]" title={item.brand}>
+          {item.brand}
+        </div>
+      )
+    },
+    { 
+      title: "SKU", 
+      key: "sku",
+      width: "120px",
+      render: (item) => (
+        <div className="truncate max-w-[120px] text-xs" title={item.sku}>
+          {item.sku}
+        </div>
+      )
+    },
+    { 
+      title: "Price", 
+      key: "price", 
+      width: "80px",
+      align: "right",
+      render: (item) => (
+        <span className="font-semibold">
+          ${item.price}
+        </span>
+      )
+    },
+    { 
+      title: "Stock", 
+      key: "stock",
+      width: "60px",
+      align: "center",
+      render: (item) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          item.stock > 10 
+            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+            : item.stock > 0 
+            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        }`}>
+          {item.stock}
+        </span>
+      )
+    },
     {
       title: "Actions",
       key: "actions",
+      width: "120px",
       align: "right",
       render: (item) => (
-        <div className="flex items-center justify-end space-x-3">
+        <div className="flex items-center justify-end space-x-2">
           <MdModeEdit
             size={16}
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             onClick={() => handleEditProduct(item)}
+            title="Edit product"
           />
           <FiTrash2
             size={16}
@@ -148,6 +244,11 @@ const ProductListPage: React.FC = () => {
               setDeleteProductId(item._id);
               setShowDeleteDialog(true);
             }}
+            title="Delete product"
+          />
+          <ToggleSwitch
+            checked={item.isActive}
+            onChange={() => handleToggleActive(item)}
           />
         </div>
       ),
@@ -160,10 +261,10 @@ const ProductListPage: React.FC = () => {
         <h1 className="text-2xl font-semibold text-primary dark:text-white">
           Manage Products
         </h1>
-        <Button onClick={() => router.push("/create-product")}>Create New Product</Button>
+        <Button onClick={() => router.push("/create-product")}>
+          Create New Product
+        </Button>
       </div>
-
-      {/* Product Form Dialog removed in favor of redirect-based editing */}
 
       {/* Delete Confirmation */}
       <CommonDialog

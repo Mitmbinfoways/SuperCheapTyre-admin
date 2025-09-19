@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { FiUpload } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { CiImageOn } from "react-icons/ci";
+import Image from "next/image";
 
 interface ImageItem {
   id: string;
@@ -131,10 +132,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 key={img.id}
                 className={`group relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height}`}
               >
-                <img
+                <Image
                   src={img.url}
                   alt="Preview"
-                  className="h-full w-full object-cover"
+                  fill
+                  className="object-cover"
                 />
                 <button
                   type="button"

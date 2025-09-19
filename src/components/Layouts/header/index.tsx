@@ -14,7 +14,7 @@ export function Header() {
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-stroke bg-white px-4 py-3 shadow-1 dark:border-stroke-dark dark:bg-gray-dark md:px-5 2xl:px-10">
       <button
         onClick={toggleSidebar}
-        className="rounded-lg border px-1.5 py-1 dark:border-stroke-dark dark:bg-[#020D1A] hover:dark:bg-[#FFFFFF1A] lg:hidden"
+        className="rounded-lg border px-1.5 py-1 dark:border-stroke-dark dark:bg-[#020D1A] hover:dark:bg-[#FFFFFF1A] xl:hidden"
       >
         <MenuIcon />
         <span className="sr-only">Toggle Sidebar</span>
@@ -23,9 +23,9 @@ export function Header() {
       {isMobile && (
         <Link href={"/"} className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
-            src={"/images/logo/logo-icon.svg"}
-            width={32}
-            height={32}
+            src={"/logos/main.svg"}
+            width={100}
+            height={100}
             alt=""
             role="presentation"
           />

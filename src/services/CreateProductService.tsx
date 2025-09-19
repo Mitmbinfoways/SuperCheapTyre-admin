@@ -1,4 +1,4 @@
-import { deleteMethod, getMethod, postMethod } from "./methods";
+import { deleteMethod, getMethod, patchMethod, postMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -135,7 +135,7 @@ export const updateProduct = async (
     }
   });
 
-  const response = await postMethod<ApiResponse<Product>, FormData>(
+  const response = await patchMethod<ApiResponse<Product>, FormData>(
     url,
     formData,
     {

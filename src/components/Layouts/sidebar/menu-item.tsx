@@ -24,6 +24,12 @@ export function MenuItem(
     className?: string;
     children: React.ReactNode;
     isActive: boolean;
+    id?: string;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    role?: string;
+    tabIndex?: number;
+    "aria-expanded"?: boolean;
+    "aria-controls"?: string;
   } & ({ as?: "button"; onClick: () => void } | { as: "link"; href: string }),
 ) {
   const { toggleSidebar, isMobile } = useSidebarContext();
@@ -32,7 +38,7 @@ export function MenuItem(
     return (
       <Link
         href={props.href}
-        // Close sidebar on clicking link if it's mobile
+        id={props.id}
         onClick={() => isMobile && toggleSidebar()}
         className={cn(
           menuItemBaseStyles({
@@ -49,12 +55,20 @@ export function MenuItem(
 
   return (
     <button
+      id={props.id}
       onClick={props.onClick}
-      aria-expanded={props.isActive}
-      className={menuItemBaseStyles({
-        isActive: props.isActive,
-        className: "flex w-full items-center gap-3 py-3",
-      })}
+      onKeyDown={props.onKeyDown}
+      role={props.role}
+      tabIndex={props.tabIndex}
+      aria-expanded={props["aria-expanded"]}
+      aria-controls={props["aria-controls"]}
+      className={cn(
+        menuItemBaseStyles({
+          isActive: props.isActive,
+          className: "flex w-full items-center gap-3 py-3",
+        }),
+        props.className,
+      )}
     >
       {props.children}
     </button>

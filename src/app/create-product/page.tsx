@@ -116,10 +116,8 @@ const Page = () => {
       }
     };
     loadProduct();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId]);
 
-  // Handle input changes
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -175,13 +173,24 @@ const Page = () => {
         duration: 2000,
       });
 
+      let sku = "";
+      if (category === "tyre") {
+        const tyre = formData.tyreSpecifications;
+        sku = `${formData.brand}-${tyre.width || ""}/${tyre.profile || ""}-${tyre.pattern || ""}-${tyre.diameter || ""}-${tyre.loadRating || ""}${tyre.speedRating || ""}`;
+      } else if (category === "wheel") {
+        const wheel = formData.wheelSpecifications;
+        sku = `${formData.brand}-${wheel.size || ""}-${wheel.diameter || ""}-${wheel.fitments || ""}`;
+      } else {
+        sku = `${(formData.brand || "").slice(0, 10)}-${Date.now().toString().slice(-6)}`;
+      }
+
       const payload = {
         name: formData.name as string,
         brand: formData.brand as string,
         category: category as string,
         description: formData.description || undefined,
         images: imageFiles,
-        sku: `${(formData.brand || "").slice(0, 10)}-${Date.now().toString().slice(-6)}`,
+        sku,
         price: Number(formData.price || 0),
         stock: Number(formData.stock || 0),
         tyreSpecifications:
@@ -261,7 +270,9 @@ const Page = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="mb-2 gap-3">
-            <h1 className="text-3xl font-bold text-primary dark:text-white">Create Product</h1>
+            <h1 className="text-3xl font-bold text-primary dark:text-white">
+              Create Product
+            </h1>
           </div>
           <p className="text-gray-600">
             Add a new product to your inventory with detailed specifications
@@ -614,7 +625,13 @@ const Page = () => {
               disabled={isSubmitting}
               className={`rounded-lg px-8 py-3 font-semibold text-white shadow-sm transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? "cursor-not-allowed bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
             >
-              {isSubmitting ? "Create..." : "Create Product"}
+              {isEdit
+                ? isSubmitting
+                  ? "Update..."
+                  : "Update Product"
+                : isSubmitting
+                  ? "Create..."
+                  : "Create Product"}
             </button>
           </div>
         </form>

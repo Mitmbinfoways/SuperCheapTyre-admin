@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, ChangeEvent, useEffect } from "react";
+import React, { useState, ChangeEvent, useEffect, useCallback } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
@@ -61,7 +61,7 @@ const AddHolidayPage: React.FC = () => {
     id: h._id,
   }));
 
-  const loadHolidays = async () => {
+  const loadHolidays = useCallback(async () => {
     updateLoadingState("fetchingHolidays", true);
     setError(null);
     try {
@@ -78,11 +78,11 @@ const AddHolidayPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingHolidays", false);
     }
-  };
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     loadHolidays();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, loadHolidays]);
 
   const handleAddHoliday = async (e?: React.FormEvent) => {
     e?.preventDefault();
