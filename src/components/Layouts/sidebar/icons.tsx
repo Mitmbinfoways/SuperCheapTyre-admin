@@ -300,3 +300,41 @@ export function ArrowLeftIcon(props: PropsType) {
     </svg>
   );
 }
+
+export function ClockIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zM3.75 12a8.25 8.25 0 1116.5 0 8.25 8.25 0 01-16.5 0zm8.25-4.5a.75.75 0 01.75.75v3.615l2.474 1.414a.75.75 0 01-.748 1.298l-2.774-1.584A.75.75 0 0111.25 12V8.25a.75.75 0 01.75-.75z"
+      />
+    </svg>
+  );
+}
+
+export function ChatBubbleLeftRightIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.5 4.5A4.5 4.5 0 003 9v6a4.5 4.5 0 004.5 4.5h1.591l2.636 1.76a.75.75 0 001.135-.64v-1.12h.638A4.5 4.5 0 0020.25 15V9A4.5 4.5 0 0015.75 4.5h-8.25zm-3 4.5a3 3 0 013-3h8.25a3 3 0 013 3v6a3 3 0 01-3 3h-1.388a.75.75 0 00-.75.75v.675l-1.844-1.23a.75.75 0 00-.416-.126H7.5a3 3 0 01-3-3V9z"
+      />
+    </svg>
+  );
+}

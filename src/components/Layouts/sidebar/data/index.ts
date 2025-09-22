@@ -43,7 +43,13 @@ export const NAV_DATA = [
       {
         title: "Add TimeSlot",
         url: "/add-timeslot",
-        icon: Icons.UserPlusIcon,
+        icon: Icons.ClockIcon,
+        items: [],
+      },
+      {
+        title: "Manage Query",
+        url: "/query",
+        icon: Icons.ChatBubbleLeftRightIcon,
         items: [],
       },
     ],

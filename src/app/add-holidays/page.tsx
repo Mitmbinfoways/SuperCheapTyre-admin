@@ -15,6 +15,7 @@ import { Toast } from "@/components/ui/Toast";
 import Pagination from "@/components/ui/Pagination";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
+import DatePicker from "@/components/ui/DatePicker";
 
 type Holiday = {
   _id: string;
@@ -32,7 +33,7 @@ type LoadingStates = {
 };
 
 const AddHolidayPage: React.FC = () => {
-  const [date, setDate] = useState<string>("");
+  const [date, setDate] = useState<Date | null>(null);
   const [reason, setReason] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -86,6 +87,8 @@ const AddHolidayPage: React.FC = () => {
     loadHolidays();
   }, [currentPage, itemsPerPage, loadHolidays]);
 
+  const formatToYmd = (d: Date) => d.toISOString().split("T")[0];
+
   const handleAddHoliday = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!date || !reason) return;
@@ -93,14 +96,15 @@ const AddHolidayPage: React.FC = () => {
     setError(null);
 
     try {
+      const payloadDate = formatToYmd(date as Date);
       if (editingHoliday) {
-        await AddHoliday({ id: editingHoliday._id, date, reason });
+        await AddHoliday({ id: editingHoliday._id, date: payloadDate, reason });
         Toast({
           type: "success",
           message: "Holiday updated successfully!",
         });
       } else {
-        await AddHoliday({ date, reason });
+        await AddHoliday({ date: payloadDate, reason });
         Toast({
           type: "success",
           message: "Holiday added successfully!",
@@ -138,7 +142,7 @@ const AddHolidayPage: React.FC = () => {
 
   const handleEditHoliday = (holiday: Holiday) => {
     setEditingHoliday(holiday);
-    setDate(holiday.date.split("T")[0]);
+    setDate(new Date(holiday.date));
     setReason(holiday.reason);
     setShowForm(true);
     setError(null);
@@ -151,7 +155,7 @@ const AddHolidayPage: React.FC = () => {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingHoliday(null);
-    setDate("");
+    setDate(null);
     setReason("");
     setError(null);
   };
@@ -186,11 +190,6 @@ const AddHolidayPage: React.FC = () => {
     {
       title: "Reason",
       key: "reason",
-      render: (item) => (
-        <span className="text-sm font-semibold dark:text-gray-200">
-          {item.reason}
-        </span>
-      ),
     },
     {
       title: "Actions",
@@ -248,7 +247,7 @@ const AddHolidayPage: React.FC = () => {
           <Button
             onClick={() => {
               setEditingHoliday(null);
-              setDate("");
+              setDate(null);
               setReason("");
               setError(null);
               setShowForm(true);
@@ -275,16 +274,15 @@ const AddHolidayPage: React.FC = () => {
             <label className="mb-1 block text-sm font-medium dark:text-gray-200">
               Date *
             </label>
-            <input
-              type="date"
+            <DatePicker
               value={date}
-              min={editingHoliday ? undefined : getTodayDate()}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setDate(e.target.value)
-              }
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+              onChange={(d: Date | null) => setDate(d)}
+              minDate={new Date()}
+              placeholder="Select a date"
+              className="w-full"
               disabled={loadingStates.submittingForm}
-              required
+              dateFormat="yyyy-MM-dd"
+              isClearable={true}
             />
             {!editingHoliday && (
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -302,7 +300,7 @@ const AddHolidayPage: React.FC = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setReason(e.target.value)
                 }
-                placeholder="E.g. Independence Day"
+                placeholder="E.g. Special Day"
               />
             </div>
           </div>
