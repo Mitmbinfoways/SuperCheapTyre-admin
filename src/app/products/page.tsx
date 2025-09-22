@@ -13,6 +13,8 @@ import Image from "next/image";
 import { getProductImageUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
+import TextField from "@/components/ui/TextField";
+import useDebounce from "@/hooks/useDebounce";
 
 type Product = {
   _id: string;
@@ -40,6 +42,7 @@ const ProductListPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   // pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -54,11 +57,13 @@ const ProductListPage: React.FC = () => {
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
+   
+  const debounceSearch = useDebounce<string>(search , 300)
 
   const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
     try {
-      const filter = { page: currentPage, limit: itemsPerPage };
+      const filter = { page: currentPage, limit: itemsPerPage , search:debounceSearch };
       const data = await getAllProducts(filter);
       const { items, pagination } = data.data;
       setProducts(items as Product[]);
@@ -71,7 +76,7 @@ const ProductListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage ,debounceSearch]);
 
   useEffect(() => {
     loadProducts();
@@ -266,6 +271,15 @@ const ProductListPage: React.FC = () => {
         </Button>
       </div>
 
+      <div className="w-1/3">
+        <TextField
+          type="text"
+          className="mb-4"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
       {/* Delete Confirmation */}
       <CommonDialog
         isOpen={showDeleteDialog}
@@ -288,7 +302,7 @@ const ProductListPage: React.FC = () => {
       </CommonDialog>
 
       {/* Table */}
-      <div className="mt-8">
+      <div>
         <Table columns={columns} data={tableData} />
         <div className="mt-4 flex justify-center">
           <Pagination

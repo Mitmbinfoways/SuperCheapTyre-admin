@@ -25,7 +25,7 @@ interface Technician {
   email: string;
   phone: string;
   updatedAt: any;
-  isActive: boolean; // ✅ added for toggle
+  isActive: boolean;
 }
 
 type Pagination = {
@@ -42,21 +42,20 @@ type LoadingStates = {
 };
 
 const AddTechnicianPage: React.FC = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [formData ,setFormData] = useState({
+    firstName:"",
+    lastName:"",
+    email:"",
+    phone:"",
+  })
   const [error, setError] = useState<string | null>(null);
-
   const [showForm, setShowForm] = useState(false);
   const [isEdit, setIsEdit] = useState<Technician | null>(null);
-
   const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTechnicianId, setDeleteTechnicianId] = useState<string | null>(
     null,
   );
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
@@ -70,8 +69,6 @@ const AddTechnicianPage: React.FC = () => {
   const updateLoading = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
-
-  console.log(loadingStates);
 
   const tableData = technicians.map((t) => ({ ...t, id: t._id }));
 
@@ -99,21 +96,23 @@ const AddTechnicianPage: React.FC = () => {
 
   const handleSaveTechnician = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!firstName || !lastName || !email || !phone) return;
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) return;
+    
     setError(null);
-
+    updateLoading("submitting", true);
+    
     try {
       if (isEdit) {
         await UpdateTechnician({
           id: isEdit._id,
-          firstName,
-          lastName,
-          email,
-          phone,
+          firstName:formData.firstName,
+          lastName:formData.lastName,
+          email:formData.email,
+          phone:formData.phone,
         });
         Toast({ type: "success", message: "Technician updated successfully!" });
       } else {
-        await AddTechnician({ firstName, lastName, email, phone });
+        await AddTechnician({ firstName:formData.firstName, lastName:formData.lastName, email:formData.email, phone:formData.phone });
         Toast({ type: "success", message: "Technician added successfully!" });
       }
       handleCloseForm();
@@ -147,20 +146,19 @@ const AddTechnicianPage: React.FC = () => {
 
   const handleEditTechnician = (t: Technician) => {
     setIsEdit(t);
-    setFirstName(t.firstName);
-    setLastName(t.lastName);
-    setEmail(t.email);
-    setPhone(t.phone);
+    setFormData({
+      firstName: t.firstName,
+      lastName: t.lastName,
+      email: t.email,
+      phone: t.phone,
+    });
     setShowForm(true);
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
     setIsEdit(null);
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPhone("");
+    setFormData({ firstName: "", lastName: "", email: "", phone: "" });
     setError(null);
   };
 
@@ -240,10 +238,7 @@ const AddTechnicianPage: React.FC = () => {
         <Button
           onClick={() => {
             setIsEdit(null);
-            setFirstName("");
-            setLastName("");
-            setEmail("");
-            setPhone("");
+            setFormData({ firstName: "", lastName: "", email: "", phone: "" });
             setError(null);
             setShowForm(true);
           }}
@@ -271,10 +266,10 @@ const AddTechnicianPage: React.FC = () => {
               <FormLabel label="First Name" required />
               <div className="relative">
                 <TextField
-                  type="number"
-                  value={firstName}
+                  type="text"
+                  value={formData.firstName}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFirstName(e.target.value)
+                    setFormData({ ...formData, firstName: e.target.value })
                   }
                   placeholder="First Name"
                 />
@@ -284,10 +279,10 @@ const AddTechnicianPage: React.FC = () => {
               <FormLabel label="Last Name" required />
               <div className="relative">
                 <TextField
-                  type="number"
-                  value={lastName}
+                  type="text"
+                  value={formData.lastName}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setLastName(e.target.value)
+                    setFormData({ ...formData, lastName: e.target.value })
                   }
                   placeholder="Last Name"
                 />
@@ -300,10 +295,10 @@ const AddTechnicianPage: React.FC = () => {
               <FormLabel label="Email" required />
               <div className="relative">
                 <TextField
-                  type="number"
-                  value={email}
+                  type="text"
+                  value={formData.email}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setEmail(e.target.value)
+                    setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="Email"
                 />
@@ -314,9 +309,9 @@ const AddTechnicianPage: React.FC = () => {
               <div className="relative">
                 <TextField
                   type="number"
-                  value={phone}
+                  value={formData.phone}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setPhone(e.target.value)
+                    setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="Phone"
                 />

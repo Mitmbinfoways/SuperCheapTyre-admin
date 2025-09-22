@@ -16,6 +16,7 @@ import Pagination from "@/components/ui/Pagination";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import DatePicker from "@/components/ui/DatePicker";
+import useDebounce from "@/hooks/useDebounce";
 
 type Holiday = {
   _id: string;
@@ -44,6 +45,7 @@ const AddHolidayPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+  const [search ,setSearch] = useState<string>('')
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingHolidays: false,
     submittingForm: false,
@@ -54,10 +56,7 @@ const AddHolidayPage: React.FC = () => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
-  const getTodayDate = (): string => {
-    const TodayDate = new Date();
-    return TodayDate.toISOString().split("T")[0];
-  };
+  const debounceSearch = useDebounce<string>(search ,300)
 
   const tableData: HolidayWithId[] = holidays?.map((h) => ({
     ...h,
@@ -71,6 +70,7 @@ const AddHolidayPage: React.FC = () => {
       const filter = {
         currentPage,
         itemsPerPage,
+        search:debounceSearch
       };
       const data = await GetHolidays(filter);
       const { items, pagination } = data.data;
@@ -81,11 +81,11 @@ const AddHolidayPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingHolidays", false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage ,debounceSearch]);
 
   useEffect(() => {
     loadHolidays();
-  }, [currentPage, itemsPerPage, loadHolidays]);
+  }, [loadHolidays]);
 
   const formatToYmd = (d: Date) => d.toISOString().split("T")[0];
 
@@ -259,6 +259,15 @@ const AddHolidayPage: React.FC = () => {
         </div>
       </div>
 
+      <div className="w-1/3 mb-4">
+        <TextField
+          type="text"
+          placeholder="Search appointments"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       <CommonDialog
         isOpen={showForm}
         onClose={handleCloseForm}
@@ -367,7 +376,7 @@ const AddHolidayPage: React.FC = () => {
         </p>
       </CommonDialog>
 
-      <div className="mt-8">
+      <div>
         {loadingStates.fetchingHolidays ? (
           <LoadingTable />
         ) : tableData.length === 0 ? (

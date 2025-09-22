@@ -62,11 +62,11 @@ export const getTimeSlotById = async (id: string): Promise<ApiResponse<TimeSlot>
   return response.data;
 };
 
-export const createTimeSlot = async (payload: TimeSlotPayload): Promise<ApiResponse<TimeSlot>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/timeslot`;
-  const response = await postMethod<ApiResponse<TimeSlot>, TimeSlotPayload>(url, payload);
-  return response.data;
-};
+// export const createTimeSlot = async (payload: TimeSlotPayload): Promise<ApiResponse<TimeSlot>> => {
+//   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/timeslot`;
+//   const response = await postMethod<ApiResponse<TimeSlot>, TimeSlotPayload>(url, payload);
+//   return response.data;
+// };
 
 export const updateTimeSlot = async (
   id: string,
