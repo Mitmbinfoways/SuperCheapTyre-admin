@@ -25,12 +25,12 @@ const ContactList: React.FC = () => {
   const columns: Column<Contact>[] = [
     { title: "Name", key: "name", render: (item) => item.name },
     { title: "Email", key: "email", render: (item) => item.email },
-    { title: "Message", key: "message", render: (item) => item.message },
     {
       title: "Date",
       key: "date",
       render: (item) => new Date(item.createdAt).toLocaleString(),
     },
+    { title: "Message", key: "message", render: (item) => item.message },
   ];
 
   const debounceSearch = useDebounce<string>(search, 300);

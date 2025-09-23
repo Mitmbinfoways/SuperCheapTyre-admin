@@ -35,13 +35,13 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Add Employee",
+        title: "Manage Employee",
         url: "/add-employee",
         icon: Icons.UserPlusIcon,
         items: [],
       },
       {
-        title: "Add TimeSlot",
+        title: "Manage TimeSlot",
         url: "/add-timeslot",
         icon: Icons.ClockIcon,
         items: [],

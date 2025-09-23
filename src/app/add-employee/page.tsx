@@ -42,12 +42,12 @@ type LoadingStates = {
 };
 
 const AddTechnicianPage: React.FC = () => {
-  const [formData ,setFormData] = useState({
-    firstName:"",
-    lastName:"",
-    email:"",
-    phone:"",
-  })
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isEdit, setIsEdit] = useState<Technician | null>(null);
@@ -96,23 +96,34 @@ const AddTechnicianPage: React.FC = () => {
 
   const handleSaveTechnician = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) return;
-    
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.phone
+    )
+      return;
+
     setError(null);
     updateLoading("submitting", true);
-    
+
     try {
       if (isEdit) {
         await UpdateTechnician({
           id: isEdit._id,
-          firstName:formData.firstName,
-          lastName:formData.lastName,
-          email:formData.email,
-          phone:formData.phone,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
         });
         Toast({ type: "success", message: "Technician updated successfully!" });
       } else {
-        await AddTechnician({ firstName:formData.firstName, lastName:formData.lastName, email:formData.email, phone:formData.phone });
+        await AddTechnician({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+        });
         Toast({ type: "success", message: "Technician added successfully!" });
       }
       handleCloseForm();
@@ -197,8 +208,11 @@ const AddTechnicianPage: React.FC = () => {
       key: "index",
       render: (_, index) => (currentPage - 1) * itemsPerPage + index + 1,
     },
-    { title: "First Name", key: "firstName", render: (item) => item.firstName },
-    { title: "Last Name", key: "lastName", render: (item) => item.lastName },
+    {
+      title: "Name",
+      key: "firstName",
+      render: (item) => item.firstName + " " + item.lastName,
+    },
     { title: "Email", key: "email" },
     { title: "Phone", key: "phone", render: (item) => item.phone },
     {

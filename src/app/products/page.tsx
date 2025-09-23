@@ -175,6 +175,7 @@ const ProductListPage: React.FC = () => {
       title: "Category",
       key: "category",
       width: "100px",
+      align: "center",
       render: (item) => (
         <span className="text-xs sm:text-sm">
           {item.category?.toUpperCase() || ""}
@@ -185,6 +186,7 @@ const ProductListPage: React.FC = () => {
       title: "Brand", 
       key: "brand",
       width: "100px",
+      align: "center",
       render: (item) => (
         <div className="truncate max-w-[100px]" title={item.brand}>
           {item.brand}
@@ -194,9 +196,10 @@ const ProductListPage: React.FC = () => {
     { 
       title: "SKU", 
       key: "sku",
+      align: "center",
       width: "120px",
       render: (item) => (
-        <div className="truncate max-w-[120px] text-xs" title={item.sku}>
+        <div className="text-xs" title={item.sku}>
           {item.sku}
         </div>
       )
@@ -205,7 +208,7 @@ const ProductListPage: React.FC = () => {
       title: "Price", 
       key: "price", 
       width: "80px",
-      align: "right",
+      align: "center",
       render: (item) => (
         <span className="font-semibold">
           ${item.price}
@@ -233,7 +236,7 @@ const ProductListPage: React.FC = () => {
       title: "Actions",
       key: "actions",
       width: "120px",
-      align: "right",
+      align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
           <MdModeEdit

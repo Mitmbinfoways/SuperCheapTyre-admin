@@ -308,7 +308,6 @@ const Page = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Enter product name"
-                      required
                     />
                   </div>
                   <div>
@@ -323,7 +322,6 @@ const Page = () => {
                         { label: "Tyre", value: "tyre" },
                         { label: "Wheel", value: "wheel" },
                       ]}
-                      required
                     />
                   </div>
                   <div>
@@ -333,7 +331,6 @@ const Page = () => {
                       value={formData.brand}
                       onChange={handleChange}
                       placeholder="Enter brand name"
-                      required
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

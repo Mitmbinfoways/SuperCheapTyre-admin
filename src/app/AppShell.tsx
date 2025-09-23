@@ -9,14 +9,18 @@ import { useEffect, useState } from "react";
 export default function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthOnlyPage = pathname === "/signin";
+  const authOnlyRoutes = ["/signin", "/forgot-password" , "reset-password"];
+  const isAuthOnlyPage = authOnlyRoutes.includes(pathname);
 
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     try {
-      const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null;
+      const token =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("authToken")
+          : null;
       const authorized = Boolean(token);
       setIsAuthorized(authorized);
       setHasCheckedAuth(true);
@@ -34,16 +38,9 @@ export default function AppShell({ children }: PropsWithChildren) {
   }, [pathname, isAuthOnlyPage, router]);
 
   if (isAuthOnlyPage) {
-    return (
-      <div className="w-full dark:bg-[#020d1a]">
-        
-          {children}
-        
-      </div>
-    );
+    return <div className="w-full dark:bg-[#020d1a]">{children}</div>;
   }
 
-  // Avoid flashing protected content before auth check completes
   if (!hasCheckedAuth) {
     return null;
   }
@@ -66,5 +63,3 @@ export default function AppShell({ children }: PropsWithChildren) {
     </div>
   );
 }
-
-

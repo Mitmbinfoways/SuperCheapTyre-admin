@@ -74,7 +74,6 @@ function Table<T extends { id?: string | number; _id?: string }>({
             ))}
           </tr>
         </thead>
-        {/* ✅ border-t + border-b ensures top and bottom borders inside tbody */}
         <tbody className="bg-white dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-700">
           {data.map((item, index) => (
             <tr
@@ -91,7 +90,7 @@ function Table<T extends { id?: string | number; _id?: string }>({
                     col.align === "right"
                       ? "text-right"
                       : col.align === "center"
-                      ? "text-center"
+                      ? "text-center text-gray-900"
                       : "text-gray-900 dark:text-gray-200"
                   }`}
                   style={col.width ? { width: col.width } : undefined}
