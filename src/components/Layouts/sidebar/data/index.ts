@@ -29,6 +29,12 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Orders",
+        url: "/orders",
+        icon: Icons.OrdersIcon,
+        items: [],
+      },
+      {
         title: "Add Holidays",
         url: "/add-holidays",
         icon: Icons.CalendarPlusIcon,

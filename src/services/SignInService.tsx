@@ -20,7 +20,8 @@ export interface SignInPayload {
 }
 
 export interface ForgotPasswordPayload {
-  email: string;
+  token: string;
+  newPassword: string;
 }
 
 export interface SendOTPPayload {
@@ -51,16 +52,16 @@ export const signIn = async (
 export const forgotPassword = async (
   payload: ForgotPasswordPayload
 ): Promise<ApiResponse<{ message: string }>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/auth/forgot-password`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/admin/forgot-password`;
   const response = await postMethod<ApiResponse<{ message: string }>>(url, payload);
   return response.data;
 };
 
 // Send OTP
-export const sendOTP = async (
+export const RequestReset = async (
   payload: SendOTPPayload
 ): Promise<ApiResponse<{ message: string }>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/auth/send-otp`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/admin/request-reset`;
   const response = await postMethod<ApiResponse<{ message: string }>>(url, payload);
   return response.data;
 };

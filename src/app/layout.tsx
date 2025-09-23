@@ -17,8 +17,6 @@ export const metadata: Metadata = {
     template: "SuperCheapTyre Admin",
     default: "SuperCheapTyre Admin",
   },
-  description:
-    "Next.js admin dashboard toolkit with 200+ templates, UI components, and integrations for fast dashboard development.",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {

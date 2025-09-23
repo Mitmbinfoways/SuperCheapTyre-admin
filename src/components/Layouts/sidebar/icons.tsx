@@ -216,6 +216,26 @@ export function CalendarDaysIcon(props: PropsType) {
   );
 }
 
+export function OrdersIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6 2.25a.75.75 0 00-.75.75v18a.75.75 0 00.75.75h12a.75.75 0 00.75-.75v-18a.75.75 0 00-.75-.75H6zm0 1.5h12v18H6v-18z"
+      />
+      <path d="M8.25 6.75h7.5v1.5h-7.5v-1.5zM8.25 10.5h7.5v1.5h-7.5v-1.5zM8.25 14.25h4.5v1.5h-4.5v-1.5z" />
+      <path d="M6.75 6.75l.75.75 1.5-1.5-.75-.75-1.5 1.5zM6.75 10.5l.75.75 1.5-1.5-.75-.75-1.5 1.5zM6.75 14.25l.75.75 1.5-1.5-.75-.75-1.5 1.5z" />
+    </svg>
+  );
+}
 export function ShoppingCartIcon(props: PropsType) {
   return (
     <svg

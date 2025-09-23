@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
+import { forgotPassword } from "@/services/SignInService";
 
 export default function ResetPasswordPage() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fieldError, setFieldError] = useState<string>("");
@@ -41,11 +45,21 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!validateForm()) return;
+    if (!token) {
+      Toast({ message: "Invalid or missing token", type: "error" });
+      return;
+    }
 
     setIsLoading(true);
 
     try {
+      await forgotPassword({ token, newPassword: password }); // assuming API call
+      Toast({ message: "Password reset successfully", type: "success" });
+      setPassword("");
+      setConfirmPassword("");
+      router.push("/login"); // <-- works now
     } catch (err: any) {
       Toast({ message: err.message || "Something went wrong", type: "error" });
     } finally {

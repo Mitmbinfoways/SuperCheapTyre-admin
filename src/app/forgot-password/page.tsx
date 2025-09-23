@@ -6,9 +6,11 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
+import { RequestReset } from "@/services/SignInService";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [fieldError, setFieldError] = useState<string>("");
 
@@ -38,7 +40,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-
+      await RequestReset({ email });
       setEmail("");
     } catch (err: any) {
       Toast({ message: err.message || "Something went wrong", type: "error" });
@@ -49,11 +51,16 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <h2 className="mb-6 text-center text-2xl font-bold text-gray-900">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+        {/* Title */}
+        <h2 className="mb-2 text-center text-2xl font-bold text-gray-900">
           Forgot Password
         </h2>
+        <p className="mb-6 text-center text-sm text-gray-500">
+          Enter your email to reset your password
+        </p>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
             <FormLabel label="Email" required />
@@ -69,13 +76,21 @@ export default function ForgotPasswordPage() {
 
           <Button
             variant="primary"
-            className="w-full"
+            className="w-full rounded-lg py-2 text-base font-medium"
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? "Sending..." : "Send"}
           </Button>
         </form>
+        <div className="mt-6 text-center">
+          <span
+            onClick={() => router.push("/signin")}
+            className="cursor-pointer text-sm font-medium text-primary hover:underline"
+          >
+            ← Back to Sign in
+          </span>
+        </div>
       </div>
     </div>
   );
