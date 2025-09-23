@@ -65,9 +65,6 @@ export default function LoginPage() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {errorMessage && (
-            <p className="text-sm text-red-600" role="alert">{errorMessage}</p>
-          )}
           <div>
             <FormLabel label="Email address" required />
             <TextField
@@ -99,6 +96,9 @@ export default function LoginPage() {
               required
             />
           </div>
+          {errorMessage && (
+            <p className="text-sm text-red-600" role="alert">{errorMessage}</p>
+          )}
 
           <Button variant="primary" className="w-full" type="submit" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign in"}

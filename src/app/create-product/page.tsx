@@ -34,6 +34,7 @@ const Page = () => {
   const editId = searchParams.get("id");
   const [category, setCategory] = useState<string>("tyre");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [existingFilenames, setExistingFilenames] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [formData, setFormData] = useState<any>({
@@ -89,6 +90,7 @@ const Page = () => {
           wheelSpecifications:
             product.wheelSpecifications || prev.wheelSpecifications,
         }));
+        setExistingFilenames(product.images || []);
       } catch (error: any) {
         Toast({
           message: error?.message || "Failed to load product",
@@ -127,13 +129,15 @@ const Page = () => {
     setImageFiles((prev) => [...prev, ...files]);
   };
 
-  // Remove image from previews and mirror the file list
+  // Remove image from previews and recompute file list based on images array
   const handleRemoveImage = (index: number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      images: prev.images.filter((_: any, i: number) => i !== index),
-    }));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setFormData((prev: any) => {
+      const newImages = prev.images.filter((_: any, i: number) => i !== index);
+      // Recompute files from images that have file property
+      const newFiles = newImages.filter((it: any) => it?.file).map((it: any) => it.file as File);
+      setImageFiles(newFiles);
+      return { ...prev, images: newImages };
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -165,11 +169,25 @@ const Page = () => {
         sku = `${(formData.brand || "").slice(0, 10)}-${Date.now().toString().slice(-6)}`;
       }
 
+      // Derive keep list from current preview items that are existing (no file prop)
+      const keepList: string[] = (formData.images || [])
+        .filter((it: any) => !it?.file && typeof it?.url === "string")
+        .map((it: any) => {
+          try {
+            const url: string = it.url;
+            const parts = url.split("/Product/");
+            return parts.length > 1 ? parts[1] : url;
+          } catch {
+            return it.url;
+          }
+        });
+
       const payload = {
         name: formData.name as string,
         brand: formData.brand as string,
         category: category as string,
         description: formData.description || undefined,
+        // For update: send keepImages (existing file names to keep) and new files as images
         images: imageFiles,
         sku,
         price: Number(formData.price || 0),
@@ -179,14 +197,13 @@ const Page = () => {
         wheelSpecifications:
           category === "wheel" ? formData.wheelSpecifications : undefined,
         isActive: true,
+        keepImages: isEdit ? keepList : undefined,
       } as any;
 
       const res =
         isEdit && editId
           ? await updateProduct(editId, payload)
           : await createProduct(payload);
-
-      console.log(res);
 
       if (
         (isEdit && res?.statusCode === 200) ||

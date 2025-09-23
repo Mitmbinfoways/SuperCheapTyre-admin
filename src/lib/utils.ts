@@ -7,6 +7,5 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getProductImageUrl(filename: any) {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-  console.log(BASE_URL)
   return `${BASE_URL}/Product/${filename}`;
 }

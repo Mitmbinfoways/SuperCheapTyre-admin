@@ -50,6 +50,11 @@ export interface ProductPayload {
   isActive?: boolean;
 }
 
+export type UpdateProductPayload = Partial<ProductPayload> & {
+  // List of existing image filenames to keep on update
+  keepImages?: string[];
+};
+
 export interface ApiResponse<T> {
   statusCode: number;
   data: T;
@@ -120,16 +125,26 @@ export const createProduct = async (
 
 export const updateProduct = async (
   id: string,
-  payload: Partial<ProductPayload>,
+  payload: UpdateProductPayload,
 ): Promise<ApiResponse<Product>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/product/${id}`;
   const formData = new FormData();
 
+  // Append keep list first if provided (backend reads req.body.images)
+  if (Array.isArray(payload.keepImages)) {
+    formData.append("images", JSON.stringify(payload.keepImages));
+  }
+
+  // Append new upload files
+  if (Array.isArray(payload.images)) {
+    payload.images.forEach((file) => formData.append("images", file));
+  }
+
+  // Append remaining scalar/object fields (excluding images/keepImages)
   Object.entries(payload).forEach(([key, value]) => {
-    if (key === "images" && Array.isArray(value)) {
-      value.forEach((file) => formData.append("images", file));
-    } else if (typeof value === "object") {
-      formData.append(key, JSON.stringify(value));
+    if (key === "images" || key === "keepImages") return;
+    if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value as any));
     } else if (value !== undefined && value !== null) {
       formData.append(key, String(value));
     }
