@@ -22,13 +22,13 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
 
-  useEffect(() => {
-    const existingToken =
-      typeof window !== "undefined"
-        ? sessionStorage.getItem("authToken")
-        : null;
-    if (existingToken) router.replace("/");
-  }, [router]);
+  // useEffect(() => {
+  //   const existingToken =
+  //     typeof window !== "undefined"
+  //       ? sessionStorage.getItem("authToken")
+  //       : null;
+  //   if (existingToken) router.replace("/");
+  // }, [router]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
