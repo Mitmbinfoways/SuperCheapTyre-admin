@@ -28,6 +28,7 @@ export function Header() {
             height={100}
             alt=""
             role="presentation"
+            priority
           />
         </Link>
       )}

@@ -50,6 +50,7 @@ export function UserInfo() {
             role="presentation"
             width={200}
             height={200}
+            loading="lazy"
           />
           <figcaption className="flex items-center gap-1 font-medium text-dark dark:text-dark-6 max-[1024px]:sr-only">
             <span>{USER.name}</span>
@@ -80,6 +81,7 @@ export function UserInfo() {
             role="presentation"
             width={200}
             height={200}
+            loading="lazy"
           />
 
           <figcaption className="space-y-1 text-base font-medium">

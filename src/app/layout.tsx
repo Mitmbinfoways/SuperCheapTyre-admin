@@ -25,10 +25,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
       <body>
         <Providers>
           <NextTopLoader color="#5750F1" showSpinner={false} />
-
-          <ClientOnly>
-            <AppShell>{children}</AppShell>
-          </ClientOnly>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

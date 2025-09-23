@@ -42,7 +42,15 @@ export default function AppShell({ children }: PropsWithChildren) {
   }
 
   if (!hasCheckedAuth) {
-    return null;
+    // Render a lightweight shell to avoid blank screen and improve LCP
+    return (
+      <div className="flex min-h-screen">
+        <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
+          <div className="sticky top-0 z-10 h-[56px] border-b border-stroke bg-white shadow-1 dark:border-stroke-dark dark:bg-gray-dark" />
+          <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10" />
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthorized) {

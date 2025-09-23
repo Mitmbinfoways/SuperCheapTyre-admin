@@ -81,7 +81,7 @@ export default function LoginPage() {
       if (admin) localStorage.setItem("adminUser", JSON.stringify(admin));
 
       Toast({
-        message: response?.message || "Signed in successfully",
+        message: response?.message || "Login successful",
         type: "success",
       });
 
@@ -91,7 +91,6 @@ export default function LoginPage() {
       const apiMessage =
       error.response.data.errorData || "Failed to sign in";
       setErrorMessage(apiMessage);
-      Toast({ message: apiMessage, type: "error" });
     } finally {
       setIsLoading(false);
     }
