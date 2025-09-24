@@ -43,8 +43,6 @@ const ProductListPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-
-  // pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;

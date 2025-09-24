@@ -21,18 +21,17 @@ export function Header() {
       </button>
 
       {isMobile && (
-        <Link href={"/"} className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
+        <Link href="/" className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
-            src={"/logos/main.svg"}
-            width={100}
-            height={100}
-            alt=""
-            role="presentation"
+            src="/logo_light.svg"
+            alt="logo"
+            width={120}
+            height={0} 
+            className="h-14 object-contain"
             priority
           />
         </Link>
       )}
-
 
       <div className="flex flex-1 items-center justify-end gap-2 min-[375px]:gap-4">
         <ThemeToggleSwitch />

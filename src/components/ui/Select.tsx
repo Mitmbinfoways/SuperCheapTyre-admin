@@ -132,9 +132,7 @@ const Select: React.FC<SelectProps> = ({
             ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
             : isOpen
               ? "ring-2 ring-indigo-400"
-              : error
-                ? "border-red-300 hover:border-red-400"
-                : "border-gray-300"
+              : "border-gray-300"
         } dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500 ${isOpen ? "dark:border-indigo-400 dark:ring-indigo-400/20" : ""} `}
       >
         <div className="flex items-center justify-between">

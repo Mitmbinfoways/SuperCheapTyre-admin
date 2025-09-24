@@ -29,6 +29,17 @@ const nextConfig = {
         hostname: "api.myapp.com", // replace with your real backend domain
         pathname: "/Product/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "5000",
+        pathname: "/AdminProfile/**", // <-- added for avatars
+      },
+      {
+        protocol: "https",
+        hostname: "api.myapp.com", // replace with your real backend domain
+        pathname: "/Product/**",
+      },
     ],
   },
 };

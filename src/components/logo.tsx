@@ -1,10 +1,10 @@
-import darkLogo from "../../public/logos/dark.svg";
-import logo from "../../public/logos/main.svg";
+import logo from "../../public/logo_dark.svg";
+import darkLogo from "../../public/logo_light.svg";
 import Image from "next/image";
 
 export function Logo() {
   return (
-    <div className="relative h-8 max-w-[10.847rem]">
+    <div className="relative h-20">
       <Image
         src={logo}
         fill

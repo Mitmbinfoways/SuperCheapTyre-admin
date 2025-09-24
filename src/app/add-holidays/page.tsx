@@ -36,7 +36,11 @@ type LoadingStates = {
 const AddHolidayPage: React.FC = () => {
   const [date, setDate] = useState<Date | null>(null);
   const [reason, setReason] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    date?: string;
+    reason?: string;
+    apiError?: string;
+  }>({});
   const [showForm, setShowForm] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -45,7 +49,7 @@ const AddHolidayPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
-  const [search ,setSearch] = useState<string>('')
+  const [search, setSearch] = useState<string>("");
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingHolidays: false,
     submittingForm: false,
@@ -56,7 +60,7 @@ const AddHolidayPage: React.FC = () => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
-  const debounceSearch = useDebounce<string>(search ,300)
+  const debounceSearch = useDebounce<string>(search, 300);
 
   const tableData: HolidayWithId[] = holidays?.map((h) => ({
     ...h,
@@ -65,23 +69,25 @@ const AddHolidayPage: React.FC = () => {
 
   const loadHolidays = useCallback(async () => {
     updateLoadingState("fetchingHolidays", true);
-    setError(null);
+    setError({});
     try {
       const filter = {
         currentPage,
         itemsPerPage,
-        search:debounceSearch
+        search: debounceSearch,
       };
       const data = await GetHolidays(filter);
       const { items, pagination } = data.data;
       setHolidays(items);
       setTotalPages(pagination.totalPages);
     } catch (e: any) {
-      setError(e?.response?.data?.errorData || "Failed to load holidays");
+      setError({
+        apiError: e?.response?.data?.errorData || "Failed to load holidays",
+      });
     } finally {
       updateLoadingState("fetchingHolidays", false);
     }
-  }, [currentPage, itemsPerPage ,debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
     loadHolidays();
@@ -91,31 +97,36 @@ const AddHolidayPage: React.FC = () => {
 
   const handleAddHoliday = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!date || !reason) return;
-    updateLoadingState("submittingForm", true);
-    setError(null);
+    setError({});
 
+    const newError: { date?: string; reason?: string } = {};
+
+    if (!date) newError.date = "Date is required";
+    if (!reason.trim())
+      newError.reason = "Reason is required";
+    if (Object.keys(newError).length > 0) {
+      setError(newError);
+      return;
+    }
+
+    updateLoadingState("submittingForm", true);
     try {
       const payloadDate = formatToYmd(date as Date);
       if (editingHoliday) {
         await AddHoliday({ id: editingHoliday._id, date: payloadDate, reason });
-        Toast({
-          type: "success",
-          message: "Holiday updated successfully!",
-        });
+        Toast({ type: "success", message: "Holiday updated successfully!" });
       } else {
         await AddHoliday({ date: payloadDate, reason });
-        Toast({
-          type: "success",
-          message: "Holiday added successfully!",
-        });
+        Toast({ type: "success", message: "Holiday added successfully!" });
       }
       handleCloseForm();
       await loadHolidays();
     } catch (e: any) {
-      setError(
-        e?.response?.data?.errorData || "Failed to create/update holiday",
-      );
+      setError({
+        apiError:
+          e?.response?.data?.errorData ||
+          "Something went wrong. Please try again",
+      });
     } finally {
       updateLoadingState("submittingForm", false);
     }
@@ -124,17 +135,16 @@ const AddHolidayPage: React.FC = () => {
   const confirmDeleteHoliday = async () => {
     if (!deleteHolidayId) return;
     updateLoadingState("deletingHoliday", true);
-    setError(null);
+    setError({});
     try {
       await DeleteHoliday(deleteHolidayId);
-      Toast({
-        type: "success",
-        message: "Holiday deleted successfully!",
-      });
+      Toast({ type: "success", message: "Holiday deleted successfully!" });
       handleCloseDeleteDialog();
       await loadHolidays();
     } catch (e: any) {
-      setError(e.response?.data?.errorData || "Failed to delete holiday");
+      setError({
+        apiError: e.response?.data?.errorData || "Failed to delete holiday",
+      });
     } finally {
       updateLoadingState("deletingHoliday", false);
     }
@@ -145,28 +155,25 @@ const AddHolidayPage: React.FC = () => {
     setDate(new Date(holiday.date));
     setReason(holiday.reason);
     setShowForm(true);
-    setError(null);
+    setError({});
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingHoliday(null);
     setDate(null);
     setReason("");
-    setError(null);
+    setError({});
   };
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteHolidayId(null);
-    setError(null);
+    setError({});
   };
 
-  // Loading component for table
   const LoadingTable = () => (
     <div className="animate-pulse space-y-4">
       <div className="h-10 rounded bg-gray-200 dark:bg-gray-700"></div>
@@ -177,20 +184,13 @@ const AddHolidayPage: React.FC = () => {
   );
 
   const columns: Column<HolidayWithId>[] = [
-    {
-      title: "Index",
-      key: "index",
-      render: (_, index) => index + 1,
-    },
+    { title: "Index", key: "index", render: (_, index) => index + 1 },
     {
       title: "Date",
       key: "date",
       render: (item) => new Date(item.date).toDateString(),
     },
-    {
-      title: "Reason",
-      key: "reason",
-    },
+    { title: "Reason", key: "reason" },
     {
       title: "Actions",
       key: "actions",
@@ -243,26 +243,24 @@ const AddHolidayPage: React.FC = () => {
         <h1 className="text-2xl font-semibold text-primary dark:text-white">
           Manage Holidays
         </h1>
-        <div>
-          <Button
-            onClick={() => {
-              setEditingHoliday(null);
-              setDate(null);
-              setReason("");
-              setError(null);
-              setShowForm(true);
-            }}
-            disabled={loadingStates.fetchingHolidays}
-          >
-            {loadingStates.fetchingHolidays ? "Loading..." : "Add Holiday"}
-          </Button>
-        </div>
+        <Button
+          onClick={() => {
+            setEditingHoliday(null);
+            setDate(null);
+            setReason("");
+            setError({});
+            setShowForm(true);
+          }}
+          disabled={loadingStates.fetchingHolidays}
+        >
+          {loadingStates.fetchingHolidays ? "Loading..." : "Add Holiday"}
+        </Button>
       </div>
 
-      <div className="w-1/3 mb-4">
+      <div className="mb-4 w-1/3">
         <TextField
           type="text"
-          placeholder="Search appointments"
+          placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -273,46 +271,44 @@ const AddHolidayPage: React.FC = () => {
         onClose={handleCloseForm}
         title={editingHoliday ? "Edit Holiday" : "Add Holiday"}
       >
-        {error && (
+        {error.apiError && (
           <div className="mb-4 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
-            {error}
+            {error.apiError}
           </div>
         )}
         <form className="space-y-4" onSubmit={handleAddHoliday}>
           <div>
-            <label className="mb-1 block text-sm font-medium dark:text-gray-200">
-              Date *
-            </label>
+            <FormLabel label="Date" required />
             <DatePicker
               value={date}
               onChange={(d: Date | null) => setDate(d)}
               minDate={new Date()}
               placeholder="Select a date"
-              className="w-full"
+              className="w-100"
               disabled={loadingStates.submittingForm}
               dateFormat="yyyy-MM-dd"
               isClearable={true}
             />
-            {!editingHoliday && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Only future dates are allowed
+            {error.date && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                {error.date}
               </p>
             )}
           </div>
+
           <div>
             <FormLabel label="Reason" required />
-            <div className="relative">
-              <TextField
-                type="text"
-                name="price"
-                value={reason}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setReason(e.target.value)
-                }
-                placeholder="E.g. Special Day"
-              />
-            </div>
+            <TextField
+              type="text"
+              value={reason}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setReason(e.target.value)
+              }
+              error={error.reason}
+              placeholder="E.g. Special Day"
+            />
           </div>
+
           <div className="flex items-center justify-end space-x-3">
             <Button
               type="button"
@@ -322,11 +318,7 @@ const AddHolidayPage: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={loadingStates.submittingForm || !date || !reason}
-            >
+            <Button variant="primary" type="submit">
               {loadingStates.submittingForm ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -365,9 +357,9 @@ const AddHolidayPage: React.FC = () => {
           </div>
         }
       >
-        {error && (
+        {error.apiError && (
           <div className="mb-4 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
-            {error}
+            {error.apiError}
           </div>
         )}
         <p className="text-gray-700 dark:text-gray-300">
@@ -398,7 +390,6 @@ const AddHolidayPage: React.FC = () => {
               data={tableData}
               className="dark:divide-gray-700"
             />
-
             <div className="mt-4 flex justify-center">
               <Pagination
                 currentPage={currentPage}

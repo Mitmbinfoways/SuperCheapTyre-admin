@@ -9,3 +9,8 @@ export function getProductImageUrl(filename: any) {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   return `${BASE_URL}/Product/${filename}`;
 }
+
+export function getAdminProfile(filename: any) {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  return `${BASE_URL}/AdminProfile/${filename}`;
+}

@@ -41,7 +41,6 @@ export function Sidebar() {
     });
   }, [pathname]);
 
-  // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
       <aside
@@ -49,8 +48,8 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         <div className="flex h-full flex-col py-10 pl-5 pr-2">
-          <div className="relative pr-4.5">
-            <Link href={"/"} className="px-0 py-2.5 min-[850px]:py-0">
+          <div className="relative pr-3">
+            <Link href={"/"}>
               <Logo />
             </Link>
           </div>
@@ -86,8 +85,8 @@ export function Sidebar() {
         aria-hidden={!isOpen}
         inert={!isOpen}
       >
-        <div className="flex h-full flex-col py-10 pl-[25px] pr-[7px]">
-          <div className="relative pr-4.5">
+        <div className="flex h-full flex-col pt-4 pb-10 pl-6 pr-2">
+          <div className="relative pr-8">
             <Link
               href={"/"}
               onClick={() => isMobile && toggleSidebar()}
@@ -99,7 +98,7 @@ export function Sidebar() {
             {isMobile && (
               <button
                 onClick={toggleSidebar}
-                className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
+                className="absolute left-3/4 right-3.5 top-1/2 -translate-y-1/2 text-right"
               >
                 <span className="sr-only">Close Menu</span>
 
@@ -109,7 +108,7 @@ export function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
+          <div className="custom-scrollbar mt-2 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
             {NAV_DATA.map((section) => (
               <div key={section.label} className="mb-6">
                 <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">

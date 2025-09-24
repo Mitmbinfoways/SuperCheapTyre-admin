@@ -45,9 +45,7 @@ const TextField: React.FC<TextFieldProps> = ({
           min={min}
           max={max}
           onWheel={(e) => type === "number" && e.currentTarget.blur()}
-          className={`border ${
-            error ? "border-red-500" : "border-gray-300"
-          } focus:ring-indigo-400 w-full rounded-lg bg-white px-3 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 ${
+          className={`border ${"border-gray-300"} w-full rounded-lg bg-white px-3 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 ${
             type === "number" ? "no-spinner" : ""
           } ${className}`}
         />
@@ -56,7 +54,7 @@ const TextField: React.FC<TextFieldProps> = ({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-500 dark:text-gray-400 p-1"
+            className="absolute right-3 top-1/2 -translate-y-1/2 transform p-1 text-gray-500 dark:text-gray-400"
           >
             {showPassword ? (
               <svg

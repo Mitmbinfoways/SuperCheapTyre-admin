@@ -61,7 +61,56 @@ const Page = () => {
     },
   });
 
-  // Load existing product when id present
+  const [errors, setErrors] = useState<any>({});
+  const [apiError, setApiError] = useState<string>("");
+
+  const validateForm = () => {
+    const newErrors: any = {};
+
+    if (!formData.name?.trim()) {
+      newErrors.name = "Product name is required";
+    }
+
+    if (!formData.brand?.trim()) {
+      newErrors.brand = "Brand is required";
+    }
+
+    if (!formData.price) {
+      newErrors.price = "Price is required";
+    }
+
+    if (!formData.stock) {
+      newErrors.stock = "Stock is required";
+    }
+
+    if (category === "tyre") {
+      const tyre = formData.tyreSpecifications;
+      if (!tyre.pattern) newErrors["tyre.pattern"] = "Pattern is required";
+      if (!tyre.width) newErrors["tyre.width"] = "Width is required";
+      if (!tyre.profile) newErrors["tyre.profile"] = "Profile is required";
+      if (!tyre.diameter) newErrors["tyre.diameter"] = "Diameter is required";
+      if (!tyre.loadRating)
+        newErrors["tyre.loadRating"] = "Load rating is required";
+      if (!tyre.speedRating)
+        newErrors["tyre.speedRating"] = "Speed rating is required";
+    }
+
+    if (category === "wheel") {
+      const wheel = formData.wheelSpecifications;
+      if (!wheel.size) newErrors["wheel.size"] = "Size is required";
+      if (!wheel.color) newErrors["wheel.color"] = "Color is required";
+      if (!wheel.diameter) newErrors["wheel.diameter"] = "Diameter is required";
+      if (!wheel.fitments)
+        newErrors["wheel.fitments"] = "Fitments are required";
+      if (!wheel.staggeredOptions)
+        newErrors["wheel.staggeredOptions"] = "Staggered option is required";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   useEffect(() => {
     const loadProduct = async () => {
       if (!editId) return;
@@ -92,10 +141,7 @@ const Page = () => {
         }));
         setExistingFilenames(product.images || []);
       } catch (error: any) {
-        Toast({
-          message: error?.message || "Failed to load product",
-          type: "error",
-        });
+        console.log(error);
       }
     };
     loadProduct();
@@ -105,6 +151,9 @@ const Page = () => {
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
+
+    // Remove error for this field
+    setErrors((prev: any) => ({ ...prev, [name]: undefined }));
 
     if (name?.startsWith("tyre.")) {
       const key = name.replace("tyre.", "");
@@ -133,8 +182,9 @@ const Page = () => {
   const handleRemoveImage = (index: number) => {
     setFormData((prev: any) => {
       const newImages = prev.images.filter((_: any, i: number) => i !== index);
-      // Recompute files from images that have file property
-      const newFiles = newImages.filter((it: any) => it?.file).map((it: any) => it.file as File);
+      const newFiles = newImages
+        .filter((it: any) => it?.file)
+        .map((it: any) => it.file as File);
       setImageFiles(newFiles);
       return { ...prev, images: newImages };
     });
@@ -144,20 +194,10 @@ const Page = () => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    // Basic validations
-    if (!formData.name || !formData.brand) {
-      Toast({ message: "Please fill required fields", type: "error" });
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       setIsSubmitting(true);
-      Toast({
-        message: isEdit ? "Updating product..." : "Creating product...",
-        type: "loading",
-        duration: 2000,
-      });
-
       let sku = "";
       if (category === "tyre") {
         const tyre = formData.tyreSpecifications;
@@ -187,7 +227,6 @@ const Page = () => {
         brand: formData.brand as string,
         category: category as string,
         description: formData.description || undefined,
-        // For update: send keepImages (existing file names to keep) and new files as images
         images: imageFiles,
         sku,
         price: Number(formData.price || 0),
@@ -247,19 +286,36 @@ const Page = () => {
         });
       }
     } catch (error: any) {
-      Toast({
-        message: error?.message || "Error creating product",
-        type: "error",
-      });
+      setApiError(
+        error?.response?.data?.errorData ||
+          "Something went wrong Please try again",
+      );
+      console.error(error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const formatFieldName = (field: string) => {
-    return field
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
+  const handleSelect = (field: string, value: string) => {
+    // Remove error for this field
+    setErrors((prev: any) => ({ ...prev, [field]: undefined }));
+
+    // Update formData dynamically
+    if (field.startsWith("tyre.")) {
+      const key = field.replace("tyre.", "");
+      setFormData((prev: any) => ({
+        ...prev,
+        tyreSpecifications: { ...prev.tyreSpecifications, [key]: value },
+      }));
+    } else if (field.startsWith("wheel.")) {
+      const key = field.replace("wheel.", "");
+      setFormData((prev: any) => ({
+        ...prev,
+        wheelSpecifications: { ...prev.wheelSpecifications, [key]: value },
+      }));
+    } else {
+      setFormData((prev: any) => ({ ...prev, [field]: value }));
+    }
   };
 
   return (
@@ -276,6 +332,12 @@ const Page = () => {
             Add a new product to your inventory with detailed specifications
           </p>
         </div>
+
+        {apiError && (
+          <div className="mb-4 rounded border border-red-400 bg-red-50 p-4 text-red-700">
+            {apiError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="flex flex-col gap-6 rounded-xl border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex-row">
@@ -308,6 +370,7 @@ const Page = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Enter product name"
+                      error={errors.name}
                     />
                   </div>
                   <div>
@@ -331,6 +394,7 @@ const Page = () => {
                       value={formData.brand}
                       onChange={handleChange}
                       placeholder="Enter brand name"
+                      error={errors.brand}
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -343,6 +407,7 @@ const Page = () => {
                           value={formData.price}
                           onChange={handleChange}
                           placeholder="0"
+                          error={errors.price}
                         />
                       </div>
                     </div>
@@ -354,6 +419,7 @@ const Page = () => {
                         value={formData.stock}
                         onChange={handleChange}
                         placeholder="0"
+                        error={errors.stock}
                       />
                     </div>
                   </div>
@@ -382,159 +448,85 @@ const Page = () => {
 
             {category === "tyre" && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* Pattern */}
-                <div>
-                  <Select
-                    label="Pattern"
-                    required
-                    name="tyre.pattern"
-                    value={formData.tyreSpecifications.pattern}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          pattern: value,
-                        },
-                      }))
-                    }
-                    options={pattern}
-                    placeholder="Select pattern"
-                  />
-                </div>
+                <Select
+                  label="Pattern"
+                  required
+                  name="tyre.pattern"
+                  value={formData.tyreSpecifications.pattern}
+                  onChange={(value) => handleSelect("tyre.pattern", value)}
+                  error={errors["tyre.pattern"]}
+                  options={pattern}
+                  placeholder="Select pattern"
+                />
 
-                <div>
-                  <Select
-                    name="tyre.width"
-                    label="Width"
-                    required
-                    value={formData.tyreSpecifications.width}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          width: value,
-                        },
-                      }))
-                    }
-                    options={width}
-                    placeholder="Select width"
-                  />
-                </div>
+                <Select
+                  label="Width"
+                  required
+                  value={formData.tyreSpecifications.width}
+                  onChange={(value) => handleSelect("tyre.width", value)}
+                  error={errors["tyre.width"]}
+                  options={width}
+                  placeholder="Select width"
+                />
 
                 {/* Profile */}
-                <div>
-                  <Select
-                    label="Profile"
-                    required
-                    name="tyre.profile"
-                    value={formData.tyreSpecifications.profile}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          profile: value,
-                        },
-                      }))
-                    }
-                    options={profiles}
-                    placeholder="Select profile"
-                  />
-                </div>
+                <Select
+                  label="Profile"
+                  required
+                  value={formData.tyreSpecifications.profile}
+                  onChange={(value) => handleSelect("tyre.profile", value)}
+                  error={errors["tyre.profile"]}
+                  options={profiles}
+                  placeholder="Select profile"
+                />
 
-                <div>
-                  <Select
-                    label="Diameter"
-                    required
-                    name="tyre.diameter"
-                    value={formData.tyreSpecifications.diameter}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          diameter: value,
-                        },
-                      }))
-                    }
-                    options={diameter}
-                    placeholder="Select diameter"
-                  />
-                </div>
+                <Select
+                  label="Diameter"
+                  required
+                  value={formData.tyreSpecifications.diameter}
+                  onChange={(value) => handleSelect("tyre.diameter", value)}
+                  error={errors["tyre.diameter"]}
+                  options={diameter}
+                  placeholder="Select diameter"
+                />
 
-                {/* Load Rating */}
-                <div>
-                  <Select
-                    label="Load Rating"
-                    name="tyre.loadRating"
-                    value={formData.tyreSpecifications.loadRating}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          loadRating: value,
-                        },
-                      }))
-                    }
-                    required
-                    options={loadrating}
-                    placeholder="Select load rating"
-                  />
-                </div>
+                <Select
+                  label="Load Rating"
+                  required
+                  value={formData.tyreSpecifications.loadRating}
+                  onChange={(value) => handleSelect("tyre.loadRating", value)}
+                  error={errors["tyre.loadRating"]}
+                  options={loadrating}
+                  placeholder="Select load rating"
+                />
 
-                {/* Speed Rating */}
-                <div>
-                  <FormLabel label="Speed Rating" required />
-                  <Select
-                    name="tyre.speedRating"
-                    value={formData.tyreSpecifications.speedRating}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        tyreSpecifications: {
-                          ...prev.tyreSpecifications,
-                          speedRating: value,
-                        },
-                      }))
-                    }
-                    options={speedrating}
-                    placeholder="Select speed rating"
-                  />
-                </div>
+                <Select
+                  label="Speed Rating"
+                  required
+                  value={formData.tyreSpecifications.speedRating}
+                  onChange={(value) => handleSelect("tyre.speedRating", value)}
+                  error={errors["tyre.speedRating"]}
+                  options={speedrating}
+                  placeholder="Select speed rating"
+                />
               </div>
             )}
 
             {category === "wheel" && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* Size */}
-                <div>
-                  <Select
-                    label="Size"
-                    required
-                    name="wheel.size"
-                    value={formData.wheelSpecifications.size}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        wheelSpecifications: {
-                          ...prev.wheelSpecifications,
-                          size: value,
-                        },
-                      }))
-                    }
-                    options={wheelSizes} // define your wheelSizes array
-                    placeholder="Select size"
-                  />
-                </div>
+                <Select
+                  label="Size"
+                  required
+                  name="wheel.size"
+                  value={formData.wheelSpecifications.size}
+                  onChange={(value) => handleSelect("wheel.size", value)}
+                  error={errors["wheel.size"]}
+                  options={wheelSizes}
+                  placeholder="Select size"
+                />
 
-                {/* Color */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white">
-                    Color <span className="text-red-500">*</span>
-                  </label>
+                  <FormLabel label="Color" required />
                   <TextField
                     name="wheel.color"
                     value={formData.wheelSpecifications.color}
@@ -547,68 +539,40 @@ const Page = () => {
                         },
                       }))
                     }
+                    error={errors["wheel.color"]}
                     placeholder="Enter color"
                   />
                 </div>
-                <div>
-                  <Select
-                    label="Diameter"
-                    required
-                    name="wheel.diameter"
-                    value={formData.wheelSpecifications.diameter}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        wheelSpecifications: {
-                          ...prev.wheelSpecifications,
-                          diameter: value,
-                        },
-                      }))
-                    }
-                    options={wheelDiameters} // define your wheelDiameters array
-                    placeholder="Select diameter"
-                  />
-                </div>
-                <div>
-                  <Select
-                    label="Fitments"
-                    required
-                    name="wheel.fitments"
-                    value={formData.wheelSpecifications.fitments}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        wheelSpecifications: {
-                          ...prev.wheelSpecifications,
-                          fitments: value,
-                        },
-                      }))
-                    }
-                    options={wheelFitments} // define your fitmentsOptions array
-                    placeholder="Select fitments"
-                  />
-                </div>
+                <Select
+                  label="Diameter"
+                  required
+                  value={formData.wheelSpecifications.diameter}
+                  onChange={(value) => handleSelect("wheel.diameter", value)}
+                  error={errors["wheel.diameter"]}
+                  options={wheelDiameters}
+                  placeholder="Select diameter"
+                />
+                <Select
+                  label="Fitments"
+                  required
+                  value={formData.wheelSpecifications.fitments}
+                  onChange={(value) => handleSelect("wheel.fitments", value)}
+                  error={errors["wheel.fitments"]}
+                  options={wheelFitments}
+                  placeholder="Select fitments"
+                />
 
-                {/* Staggered Options */}
-                <div>
-                  <Select
-                    label="Staggered Options"
-                    required
-                    name="wheel.staggeredOptions"
-                    value={formData.wheelSpecifications.staggeredOptions}
-                    onChange={(value) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        wheelSpecifications: {
-                          ...prev.wheelSpecifications,
-                          staggeredOptions: value,
-                        },
-                      }))
-                    }
-                    options={staggeredOptions} // define your staggeredOptionsList array
-                    placeholder="Select staggered option"
-                  />
-                </div>
+                <Select
+                  label="Staggered Options"
+                  required
+                  value={formData.wheelSpecifications.staggeredOptions}
+                  onChange={(value) =>
+                    handleSelect("wheel.staggeredOptions", value)
+                  }
+                  error={errors["wheel.staggeredOptions"]}
+                  options={staggeredOptions}
+                  placeholder="Select staggered option"
+                />
               </div>
             )}
           </div>

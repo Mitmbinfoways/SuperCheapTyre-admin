@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
-import { HiEye, HiEyeOff } from "react-icons/hi";
+import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
+import { Toast } from "@/components/ui/Toast";
+import { getAdminProfile } from "@/lib/utils";
+import Image from "next/image";
 
 const Page = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,64 +20,171 @@ const Page = () => {
     phone: "",
     avatar: "",
   });
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    avatar: "",
+  });
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
   });
-  const [errors, setErrors] = useState<any>({});
-  const [apiPasswordError, setApiPasswordError] = useState("");
-  const [profile, setProfile] = useState<any>(null);
+  const [passwordErrors, setPasswordErrors] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
+  const [profile, setProfile] = useState<Admin | null>(null);
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success",
+  ) => {
+    Toast({ message, type });
+  };
+
+  const storedAdmin =
+    typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
+  const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
+
+  const fetchProfile = async () => {
+    if (!parsedAdmin?._id) return;
+    setIsLoading(true);
+    try {
+      const response = await GetAdminById(parsedAdmin._id);
+      if (response.statusCode === 200) {
+        setProfile(response.data);
+        setFormData({
+          name: response.data.name,
+          email: response.data.email,
+          phone: response.data.phone || "",
+          avatar: response.data.avatar || "",
+        });
+      } else {
+        showToast("Failed to fetch profile", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Failed to fetch profile", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setIsLoading(true);
-    const fetchProfile = async () => {
-      try {
-        const data = {
-          _id: "68c7df8bf4d25f2b6ca780a6",
-          name: "John",
-          email: "meet.mbinfoways@gmail.com",
-          phone: "1234567890",
-          avatar: "avatar-1757929355111-100105459.png",
-        };
-        setProfile(data);
-        setFormData({
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          avatar: data.avatar,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
+    if (parsedAdmin?._id) fetchProfile();
+  }, [parsedAdmin?._id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormErrors({ ...formErrors, [e.target.name]: "" }); // clear error on change
   };
 
-  const handleUpdate = () => {
-    console.log("Update profile", formData);
-    // Call API to update profile here
-    setProfile(formData);
-    setIsEditing(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setPreview(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!parsedAdmin?._id) return;
+    const errors: any = {};
+    if (!formData.name) errors.name = "Name is required";
+    if (!formData.email) errors.email = "Email is required";
+    if (!formData.phone) errors.phone = "Phone is required";
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) return;
+
+    setIsLoading(true);
+    try {
+      const response = await UpdateProfile(
+        {
+          id: parsedAdmin._id,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        selectedFile || undefined,
+      );
+
+      if (response.statusCode === 200) {
+        setProfile(response.data);
+        showToast("Profile updated successfully", "success");
+        setFormData({
+          name: response.data.name,
+          email: response.data.email,
+          phone: response.data.phone || "",
+          avatar: response.data.avatar || "",
+        });
+        setIsEditing(false);
+        setSelectedFile(null);
+        setPreview(null);
+      } else {
+        showToast("Failed to update profile", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Failed to update profile", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    setPasswordErrors({ ...passwordErrors, [e.target.name]: "" });
   };
 
-  const handlePasswordSubmit = () => {
-    console.log("Change password", passwordData);
-    // Call API to change password here
+  const handlePasswordSubmit = async () => {
+    const errors: any = {};
+    if (!passwordData.oldPassword)
+      errors.oldPassword = "Old password is required";
+    if (!passwordData.newPassword)
+      errors.newPassword = "New password is required";
+    setPasswordErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setIsLoading(true);
+    try {
+      const response = await UpdateProfile({
+        id: parsedAdmin?._id,
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      if (response.statusCode === 200) {
+        showToast("Password changed successfully", "success");
+        setPasswordData({ oldPassword: "", newPassword: "" });
+        setIsChangingPassword(false);
+      } else {
+        setPasswordErrors({
+          ...errors,
+          oldPassword: "Failed to change password",
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      setPasswordErrors({
+        oldPassword:
+          error.response?.data?.message || "Failed to change password",
+        newPassword: "",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="flex px-4 py-8">
       {isLoading ? (
-        <div className="w-full rounded bg-white">
-          {/* <Spinner className="h-96" /> */}
+        <div className="flex h-96 w-full items-center justify-center rounded bg-white">
+          <div className="text-lg">Loading...</div>
         </div>
       ) : (
         <div className="w-full max-w-lg">
@@ -91,9 +201,12 @@ const Page = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    error={errors.name}
                   />
+                  {formErrors.name && (
+                    <p className="text-sm text-red-600">{formErrors.name}</p>
+                  )}
                 </div>
+
                 <div>
                   <FormLabel label="Email" required />
                   <TextField
@@ -101,9 +214,12 @@ const Page = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    error={errors.email}
                   />
+                  {formErrors.email && (
+                    <p className="text-sm text-red-600">{formErrors.email}</p>
+                  )}
                 </div>
+
                 <div>
                   <FormLabel label="Phone" required />
                   <TextField
@@ -111,21 +227,45 @@ const Page = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    error={errors.phone}
                   />
+                  {formErrors.phone && (
+                    <p className="text-sm text-red-600">{formErrors.phone}</p>
+                  )}
                 </div>
+
+                <div>
+                  <FormLabel label="Avatar" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-gray-700"
+                  />
+                  {(preview || formData.avatar) && (
+                    <Image
+                      src={preview || `${getAdminProfile(formData.avatar)}`}
+                      alt="avatar"
+                      width={48}
+                      height={48}
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                  )}
+                </div>
+
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <Button
                     color="primary"
                     onClick={handleUpdate}
                     className="w-full sm:w-auto"
+                    disabled={isLoading}
                   >
-                    Save
+                    {isLoading ? "Saving..." : "Save"}
                   </Button>
                   <Button
                     color="gray"
                     onClick={() => setIsEditing(false)}
                     className="w-full sm:w-auto"
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
@@ -145,8 +285,12 @@ const Page = () => {
                     name="oldPassword"
                     value={passwordData.oldPassword}
                     onChange={handlePasswordChange}
-                    error={errors.password}
                   />
+                  {passwordErrors.oldPassword && (
+                    <p className="text-sm text-red-600">
+                      {passwordErrors.oldPassword}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <FormLabel label="New Password" required />
@@ -155,24 +299,28 @@ const Page = () => {
                     name="newPassword"
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
-                    error={errors.newPassword}
                   />
+                  {passwordErrors.newPassword && (
+                    <p className="text-sm text-red-600">
+                      {passwordErrors.newPassword}
+                    </p>
+                  )}
                 </div>
-                {apiPasswordError && (
-                  <p className="text-sm text-red-600">{apiPasswordError}</p>
-                )}
+
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <Button
                     color="primary"
                     onClick={handlePasswordSubmit}
                     className="w-full sm:w-auto"
+                    disabled={isLoading}
                   >
-                    Change Password
+                    {isLoading ? "Changing..." : "Change Password"}
                   </Button>
                   <Button
                     color="gray"
                     onClick={() => setIsChangingPassword(false)}
                     className="w-full sm:w-auto"
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
@@ -181,11 +329,13 @@ const Page = () => {
             </div>
           ) : (
             profile && (
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col gap-6">
                 {profile.avatar && (
-                  <img
-                    src={`/uploads/${profile.avatar}`}
+                  <Image
+                    src={`${getAdminProfile(profile.avatar)}`}
                     alt="avatar"
+                    width={48}
+                    height={48}
                     className="h-24 w-24 rounded-full object-cover"
                   />
                 )}

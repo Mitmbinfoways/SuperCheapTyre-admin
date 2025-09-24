@@ -6,7 +6,7 @@ import {
   DropdownContent,
   DropdownTrigger,
 } from "@/components/ui/dropdown";
-import { cn } from "@/lib/utils";
+import { cn, getAdminProfile } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -24,12 +24,16 @@ export function UserInfo() {
         localStorage.removeItem("adminUser");
       }
     } catch {
-      console.log("failed to logout")
+      console.log("failed to logout");
     } finally {
       setIsOpen(false);
       router.replace("/signin");
     }
   };
+
+  const storedAdmin =
+    typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
+  const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
 
   const USER = {
     name: "John Smith",
@@ -75,12 +79,11 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-2.5 px-5 py-3.5">
           <Image
-            src={USER.img}
-            className="size-12"
-            alt={`Avatar for ${USER.name}`}
-            role="presentation"
-            width={200}
-            height={200}
+            src={getAdminProfile(parsedAdmin?.avatar) || "/profile.png"}
+            className="h-12 w-12 rounded-full object-cover"
+            alt={`Avatar of ${parsedAdmin?.name || USER.name}`}
+            width={48}
+            height={48}
             loading="lazy"
           />
 

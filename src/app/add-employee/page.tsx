@@ -28,17 +28,18 @@ interface Technician {
   isActive: boolean;
 }
 
-type Pagination = {
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
-};
-
 type LoadingStates = {
   fetching: boolean;
   submitting: boolean;
   deleting: boolean;
+};
+
+type FormErrors = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  apiError?: string;
 };
 
 const AddTechnicianPage: React.FC = () => {
@@ -48,7 +49,7 @@ const AddTechnicianPage: React.FC = () => {
     email: "",
     phone: "",
   });
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FormErrors>({});
   const [showForm, setShowForm] = useState(false);
   const [isEdit, setIsEdit] = useState<Technician | null>(null);
   const [technicians, setTechnicians] = useState<Technician[]>([]);
@@ -74,17 +75,17 @@ const AddTechnicianPage: React.FC = () => {
 
   const loadTechnicians = useCallback(async () => {
     updateLoading("fetching", true);
-    setError(null);
+    setError({});
     try {
       const filter = { currentPage, itemsPerPage };
       const data = await GetTechnicians(filter);
       const { items, pagination } = data.data;
       setTechnicians(items as Technician[]);
       setTotalPages(pagination.totalPages);
-    } catch (error: unknown) {
-      setError(
-        error instanceof Error ? error.message : "Failed to load technicians",
-      );
+    } catch (e: any) {
+      setError({
+        apiError: e?.response?.data?.errorData || "Failed to load technicians",
+      });
     } finally {
       updateLoading("fetching", false);
     }
@@ -96,42 +97,45 @@ const AddTechnicianPage: React.FC = () => {
 
   const handleSaveTechnician = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.email ||
-      !formData.phone
-    )
-      return;
+    setError({});
 
-    setError(null);
+    // ✅ Field-level validation
+    const newError: FormErrors = {};
+    if (!formData.firstName.trim())
+      newError.firstName = "First name is required";
+    if (!formData.lastName.trim()) newError.lastName = "Last name is required";
+    if (!formData.email.trim()) {
+      newError.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newError.email = "Enter a valid email";
+    }
+    if (!formData.phone.trim()) {
+      newError.phone = "Phone is required";
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newError.phone = "Enter a valid 10-digit phone number";
+    }
+
+    if (Object.keys(newError).length > 0) {
+      setError(newError);
+      return;
+    }
+
     updateLoading("submitting", true);
 
     try {
       if (isEdit) {
-        await UpdateTechnician({
-          id: isEdit._id,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-        });
+        await UpdateTechnician({ id: isEdit._id, ...formData });
         Toast({ type: "success", message: "Technician updated successfully!" });
       } else {
-        await AddTechnician({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-        });
+        await AddTechnician(formData);
         Toast({ type: "success", message: "Technician added successfully!" });
       }
       handleCloseForm();
       await loadTechnicians();
-    } catch (error: unknown) {
-      setError(
-        error instanceof Error ? error.message : "Failed to save technician",
-      );
+    } catch (e: any) {
+      setError({
+        apiError: e?.response?.data?.errorData || "Failed to save technician",
+      });
     } finally {
       updateLoading("submitting", false);
     }
@@ -140,16 +144,16 @@ const AddTechnicianPage: React.FC = () => {
   const confirmDeleteTechnician = async () => {
     if (!deleteTechnicianId) return;
     updateLoading("deleting", true);
-    setError(null);
+    setError({});
     try {
       await DeleteTechnician(deleteTechnicianId);
       Toast({ type: "success", message: "Technician deleted successfully!" });
       handleCloseDeleteDialog();
       await loadTechnicians();
-    } catch (error: unknown) {
-      setError(
-        error instanceof Error ? error.message : "Failed to delete technician",
-      );
+    } catch (e: any) {
+      setError({
+        apiError: e?.response?.data?.errorData || "Failed to delete technician",
+      });
     } finally {
       updateLoading("deleting", false);
     }
@@ -164,19 +168,20 @@ const AddTechnicianPage: React.FC = () => {
       phone: t.phone,
     });
     setShowForm(true);
+    setError({});
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
     setIsEdit(null);
     setFormData({ firstName: "", lastName: "", email: "", phone: "" });
-    setError(null);
+    setError({});
   };
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteTechnicianId(null);
-    setError(null);
+    setError({});
   };
 
   const handleToggleActive = async (t: Technician) => {
@@ -188,17 +193,14 @@ const AddTechnicianPage: React.FC = () => {
           tech._id === t._id ? { ...tech, isActive: updatedStatus } : tech,
         ),
       );
-
       Toast({
         type: "success",
         message: `Technician ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
-    } catch (error: unknown) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to toggle technician status",
-      );
+    } catch (e: any) {
+      setError({
+        apiError: e?.response?.data?.errorData || "Failed to toggle status",
+      });
     }
   };
 
@@ -253,7 +255,7 @@ const AddTechnicianPage: React.FC = () => {
           onClick={() => {
             setIsEdit(null);
             setFormData({ firstName: "", lastName: "", email: "", phone: "" });
-            setError(null);
+            setError({});
             setShowForm(true);
           }}
           disabled={loadingStates.fetching}
@@ -269,67 +271,63 @@ const AddTechnicianPage: React.FC = () => {
         onClose={handleCloseForm}
         title={isEdit ? "Edit Technician" : "Add Technician"}
       >
-        {error && (
+        {error.apiError && (
           <div className="mb-4 rounded border border-red-100 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
-            {error}
+            {error.apiError}
           </div>
         )}
         <form className="space-y-4" onSubmit={handleSaveTechnician}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <FormLabel label="First Name" required />
-              <div className="relative">
-                <TextField
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, firstName: e.target.value })
-                  }
-                  placeholder="First Name"
-                />
-              </div>
+              <TextField
+                type="text"
+                value={formData.firstName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
+                placeholder="First Name"
+                error={error.firstName}
+              />
             </div>
             <div>
               <FormLabel label="Last Name" required />
-              <div className="relative">
-                <TextField
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, lastName: e.target.value })
-                  }
-                  placeholder="Last Name"
-                />
-              </div>
+              <TextField
+                type="text"
+                value={formData.lastName}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
+                placeholder="Last Name"
+                error={error.lastName}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <FormLabel label="Email" required />
-              <div className="relative">
-                <TextField
-                  type="text"
-                  value={formData.email}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="Email"
-                />
-              </div>
+              <TextField
+                type="text"
+                value={formData.email}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                error={error.email}
+                placeholder="Email"
+              />
             </div>
             <div>
               <FormLabel label="Phone" required />
-              <div className="relative">
-                <TextField
-                  type="number"
-                  value={formData.phone}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="Phone"
-                />
-              </div>
+              <TextField
+                type="number"
+                value={formData.phone}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                placeholder="Phone"
+                error={error.phone}
+              />
             </div>
           </div>
 

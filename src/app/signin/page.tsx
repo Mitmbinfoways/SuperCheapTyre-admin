@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import Image from "next/image";
 import { signIn } from "@/services/SignInService";
 import { Toast } from "@/components/ui/Toast";
+import logo from "../../../public/logo_dark.svg";
 
 interface FieldErrors {
   email?: string;
@@ -99,8 +100,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <div className="relative mb-6 flex h-24 w-24 justify-center">
-          <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+        <div className="w-full relative mb-6 flex h-24 justify-center">
+          <Image src={logo} alt="Logo" fill className="object-contain" />
         </div>
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-900">
           Sign in to SuperCheapTyre

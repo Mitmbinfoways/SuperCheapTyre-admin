@@ -67,7 +67,7 @@ const AppointmentsPage = () => {
       <div className="w-1/3 mb-4">
         <TextField
           type="text"
-          placeholder="Search appointments"
+          placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

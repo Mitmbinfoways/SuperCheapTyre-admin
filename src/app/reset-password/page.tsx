@@ -8,58 +8,63 @@ import Button from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { forgotPassword } from "@/services/SignInService";
 
+interface FieldErrors {
+  password?: string;
+  confirmPassword?: string;
+}
+
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const router = useRouter();
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [fieldError, setFieldError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-    if (fieldError) setFieldError("");
+    if (fieldErrors.password) {
+      setFieldErrors((prev) => ({ ...prev, password: undefined }));
+    }
   };
 
   const handleConfirmChange = (e: ChangeEvent<HTMLInputElement>) => {
     setConfirmPassword(e.target.value);
-    if (fieldError) setFieldError("");
+    if (fieldErrors.confirmPassword) {
+      setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+    }
   };
 
   const validateForm = (): boolean => {
-    if (!password.trim() || !confirmPassword.trim()) {
-      setFieldError("Both fields are required");
-      return false;
+    const errors: FieldErrors = {};
+
+    if (!password.trim()) {
+      errors.password = "Password is required";
     }
-    if (password.length < 6) {
-      setFieldError("Password must be at least 6 characters");
-      return false;
+    if (!confirmPassword.trim()) {
+      errors.confirmPassword = "Confirm password is required";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
-    if (password !== confirmPassword) {
-      setFieldError("Passwords do not match");
-      return false;
-    }
-    return true;
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-    if (!token) {
-      Toast({ message: "Invalid or missing token", type: "error" });
-      return;
-    }
-
+    if (!token) return;
     setIsLoading(true);
 
     try {
-      await forgotPassword({ token, newPassword: password }); // assuming API call
+      await forgotPassword({ token, newPassword: password });
       Toast({ message: "Password reset successfully", type: "success" });
       setPassword("");
       setConfirmPassword("");
-      router.push("/login"); // <-- works now
+      router.push("/login");
     } catch (err: any) {
       Toast({ message: err.message || "Something went wrong", type: "error" });
     } finally {
@@ -82,6 +87,7 @@ export default function ResetPasswordPage() {
               value={password}
               onChange={handlePasswordChange}
               placeholder="Enter new password"
+              error={fieldErrors.password}
             />
           </div>
 
@@ -92,7 +98,7 @@ export default function ResetPasswordPage() {
               value={confirmPassword}
               onChange={handleConfirmChange}
               placeholder="Confirm new password"
-              error={fieldError}
+              error={fieldErrors.confirmPassword}
             />
           </div>
 

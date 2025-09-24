@@ -51,7 +51,6 @@ export interface ProductPayload {
 }
 
 export type UpdateProductPayload = Partial<ProductPayload> & {
-  // List of existing image filenames to keep on update
   keepImages?: string[];
 };
 
