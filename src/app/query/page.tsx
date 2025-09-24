@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Table, { Column } from "@/components/ui/table";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
@@ -35,7 +35,7 @@ const ContactList: React.FC = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -55,11 +55,11 @@ const ContactList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
     fetchContacts();
-  }, [currentPage, debounceSearch]);
+  }, [fetchContacts]);
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">

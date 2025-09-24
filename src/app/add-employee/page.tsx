@@ -17,6 +17,7 @@ import {
 import ToggleSwitch from "../../components/ui/Toggle";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
+import useDebounce from "@/hooks/useDebounce";
 
 interface Technician {
   _id: string;
@@ -60,7 +61,7 @@ const AddTechnicianPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
-
+  const [search, setSearch] = useState("");
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetching: false,
     submitting: false,
@@ -73,11 +74,13 @@ const AddTechnicianPage: React.FC = () => {
 
   const tableData = technicians.map((t) => ({ ...t, id: t._id }));
 
+  const debounceSearch = useDebounce<string>(search, 300);
+
   const loadTechnicians = useCallback(async () => {
     updateLoading("fetching", true);
     setError({});
     try {
-      const filter = { currentPage, itemsPerPage };
+      const filter = { currentPage, itemsPerPage, search: debounceSearch };
       const data = await GetTechnicians(filter);
       const { items, pagination } = data.data;
       setTechnicians(items as Technician[]);
@@ -89,17 +92,16 @@ const AddTechnicianPage: React.FC = () => {
     } finally {
       updateLoading("fetching", false);
     }
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
     loadTechnicians();
-  }, [currentPage, itemsPerPage, loadTechnicians]);
+  }, [loadTechnicians]);
 
   const handleSaveTechnician = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setError({});
 
-    // ✅ Field-level validation
     const newError: FormErrors = {};
     if (!formData.firstName.trim())
       newError.firstName = "First name is required";
@@ -264,6 +266,15 @@ const AddTechnicianPage: React.FC = () => {
         </Button>
       </div>
 
+      <div className="mb-4 w-1/3">
+        <TextField
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       {/* Add/Edit Form */}
       <CommonDialog
         isOpen={showForm}
@@ -383,7 +394,7 @@ const AddTechnicianPage: React.FC = () => {
       </CommonDialog>
 
       {/* Table */}
-      <div className="mt-8">
+      <div>
         {loadingStates.fetching ? (
           <p className="text-center text-gray-500">Loading technicians...</p>
         ) : tableData.length === 0 ? (

@@ -102,8 +102,7 @@ const AddHolidayPage: React.FC = () => {
     const newError: { date?: string; reason?: string } = {};
 
     if (!date) newError.date = "Date is required";
-    if (!reason.trim())
-      newError.reason = "Reason is required";
+    if (!reason.trim()) newError.reason = "Reason is required";
     if (Object.keys(newError).length > 0) {
       setError(newError);
       return;
@@ -253,7 +252,7 @@ const AddHolidayPage: React.FC = () => {
           }}
           disabled={loadingStates.fetchingHolidays}
         >
-          {loadingStates.fetchingHolidays ? "Loading..." : "Add Holiday"}
+          Add Holiday
         </Button>
       </div>
 

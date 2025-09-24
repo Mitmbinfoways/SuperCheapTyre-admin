@@ -10,7 +10,6 @@ import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
 import type { PropsWithChildren } from "react";
 import { Providers } from "./providers";
-import ClientOnly from "@/components/ClientOnly";
 
 export const metadata: Metadata = {
   title: {

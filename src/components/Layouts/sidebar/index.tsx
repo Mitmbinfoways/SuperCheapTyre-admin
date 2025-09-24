@@ -39,7 +39,7 @@ export function Sidebar() {
         });
       });
     });
-  }, [pathname]);
+  }, [pathname, expandedItems]);
 
   if (!mounted) {
     return (

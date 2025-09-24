@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
@@ -51,7 +51,7 @@ const Page = () => {
     typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
   const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!parsedAdmin?._id) return;
     setIsLoading(true);
     try {
@@ -73,11 +73,11 @@ const Page = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [parsedAdmin?._id]);
 
   useEffect(() => {
     if (parsedAdmin?._id) fetchProfile();
-  }, [parsedAdmin?._id]);
+  }, [fetchProfile, parsedAdmin?._id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

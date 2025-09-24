@@ -66,8 +66,6 @@ export const GetTechnicians = async (
   if (currentPage !== undefined) params.push(`page=${currentPage}`);
   if (itemsPerPage !== undefined) params.push(`limit=${itemsPerPage}`);
   if (search) params.push(`search=${encodeURIComponent(search)}`);
-  if (from) params.push(`from=${encodeURIComponent(from)}`);
-  if (to) params.push(`to=${encodeURIComponent(to)}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/technician${
     params.length ? `?${params.join("&")}` : ""
