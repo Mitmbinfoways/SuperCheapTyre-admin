@@ -63,7 +63,7 @@ const ContactList: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-white">
+      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
         Contact Messages
       </h1>
       <div className="w-1/3">

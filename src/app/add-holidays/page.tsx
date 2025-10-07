@@ -93,7 +93,12 @@ const AddHolidayPage: React.FC = () => {
     loadHolidays();
   }, [loadHolidays]);
 
-  const formatToYmd = (d: Date) => d.toISOString().split("T")[0];
+  const formatToYmd = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   const handleAddHoliday = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -239,7 +244,7 @@ const AddHolidayPage: React.FC = () => {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-primary dark:text-white">
+        <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Holidays
         </h1>
         <Button

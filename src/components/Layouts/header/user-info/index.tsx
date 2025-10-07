@@ -88,7 +88,7 @@ export function UserInfo() {
           />
 
           <figcaption className="space-y-1 text-base font-medium">
-            <div className="mb-2 leading-none text-dark dark:text-white">
+            <div className="mb-2 leading-none text-dark dark:text-gray-300">
               {USER.name}
             </div>
 

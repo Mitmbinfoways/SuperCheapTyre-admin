@@ -38,7 +38,7 @@ export function ThemeToggleSwitch() {
             key={name}
             className={cn(
               "relative grid size-[38px] place-items-center rounded-full",
-              name === "dark" && "dark:text-white",
+              name === "dark" && "dark:text-gray-300",
             )}
           >
             <Icon />

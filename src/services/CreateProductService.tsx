@@ -165,3 +165,9 @@ export const deleteProduct = async (id: string): Promise<ApiResponse<null>> => {
   const response = await deleteMethod<ApiResponse<null>>(url);
   return response.data;
 };
+
+export const getDashboardCount = async () => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/product/dashboard`;
+  const response = await getMethod(url);
+  return response.data;
+};

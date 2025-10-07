@@ -90,7 +90,7 @@ function Table<T extends { id?: string | number; _id?: string }>({
                     col.align === "right"
                       ? "text-right"
                       : col.align === "center"
-                      ? "text-center text-gray-900"
+                      ? "text-center text-gray-900 dark:text-gray-300"
                       : "text-gray-900 dark:text-gray-200"
                   }`}
                   style={col.width ? { width: col.width } : undefined}

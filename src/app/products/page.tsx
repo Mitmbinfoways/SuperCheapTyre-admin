@@ -264,7 +264,7 @@ const ProductListPage: React.FC = () => {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-primary dark:text-white">
+        <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Products
         </h1>
         <Button onClick={() => router.push("/create-product")}>

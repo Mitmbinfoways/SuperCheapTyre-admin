@@ -417,7 +417,7 @@ const AddTimeSlotPage: React.FC = () => {
       <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-primary dark:text-white">
+            <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
               Time Slot Management
             </h1>
             <p className="text-gray-600 dark:text-gray-400">

@@ -4,20 +4,17 @@ import Image from "next/image";
 
 export function Logo() {
   return (
-    <div className="relative h-20">
+    <div className="relative h-20 flex items-center justify-center">
       <Image
         src={logo}
-        fill
-        className="dark:hidden"
+        className="w-56 dark:hidden"
         alt="SuperCheapTyre Admin logo"
         role="presentation"
         quality={100}
       />
-
       <Image
         src={darkLogo}
-        fill
-        className="hidden dark:block"
+        className="w-56 hidden dark:block"
         alt="SuperCheapTyre Admin logo"
         role="presentation"
         quality={100}

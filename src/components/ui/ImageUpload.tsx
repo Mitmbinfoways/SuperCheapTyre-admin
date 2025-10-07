@@ -91,7 +91,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       {/* Header */}
       <div className="mb-8 flex items-center gap-2">
         <CiImageOn className="h-5 w-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
           Product Images
         </h2>
       </div>

@@ -22,11 +22,11 @@ const AppointmentsPage = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
 
-  const employeeOptions = [
-    { label: "John Doe", value: "1" },
-    { label: "Jane Smith", value: "2" },
-    { label: "Mike Johnson", value: "3" },
-  ];
+  // const employeeOptions = [
+  //   { label: "John Doe", value: "1" },
+  //   { label: "Jane Smith", value: "2" },
+  //   { label: "Mike Johnson", value: "3" },
+  // ];
 
   const columns: Column<Appointment>[] = [
     {
@@ -43,31 +43,31 @@ const AppointmentsPage = () => {
     },
     { title: "Status", key: "status", render: (item) => item.status },
     { title: "Notes", key: "notes", render: (item) => item.notes },
-    {
-      title: "Assign Employee",
-      key: "employee",
-      align: "center",
-      render: (item) =>
-        editingId === item._id ? (
-          <Select
-            options={employeeOptions}
-            value={item.value || ""}
-            placeholder="Select Employee"
-            onChange={(value) => {
-              const updatedAppointments = appointments.map((appt) =>
-                appt._id === item._id
-                  ? { ...appt, assignedEmployeeId: value }
-                  : appt,
-              );
-              setAppointments(updatedAppointments);
-              setEditingId(null);
-            }}
-          />
-        ) : (
-          employeeOptions.find((opt) => opt.value === item.assignedEmployeeId)
-            ?.label || "-"
-        ),
-    },
+    // {
+    //   title: "Assign Employee",
+    //   key: "employee",
+    //   align: "center",
+    //   render: (item) =>
+    //     editingId === item._id ? (
+    //       <Select
+    //         options={employeeOptions}
+    //         value={item.value || ""}
+    //         placeholder="Select Employee"
+    //         onChange={(value) => {
+    //           const updatedAppointments = appointments.map((appt) =>
+    //             appt._id === item._id
+    //               ? { ...appt, assignedEmployeeId: value }
+    //               : appt,
+    //           );
+    //           setAppointments(updatedAppointments);
+    //           setEditingId(null);
+    //         }}
+    //       />
+    //     ) : (
+    //       employeeOptions.find((opt) => opt.value === item.assignedEmployeeId)
+    //         ?.label || "-"
+    //     ),
+    // },
     {
       title: "Action",
       key: "action",
@@ -111,7 +111,7 @@ const AppointmentsPage = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-white">
+      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
         Appointments
       </h1>
 

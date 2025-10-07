@@ -324,7 +324,7 @@ const Page = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="mb-2 gap-3">
-            <h1 className="text-3xl font-bold text-primary dark:text-white">
+            <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
               Create Product
             </h1>
           </div>
@@ -357,7 +357,7 @@ const Page = () => {
               <div className="p-6">
                 <div className="mb-6 flex items-center gap-2">
                   <FiPackage className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
                     Basic Information
                   </h2>
                 </div>
@@ -441,7 +441,7 @@ const Page = () => {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
             <div className="mb-6 flex items-center gap-2">
               <GiCarWheel className="h-5 w-5 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
                 {category === "tyre" ? "Tyre" : "Wheel"} Specifications
               </h2>
             </div>

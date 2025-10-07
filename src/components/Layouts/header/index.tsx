@@ -23,11 +23,19 @@ export function Header() {
       {isMobile && (
         <Link href="/" className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
+            src="/logo_dark.svg"
+            alt="logo"
+            width={120}
+            height={0}
+            className="h-14 object-contain dark:hidden"
+            priority
+          />
+          <Image
             src="/logo_light.svg"
             alt="logo"
             width={120}
-            height={0} 
-            className="h-14 object-contain"
+            height={0}
+            className="hidden h-14 object-contain dark:block"
             priority
           />
         </Link>
