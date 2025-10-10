@@ -18,6 +18,7 @@ import ToggleSwitch from "../../components/ui/Toggle";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
+import EmptyState from "@/components/EmptyState";
 
 interface Technician {
   _id: string;
@@ -398,9 +399,7 @@ const AddTechnicianPage: React.FC = () => {
         {loadingStates.fetching ? (
           <p className="text-center text-gray-500">Loading technicians...</p>
         ) : tableData.length === 0 ? (
-          <p className="py-8 text-center text-gray-500">
-            No technicians found.
-          </p>
+          <EmptyState message="No technicians found." className="h-full" />
         ) : (
           <>
             <Table columns={columns} data={tableData} />

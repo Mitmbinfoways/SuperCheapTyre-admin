@@ -8,136 +8,121 @@ import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
-import { deleteProduct, getAllProducts, updateProduct } from "@/services/CreateProductService";
+import { getAllBrands, deleteBrand, updateBrand, Brand } from "@/services/BrandService";
 import Image from "next/image";
-import { getProductImageUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 
-type Product = {
-  _id: string;
-  name: string;
-  category: string;
-  brand: string;
-  description: string;
-  images: string[];
-  sku?: string;
-  price: number;
-  stock: number;
-  isActive: boolean;
-  createdAt: string;
-};
-
-type ProductWithId = Product & { id: string };
+type BrandWithId = Brand & { id: string };
 
 type LoadingStates = {
-  fetchingProducts: boolean;
-  deletingProduct: boolean;
+  fetchingBrands: boolean;
+  deletingBrand: boolean;
 };
 
-const ProductListPage: React.FC = () => {
+const BrandListPage: React.FC = () => {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+  const [deleteBrandId, setDeleteBrandId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
-    fetchingProducts: false,
-    deletingProduct: false,
+    fetchingBrands: false,
+    deletingBrand: false,
   });
 
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
    
-  const debounceSearch = useDebounce<string>(search , 300)
+  const debounceSearch = useDebounce<string>(search, 300);
 
-  const loadProducts = useCallback(async () => {
-    updateLoadingState("fetchingProducts", true);
+  const loadBrands = useCallback(async () => {
+    updateLoadingState("fetchingBrands", true);
     try {
-      const filter = { page: currentPage, limit: itemsPerPage , search:debounceSearch };
-      const data = await getAllProducts(filter);
+      const filter = { page: currentPage, limit: itemsPerPage, search: debounceSearch };
+      const data = await getAllBrands(filter);
       const { items, pagination } = data.data;
-      setProducts(items as Product[]);
+      setBrands(items as Brand[]);
       setTotalPages(pagination.totalPages);
     } catch (e: any) {
       Toast({
         type: "error",
-        message: e?.response?.data?.errorData || "Failed to load products",
+        message: e?.response?.data?.errorData || "Failed to load brands",
       });
     } finally {
-      updateLoadingState("fetchingProducts", false);
+      updateLoadingState("fetchingBrands", false);
     }
-  }, [currentPage, itemsPerPage ,debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    loadBrands();
+  }, [loadBrands]);
 
   // confirm delete
-  const confirmDeleteProduct = async () => {
-    if (!deleteProductId) return;
-    updateLoadingState("deletingProduct", true);
+  const confirmDeleteBrand = async () => {
+    if (!deleteBrandId) return;
+    updateLoadingState("deletingBrand", true);
     try {
-      await deleteProduct(deleteProductId);
-      Toast({ type: "success", message: "Product deleted successfully!" });
+      await deleteBrand(deleteBrandId);
+      Toast({ type: "success", message: "Brand deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadProducts();
+      await loadBrands();
     } catch (e: any) {
       Toast({
         type: "error",
-        message: e?.response?.data?.errorData || "Failed to delete product",
+        message: e?.response?.data?.errorData || "Failed to delete brand",
       });
     } finally {
-      updateLoadingState("deletingProduct", false);
+      updateLoadingState("deletingBrand", false);
     }
   };
 
-  const handleEditProduct = (product: Product) => {
-    router.push(`/create-product?id=${product._id}`);
+  const handleEditBrand = (brand: Brand) => {
+    router.push(`/create-brand?id=${brand._id}`);
   };
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
-    setDeleteProductId(null);
+    setDeleteBrandId(null);
   };
 
-  const tableData: ProductWithId[] = products.map((p) => ({ ...p, id: p._id }));
+  const tableData: BrandWithId[] = brands.map((p) => ({ ...p, id: p._id }));
 
-  const handleToggleActive = async (product: Product) => {
-    const updatedStatus = !product.isActive;
+  const handleToggleActive = async (brand: Brand) => {
+    const updatedStatus = !brand.isActive;
 
     try {
-      await updateProduct(product._id, { isActive: updatedStatus });
-      setProducts((prev) =>
+      await updateBrand(brand._id, { isActive: updatedStatus });
+      setBrands((prev) =>
         prev.map((p) =>
-          p._id === product._id ? { ...p, isActive: updatedStatus } : p,
+          p._id === brand._id ? { ...p, isActive: updatedStatus } : p,
         ),
       );
 
       Toast({
         type: "success",
-        message: `Product ${updatedStatus ? "activated" : "deactivated"} successfully!`,
+        message: `Brand ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
       Toast({
         type: "error",
         message:
-          e?.response?.data?.errorData || "Failed to update product status",
+          e?.response?.data?.errorData || "Failed to update brand status",
       });
     }
   };
 
-  const columns: Column<ProductWithId>[] = [
+  const columns: Column<BrandWithId>[] = [
     { 
       title: "Sr.No", 
       key: "index", 
@@ -146,19 +131,26 @@ const ProductListPage: React.FC = () => {
     },
     {
       title: "Image",
-      key: "images",
+      key: "image",
       width: "80px",
-      render: (item) => (
-        <div className="h-12 w-12 sm:h-16 sm:w-16">
-          <Image
-            src={getProductImageUrl(item.images?.[0])}
-            alt={item.name}
-            width={50}
-            height={50}
-            className="h-full w-full rounded object-cover"
-          />
-        </div>
-      ),
+      render: (item) => {
+        const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/brand/${item.image}`;
+        return (
+          <div className="h-12 w-12 sm:h-16 sm:w-16">
+            <Image
+              src={imageUrl}
+              alt={item.name}
+              width={50}
+              height={50}
+              className="h-full w-full rounded object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/placeholder-image.png"; // Fallback image
+              }}
+            />
+          </div>
+        );
+      },
     },
     { 
       title: "Name", 
@@ -171,65 +163,19 @@ const ProductListPage: React.FC = () => {
       )
     },
     {
-      title: "Category",
-      key: "category",
+      title: "Status",
+      key: "isActive",
       width: "100px",
-      align: "center",
-      render: (item) => (
-        <span className="text-xs sm:text-sm">
-          {item.category?.toUpperCase() || ""}
-        </span>
-      ),
-    },
-    { 
-      title: "Brand", 
-      key: "brand",
-      width: "100px",
-      align: "center",
-      render: (item) => (
-        <div className="truncate max-w-[100px]" title={item.brand}>
-          {item.brand}
-        </div>
-      )
-    },
-    { 
-      title: "SKU", 
-      key: "sku",
-      align: "center",
-      width: "120px",
-      render: (item) => (
-        <div className="text-xs" title={item.sku}>
-          {item.sku}
-        </div>
-      )
-    },
-    { 
-      title: "Price", 
-      key: "price", 
-      width: "80px",
-      align: "center",
-      render: (item) => (
-        <span className="font-semibold">
-          ${item.price}
-        </span>
-      )
-    },
-    { 
-      title: "Stock", 
-      key: "stock",
-      width: "60px",
       align: "center",
       render: (item) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          item.stock > 10 
+          item.isActive 
             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-            : item.stock > 0 
-            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
         }`}>
-          {item.stock}
+          {item.isActive ? 'Active' : 'Inactive'}
         </span>
-      )
+      ),
     },
     {
       title: "Actions",
@@ -241,17 +187,17 @@ const ProductListPage: React.FC = () => {
           <MdModeEdit
             size={16}
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditProduct(item)}
-            title="Edit product"
+            onClick={() => handleEditBrand(item)}
+            title="Edit brand"
           />
           <FiTrash2
             size={16}
             className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
             onClick={() => {
-              setDeleteProductId(item._id);
+              setDeleteBrandId(item._id);
               setShowDeleteDialog(true);
             }}
-            title="Delete product"
+            title="Delete brand"
           />
           <ToggleSwitch
             checked={item.isActive}
@@ -266,10 +212,10 @@ const ProductListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Products
+          Manage Brands
         </h1>
-        <Button onClick={() => router.push("/create-product")}>
-          Create New Product
+        <Button onClick={() => router.push("/create-brand")}>
+          Create New Brand
         </Button>
       </div>
 
@@ -292,21 +238,27 @@ const ProductListPage: React.FC = () => {
             <Button variant="secondary" onClick={handleCloseDeleteDialog}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDeleteProduct}>
+            <Button variant="danger" onClick={confirmDeleteBrand}>
               Delete
             </Button>
           </div>
         }
       >
         <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to delete this product?
+          Are you sure you want to delete this brand?
         </p>
       </CommonDialog>
 
       {/* Table */}
       <div className="h-[calc(100vh-200px)]">
-        {tableData.length === 0 && !loadingStates.fetchingProducts ? (
-          <EmptyState message="No products found." className="h-full" />
+        {loadingStates.fetchingBrands ? (
+          <div className="animate-pulse space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-8 rounded bg-gray-200 dark:bg-gray-700" />
+            ))}
+          </div>
+        ) : tableData.length === 0 ? (
+          <EmptyState message="No brands found." className="h-full" />
         ) : (
           <>
             <Table columns={columns} data={tableData} />
@@ -324,4 +276,4 @@ const ProductListPage: React.FC = () => {
   );
 };
 
-export default ProductListPage;
+export default BrandListPage;

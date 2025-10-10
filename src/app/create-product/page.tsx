@@ -12,6 +12,7 @@ import {
   getProductById,
   updateProduct,
 } from "@/services/CreateProductService";
+import { getAllBrands } from "@/services/BrandService";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   diameter,
@@ -37,6 +38,8 @@ const Page = () => {
   const [existingFilenames, setExistingFilenames] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [brands, setBrands] = useState<{ label: string; value: string }[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState<boolean>(false);
   const [formData, setFormData] = useState<any>({
     name: "",
     brand: "",
@@ -63,6 +66,33 @@ const Page = () => {
 
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
+
+  // Fetch brands when component mounts
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setLoadingBrands(true);
+      try {
+        const res = await getAllBrands({ limit: 100 });
+        const brandOptions = res.data.items
+          .filter(brand => brand.isActive) // Only show active brands
+          .map(brand => ({
+            label: brand.name,
+            value: brand.name,
+          }));
+        setBrands(brandOptions);
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+        Toast({
+          message: "Failed to load brands",
+          type: "error",
+        });
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
 
   const validateForm = () => {
     const newErrors: any = {};
@@ -170,6 +200,13 @@ const Page = () => {
     } else {
       setFormData((prev: any) => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Handle brand selection
+  const handleBrandChange = (value: string) => {
+    setFormData((prev: any) => ({ ...prev, brand: value }));
+    // Remove error for brand field
+    setErrors((prev: any) => ({ ...prev, brand: undefined }));
   };
 
   // Sync image file selection from ImageUploader
@@ -388,13 +425,16 @@ const Page = () => {
                     />
                   </div>
                   <div>
-                    <FormLabel label="Brand" required />
-                    <TextField
+                    <Select
+                      label="Brand"
                       name="brand"
                       value={formData.brand}
-                      onChange={handleChange}
-                      placeholder="Enter brand name"
+                      onChange={handleBrandChange}
+                      options={brands}
+                      placeholder={loadingBrands ? "Loading brands..." : "Select brand"}
                       error={errors.brand}
+                      disabled={loadingBrands}
+                      required
                     />
                   </div>
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

@@ -23,6 +23,30 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Brands",
+        url: "/brands",
+        icon: Icons.PackageIcon,
+        items: [],
+      },
+      {
+        title: "Create Brand",
+        url: "/create-brand",
+        icon: Icons.PlusCircleIcon,
+        items: [],
+      },
+      {
+        title: "Blog",
+        url: "/blog",
+        icon: Icons.Alphabet,
+        items: [],
+      },
+      {
+        title: "Create Blog",
+        url: "/create-blog",
+        icon: Icons.PlusCircleIcon,
+        items: [],
+      },
+      {
         title: "Appointment",
         url: "/appointment",
         icon: Icons.CalendarDaysIcon,

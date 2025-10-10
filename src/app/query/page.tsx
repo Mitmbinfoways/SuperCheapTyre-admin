@@ -10,6 +10,7 @@ import {
 } from "@/services/ContactService";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
+import EmptyState from "@/components/EmptyState";
 
 type Contact = ContactType;
 
@@ -76,40 +77,40 @@ const ContactList: React.FC = () => {
         />
       </div>
 
-      {loading ? (
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-8 rounded bg-gray-200 dark:bg-gray-700"
-            ></div>
-          ))}
-        </div>
-      ) : error ? (
-        <div className="py-8 text-center text-red-600 dark:text-red-400">
-          {error}
-        </div>
-      ) : contacts.length === 0 ? (
-        <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-          No contacts found.
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={contacts}
-            className="dark:divide-gray-700"
-          />
-
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+      <div className="h-[calc(100vh-200px)]">
+        {loading ? (
+          <div className="animate-pulse space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
+              ></div>
+            ))}
           </div>
-        </>
-      )}
+        ) : error ? (
+          <div className="py-8 text-center text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        ) : contacts.length === 0 ? (
+          <EmptyState message="No contacts found." className="h-full" />
+        ) : (
+          <>
+            <Table
+              columns={columns}
+              data={contacts}
+              className="dark:divide-gray-700"
+            />
+
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

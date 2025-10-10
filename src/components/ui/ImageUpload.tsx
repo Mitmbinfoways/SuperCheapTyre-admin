@@ -21,6 +21,7 @@ interface ImageUploaderProps {
   height?: string;
   onFilesSelected?: (files: File[]) => void;
   onRemove?: (index: number) => void;
+  replaceImages?: boolean;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -32,6 +33,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   height = "h-32",
   onFilesSelected,
   onRemove,
+  replaceImages = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -58,9 +60,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       validFileObjects.push(file);
     });
 
-    const remainingSlots = Math.max(0, maxFiles - images.length);
-    onChange([...images, ...newImages].slice(0, maxFiles));
+    // If replaceImages is true, replace existing images with new ones
+    // Otherwise, add new images to existing ones
+    const finalImages = replaceImages ? newImages : [...images, ...newImages];
+    onChange(finalImages.slice(0, maxFiles));
 
+    // For onFilesSelected, we need to calculate remaining slots based on the approach
+    const remainingSlots = Math.max(0, maxFiles - (replaceImages ? 0 : images.length));
     if (onFilesSelected && validFileObjects.length) {
       onFilesSelected(validFileObjects.slice(0, remainingSlots));
     }

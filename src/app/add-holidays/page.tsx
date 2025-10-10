@@ -17,6 +17,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import DatePicker from "@/components/ui/DatePicker";
 import useDebounce from "@/hooks/useDebounce";
+import EmptyState from "@/components/EmptyState";
 
 type Holiday = {
   _id: string;
@@ -376,11 +377,7 @@ const AddHolidayPage: React.FC = () => {
         {loadingStates.fetchingHolidays ? (
           <LoadingTable />
         ) : tableData.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-lg text-gray-500 dark:text-gray-400">
-              No holidays found.
-            </p>
-          </div>
+          <EmptyState message="No holidays found." className="h-full" />
         ) : (
           <div
             className={

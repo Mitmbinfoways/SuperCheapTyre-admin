@@ -22,7 +22,7 @@ function Table<T extends { id?: string | number; _id?: string }>({
   columns,
   data,
   className = "",
-  emptyMessage = "No data available",
+  emptyMessage,
   loading = false,
   onRowClick,
 }: TableProps<T>) {
@@ -43,6 +43,12 @@ function Table<T extends { id?: string | number; _id?: string }>({
   }
 
   if (data.length === 0) {
+    // If no emptyMessage is provided, don't render anything
+    // The parent component should handle the empty state
+    if (!emptyMessage) {
+      return null;
+    }
+    
     return (
       <div className={`w-full overflow-x-auto rounded-t-lg ${className}`}>
         <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">

@@ -10,155 +10,158 @@ import Accordion from "@/components/ui/Accordion";
 import Table from "@/components/ui/table";
 import {
   getAllTimeSlots,
+  createTimeSlot,
   updateTimeSlot,
   deleteTimeSlot,
   TimeSlot,
+  TimeSlotPayload,
 } from "@/services/TimeSlotService";
 import { MdModeEdit } from "react-icons/md";
+import EmptyState from "@/components/EmptyState";
+import ToggleSwitch from "@/components/ui/Toggle";
 
-interface Props {
+interface CreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated?: () => void;
 }
 
-// const CreateTimeSlotDialog: React.FC<Props> = ({
-//   isOpen,
-//   onClose,
-//   onCreated,
-// }) => {
-//   const [startTime, setStartTime] = useState("");
-//   const [endTime, setEndTime] = useState("");
-//   const [breakStart, setBreakStart] = useState("");
-//   const [breakEnd, setBreakEnd] = useState("");
-//   const [duration, setDuration] = useState<number>(30);
-//   const [isActive, setIsActive] = useState(true);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-  
+const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
+  isOpen,
+  onClose,
+  onCreated,
+}) => {
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [breakStart, setBreakStart] = useState("");
+  const [breakEnd, setBreakEnd] = useState("");
+  const [duration, setDuration] = useState<number>(30);
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-//     if (!startTime || !endTime || !duration) {
-//       setError("Start time, end time, and duration are required");
-//       return;
-//     }
+    if (!startTime || !endTime || !duration) {
+      setError("Start time, end time, and duration are required");
+      return;
+    }
 
-//     try {
-//       setLoading(true);
-//       await createTimeSlot({
-//         startTime,
-//         endTime,
-//         duration,
-//         isActive,
-//         breakTime:
-//           breakStart && breakEnd ? { start: breakStart, end: breakEnd } : null,
-//       });
-//       Toast({ type: "success", message: "Time slot created successfully!" });
-//       onClose();
-//       onCreated?.();
-//     } catch (err: any) {
-//       setError(err?.message || "Failed to create time slot");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+    try {
+      setLoading(true);
+      await createTimeSlot({
+        startTime,
+        endTime,
+        duration,
+        isActive,
+        breakTime:
+          breakStart && breakEnd ? { start: breakStart, end: breakEnd } : null,
+      });
+      Toast({ type: "success", message: "Time slot created successfully!" });
+      onClose();
+      onCreated?.();
+    } catch (err: any) {
+      setError(err?.message || "Failed to create time slot");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   return (
-//     <CommonDialog isOpen={isOpen} onClose={onClose} title="Create Time Slot">
-//       {error && (
-//         <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
-//           {error}
-//         </div>
-//       )}
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-//           <div>
-//             <FormLabel label="Start Time" required />
-//             <TextField
-//               type="time"
-//               value={startTime}
-//               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//                 setStartTime(e.target.value)
-//               }
-//             />
-//           </div>
-//           <div>
-//             <FormLabel label="End Time" required />
-//             <TextField
-//               type="time"
-//               value={endTime}
-//               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//                 setEndTime(e.target.value)
-//               }
-//             />
-//           </div>
-//         </div>
+  return (
+    <CommonDialog isOpen={isOpen} onClose={onClose} title="Create Time Slot">
+      {error && (
+        <div className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-700 dark:bg-red-900 dark:text-red-300">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <FormLabel label="Start Time" required />
+            <TextField
+              type="time"
+              value={startTime}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setStartTime(e.target.value)
+              }
+            />
+          </div>
+          <div>
+            <FormLabel label="End Time" required />
+            <TextField
+              type="time"
+              value={endTime}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEndTime(e.target.value)
+              }
+            />
+          </div>
+        </div>
 
-//         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-//           <div>
-//             <FormLabel label="Break Start" />
-//             <TextField
-//               type="time"
-//               value={breakStart}
-//               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//                 setBreakStart(e.target.value)
-//               }
-//             />
-//           </div>
-//           <div>
-//             <FormLabel label="Break End" />
-//             <TextField
-//               type="time"
-//               value={breakEnd}
-//               onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//                 setBreakEnd(e.target.value)
-//               }
-//             />
-//           </div>
-//         </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <FormLabel label="Break Start" />
+            <TextField
+              type="time"
+              value={breakStart}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setBreakStart(e.target.value)
+              }
+            />
+          </div>
+          <div>
+            <FormLabel label="Break End" />
+            <TextField
+              type="time"
+              value={breakEnd}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setBreakEnd(e.target.value)
+              }
+            />
+          </div>
+        </div>
 
-//         <div>
-//           <FormLabel label="Duration (minutes)" required />
-//           <TextField
-//             type="number"
-//             min={15}
-//             max={480}
-//             value={duration.toString()}
-//             onChange={(e: ChangeEvent<HTMLInputElement>) =>
-//               setDuration(Number(e.target.value))
-//             }
-//             placeholder="e.g. 30"
-//           />
-//         </div>
+        <div>
+          <FormLabel label="Duration (minutes)" required />
+          <TextField
+            type="number"
+            min={15}
+            max={480}
+            value={duration.toString()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setDuration(Number(e.target.value))
+            }
+            placeholder="e.g. 30"
+          />
+        </div>
 
-//         <div className="flex items-center space-x-3">
-//           <FormLabel label="Active" />
-//           <ToggleSwitch
-//             checked={isActive}
-//             onChange={() => setIsActive(!isActive)}
-//           />
-//         </div>
+        <div className="flex items-center space-x-3">
+          <FormLabel label="Active" />
+          <ToggleSwitch
+            checked={isActive}
+            onChange={() => setIsActive(!isActive)}
+          />
+        </div>
 
-//         <div className="flex justify-end space-x-3">
-//           <Button
-//             type="button"
-//             variant="secondary"
-//             onClick={onClose}
-//             disabled={loading}
-//           >
-//             Cancel
-//           </Button>
-//           <Button type="submit" variant="primary" disabled={loading}>
-//             {loading ? "Saving..." : "Create Time Slot"}
-//           </Button>
-//         </div>
-//       </form>
-//     </CommonDialog>
-//   );
-// };
+        <div className="flex justify-end space-x-3">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" disabled={loading}>
+            {loading ? "Saving..." : "Create Time Slot"}
+          </Button>
+        </div>
+      </form>
+    </CommonDialog>
+  );
+};
 
 interface EditDialogProps {
   isOpen: boolean;
@@ -424,86 +427,91 @@ const AddTimeSlotPage: React.FC = () => {
               Create and manage appointment time slots
             </p>
           </div>
+          {timeSlots.length === 0 && (
+            <Button onClick={() => setShowCreateDialog(true)}>
+              Create Time Slot
+            </Button>
+          )}
         </div>
 
-        {loading ? (
-          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-            Loading time slots...
-          </div>
-        ) : timeSlots.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-            <p>
-              No time slots created yet. Click &quot;Create New Time Slot&quot;
-              to get started.
-            </p>
-          </div>
-        ) : (
-          <Accordion
-            items={timeSlots.map((slot) => ({
-              id: slot._id,
-              title: (
-                <div className="inline-flex w-full items-center justify-between">
-                  <span>
-                    {slot.startTime} - {slot.endTime} ({slot.duration} min)
-                  </span>
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditSlot(slot);
-                      setShowEditDialog(true);
-                    }}
-                    className="cursor-pointer rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    title="Edit time slot"
-                  >
-                    <MdModeEdit size={16} />
-                  </div>
-                </div>
-              ),
-              content: (
-                <div className="space-y-2">
-                  {slot.breakTime && (
-                    <div className="text-sm text-primary dark:text-gray-400">
-                      Break: {slot.breakTime.start} - {slot.breakTime.end}
+        <div className="h-[calc(100vh-200px)]">
+          {loading ? (
+            <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+              Loading time slots...
+            </div>
+          ) : timeSlots.length === 0 ? (
+            <EmptyState 
+              message="No time slots created yet. Click 'Create New Time Slot' to get started." 
+              className="h-full" 
+            />
+          ) : (
+            <Accordion
+              items={timeSlots.map((slot) => ({
+                id: slot._id,
+                title: (
+                  <div className="inline-flex w-full items-center justify-between">
+                    <span>
+                      {slot.startTime} - {slot.endTime} ({slot.duration} min)
+                    </span>
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditSlot(slot);
+                        setShowEditDialog(true);
+                      }}
+                      className="cursor-pointer rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      title="Edit time slot"
+                    >
+                      <MdModeEdit size={16} />
                     </div>
-                  )}
-                  <Table
-                    columns={[
-                      {
-                        title: "Index",
-                        key: "index",
-                        render: (_, index) =>
-                          slot.generatedSlots?.[index]?.isBreak
-                            ? "Break"
-                            : `Slot ${index + 1}`,
-                      },
-                      {
-                        title: "Start",
-                        key: "startTime",
-                        render: (_, index) =>
-                          slot.generatedSlots?.[index]?.startTime || "-",
-                      },
-                      {
-                        title: "End",
-                        key: "endTime",
-                        render: (_, index) =>
-                          slot.generatedSlots?.[index]?.endTime || "-",
-                      },
-                    ]}
-                    data={slot.generatedSlots ?? []}
-                    className="dark:divide-gray-700"
-                  />
-                </div>
-              ),
-            }))}
-          />
-        )}
+                  </div>
+                ),
+                content: (
+                  <div className="space-y-2">
+                    {slot.breakTime && (
+                      <div className="text-sm text-primary dark:text-gray-400">
+                        Break: {slot.breakTime.start} - {slot.breakTime.end}
+                      </div>
+                    )}
+                    <Table
+                      columns={[
+                        {
+                          title: "Index",
+                          key: "index",
+                          render: (_, index) =>
+                            slot.generatedSlots?.[index]?.isBreak
+                              ? "Break"
+                              : `Slot ${index + 1}`,
+                        },
+                        {
+                          title: "Start",
+                          key: "startTime",
+                          render: (_, index) =>
+                            slot.generatedSlots?.[index]?.startTime || "-",
+                        },
+                        {
+                          title: "End",
+                          key: "endTime",
+                          render: (_, index) =>
+                            slot.generatedSlots?.[index]?.endTime || "-",
+                        },
+                      ]}
+                      data={slot.generatedSlots ?? []}
+                      className="dark:divide-gray-700"
+                    />
+                  </div>
+                ),
+              }))}
+            />
+          )}
+        </div>
       </div>
 
-      {/* <CreateTimeSlotDialog
+      <CreateTimeSlotDialog
         isOpen={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         onCreated={fetchTimeSlots}
-      /> */}
+      />
 
       <EditTimeSlotDialog
         isOpen={showEditDialog}

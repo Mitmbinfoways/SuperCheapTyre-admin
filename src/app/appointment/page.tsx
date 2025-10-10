@@ -9,6 +9,7 @@ import { Toast } from "@/components/ui/Toast";
 import Table, { Column } from "@/components/ui/table";
 import { MdModeEdit } from "react-icons/md";
 import Select from "@/components/ui/Select";
+import EmptyState from "@/components/EmptyState";
 
 const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -124,36 +125,36 @@ const AppointmentsPage = () => {
         />
       </div>
 
-      {loading ? (
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-8 rounded bg-gray-200 dark:bg-gray-700" />
-          ))}
-        </div>
-      ) : error ? (
-        <div className="py-8 text-center text-red-600 dark:text-red-400">
-          {error}
-        </div>
-      ) : appointments.length === 0 ? (
-        <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-          No appointments found.
-        </div>
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={appointments}
-            className="dark:divide-gray-700"
-          />
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+      <div className="h-[calc(100vh-200px)]">
+        {loading ? (
+          <div className="animate-pulse space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-8 rounded bg-gray-200 dark:bg-gray-700" />
+            ))}
           </div>
-        </>
-      )}
+        ) : error ? (
+          <div className="py-8 text-center text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        ) : appointments.length === 0 ? (
+          <EmptyState message="No appointments found." className="h-full" />
+        ) : (
+          <>
+            <Table
+              columns={columns}
+              data={appointments}
+              className="dark:divide-gray-700"
+            />
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
