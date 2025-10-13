@@ -8,7 +8,11 @@ import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
-import { deleteProduct, getAllProducts, updateProduct } from "@/services/CreateProductService";
+import {
+  deleteProduct,
+  getAllProducts,
+  updateProduct,
+} from "@/services/CreateProductService";
 import Image from "next/image";
 import { getProductImageUrl } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -16,6 +20,7 @@ import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
+import Badge from "@/components/ui/Badge";
 
 type Product = {
   _id: string;
@@ -28,6 +33,7 @@ type Product = {
   price: number;
   stock: number;
   isActive: boolean;
+  isPopular: boolean;
   createdAt: string;
 };
 
@@ -48,6 +54,8 @@ const ProductListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
+  console.log(products);
+
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingProducts: false,
     deletingProduct: false,
@@ -56,13 +64,17 @@ const ProductListPage: React.FC = () => {
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
-   
-  const debounceSearch = useDebounce<string>(search , 300)
+
+  const debounceSearch = useDebounce<string>(search, 300);
 
   const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
     try {
-      const filter = { page: currentPage, limit: itemsPerPage , search:debounceSearch };
+      const filter = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debounceSearch,
+      };
       const data = await getAllProducts(filter);
       const { items, pagination } = data.data;
       setProducts(items as Product[]);
@@ -75,7 +87,7 @@ const ProductListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  }, [currentPage, itemsPerPage ,debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
     loadProducts();
@@ -138,11 +150,11 @@ const ProductListPage: React.FC = () => {
   };
 
   const columns: Column<ProductWithId>[] = [
-    { 
-      title: "Sr.No", 
-      key: "index", 
+    {
+      title: "Sr.No",
+      key: "index",
       width: "60px",
-      render: (_, i) => i + 1 
+      render: (_, i) => i + 1,
     },
     {
       title: "Image",
@@ -160,15 +172,15 @@ const ProductListPage: React.FC = () => {
         </div>
       ),
     },
-    { 
-      title: "Name", 
+    {
+      title: "Name",
       key: "name",
       width: "150px",
       render: (item) => (
-        <div className="truncate max-w-[150px]" title={item.name}>
+        <div className="max-w-[150px] truncate" title={item.name}>
           {item.name}
         </div>
-      )
+      ),
     },
     {
       title: "Category",
@@ -181,19 +193,19 @@ const ProductListPage: React.FC = () => {
         </span>
       ),
     },
-    { 
-      title: "Brand", 
+    {
+      title: "Brand",
       key: "brand",
       width: "100px",
       align: "center",
       render: (item) => (
-        <div className="truncate max-w-[100px]" title={item.brand}>
+        <div className="max-w-[100px] truncate" title={item.brand}>
           {item.brand}
         </div>
-      )
+      ),
     },
-    { 
-      title: "SKU", 
+    {
+      title: "SKU",
       key: "sku",
       align: "center",
       width: "120px",
@@ -201,35 +213,41 @@ const ProductListPage: React.FC = () => {
         <div className="text-xs" title={item.sku}>
           {item.sku}
         </div>
-      )
+      ),
     },
-    { 
-      title: "Price", 
-      key: "price", 
+    {
+      title: "Price",
+      key: "price",
       width: "80px",
       align: "center",
-      render: (item) => (
-        <span className="font-semibold">
-          ${item.price}
-        </span>
-      )
+      render: (item) => <span className="font-semibold">${item.price}</span>,
     },
-    { 
-      title: "Stock", 
+    {
+      title: "Popular",
+      key: "popular",
+      width: "60px",
+      align: "center",
+      render: (item) =>
+        item.isPopular ? (
+          <Badge
+            color={"purple"}
+            label={item.isPopular === true ? "Popular" : "-"}
+          />
+        ) : (
+          "-"
+        ),
+    },
+    {
+      title: "Stock",
       key: "stock",
       width: "60px",
       align: "center",
       render: (item) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          item.stock > 10 
-            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-            : item.stock > 0 
-            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-        }`}>
-          {item.stock}
-        </span>
-      )
+        <Badge
+          label={item.stock}
+          color={item.stock > 10 ? "green" : item.stock > 0 ? "yellow" : "red"}
+        />
+      ),
     },
     {
       title: "Actions",

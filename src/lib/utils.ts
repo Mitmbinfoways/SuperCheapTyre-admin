@@ -14,3 +14,8 @@ export function getAdminProfile(filename: any) {
   const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   return `${BASE_URL}/AdminProfile/${filename}`;
 }
+
+export function getBrandImageUrl(filename: any) {
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  return `${BASE_URL}/Brand/${filename}`;
+}

@@ -28,6 +28,7 @@ import {
 } from "./constant";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
+import ToggleSwitch from "@/components/ui/Toggle";
 
 const Page = () => {
   const router = useRouter();
@@ -47,6 +48,7 @@ const Page = () => {
     stock: "",
     images: [],
     description: "",
+    isPopular: false,
     tyreSpecifications: {
       pattern: "",
       width: "",
@@ -63,7 +65,6 @@ const Page = () => {
       staggeredOptions: "",
     },
   });
-
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
 
@@ -74,8 +75,8 @@ const Page = () => {
       try {
         const res = await getAllBrands({ limit: 100 });
         const brandOptions = res.data.items
-          .filter(brand => brand.isActive) // Only show active brands
-          .map(brand => ({
+          .filter((brand) => brand.isActive) // Only show active brands
+          .map((brand) => ({
             label: brand.name,
             value: brand.name,
           }));
@@ -163,6 +164,7 @@ const Page = () => {
               url: `${BASE_URL}/Product/${img}`,
             };
           }),
+          isPopular: product.isPopular || false,
           description: product.description || "",
           tyreSpecifications:
             product.tyreSpecifications || prev.tyreSpecifications,
@@ -181,8 +183,6 @@ const Page = () => {
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-
-    // Remove error for this field
     setErrors((prev: any) => ({ ...prev, [name]: undefined }));
 
     if (name?.startsWith("tyre.")) {
@@ -205,7 +205,6 @@ const Page = () => {
   // Handle brand selection
   const handleBrandChange = (value: string) => {
     setFormData((prev: any) => ({ ...prev, brand: value }));
-    // Remove error for brand field
     setErrors((prev: any) => ({ ...prev, brand: undefined }));
   };
 
@@ -273,6 +272,7 @@ const Page = () => {
         wheelSpecifications:
           category === "wheel" ? formData.wheelSpecifications : undefined,
         isActive: true,
+        isPopular: formData.isPopular,
         keepImages: isEdit ? keepList : undefined,
       } as any;
 
@@ -334,7 +334,6 @@ const Page = () => {
   };
 
   const handleSelect = (field: string, value: string) => {
-    // Remove error for this field
     setErrors((prev: any) => ({ ...prev, [field]: undefined }));
 
     // Update formData dynamically
@@ -431,7 +430,9 @@ const Page = () => {
                       value={formData.brand}
                       onChange={handleBrandChange}
                       options={brands}
-                      placeholder={loadingBrands ? "Loading brands..." : "Select brand"}
+                      placeholder={
+                        loadingBrands ? "Loading brands..." : "Select brand"
+                      }
                       error={errors.brand}
                       disabled={loadingBrands}
                       required
@@ -470,6 +471,18 @@ const Page = () => {
                       value={formData.description}
                       onChange={handleChange}
                       placeholder="Enter description"
+                    />
+                  </div>
+                  <div>
+                    <FormLabel label="Mark as Popular" />
+                    <ToggleSwitch
+                      checked={formData.isPopular}
+                      onChange={() => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          isPopular: !prev.isPopular,
+                        }));
+                      }}
                     />
                   </div>
                 </div>

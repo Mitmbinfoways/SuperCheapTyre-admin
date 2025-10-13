@@ -8,13 +8,20 @@ import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
-import { getAllBrands, deleteBrand, updateBrand, Brand } from "@/services/BrandService";
+import {
+  getAllBrands,
+  deleteBrand,
+  updateBrand,
+  Brand,
+} from "@/services/BrandService";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
+import Badge from "@/components/ui/Badge";
+import { getBrandImageUrl } from "@/lib/utils";
 
 type BrandWithId = Brand & { id: string };
 
@@ -41,15 +48,20 @@ const BrandListPage: React.FC = () => {
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
-   
+
   const debounceSearch = useDebounce<string>(search, 300);
 
   const loadBrands = useCallback(async () => {
     updateLoadingState("fetchingBrands", true);
     try {
-      const filter = { page: currentPage, limit: itemsPerPage, search: debounceSearch };
+      const filter = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debounceSearch,
+      };
       const data = await getAllBrands(filter);
       const { items, pagination } = data.data;
+      console.log(items);
       setBrands(items as Brand[]);
       setTotalPages(pagination.totalPages);
     } catch (e: any) {
@@ -123,22 +135,21 @@ const BrandListPage: React.FC = () => {
   };
 
   const columns: Column<BrandWithId>[] = [
-    { 
-      title: "Sr.No", 
-      key: "index", 
+    {
+      title: "Sr.No",
+      key: "index",
       width: "60px",
-      render: (_, i) => i + 1 
+      render: (_, i) => i + 1,
     },
     {
       title: "Image",
       key: "image",
       width: "80px",
       render: (item) => {
-        const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/brand/${item.image}`;
         return (
           <div className="h-12 w-12 sm:h-16 sm:w-16">
             <Image
-              src={imageUrl}
+              src={getBrandImageUrl(item.image)}
               alt={item.name}
               width={50}
               height={50}
@@ -152,15 +163,15 @@ const BrandListPage: React.FC = () => {
         );
       },
     },
-    { 
-      title: "Name", 
+    {
+      title: "Name",
       key: "name",
       width: "150px",
       render: (item) => (
-        <div className="truncate max-w-[150px]" title={item.name}>
+        <div className="max-w-[150px] truncate" title={item.name}>
           {item.name}
         </div>
-      )
+      ),
     },
     {
       title: "Status",
@@ -168,13 +179,10 @@ const BrandListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          item.isActive 
-            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-        }`}>
-          {item.isActive ? 'Active' : 'Inactive'}
-        </span>
+        <Badge
+          label={item.isActive ? "Active" : "Inactive"}
+          color={item.isActive ? "green" : "red"}
+        />
       ),
     },
     {
@@ -254,7 +262,10 @@ const BrandListPage: React.FC = () => {
         {loadingStates.fetchingBrands ? (
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-8 rounded bg-gray-200 dark:bg-gray-700" />
+              <div
+                key={i}
+                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
+              />
             ))}
           </div>
         ) : tableData.length === 0 ? (

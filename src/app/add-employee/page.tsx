@@ -19,6 +19,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
+import Badge from "@/components/ui/Badge";
 
 interface Technician {
   _id: string;
@@ -72,6 +73,8 @@ const AddTechnicianPage: React.FC = () => {
   const updateLoading = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
+
+  console.log(technicians);
 
   const tableData = technicians.map((t) => ({ ...t, id: t._id }));
 
@@ -220,6 +223,18 @@ const AddTechnicianPage: React.FC = () => {
     },
     { title: "Email", key: "email" },
     { title: "Phone", key: "phone", render: (item) => item.phone },
+    {
+      title: "Status",
+      key: "isActive",
+      width: "100px",
+      align: "center",
+      render: (item) => (
+        <Badge
+          label={item.isActive ? "Active" : "Inactive"}
+          color={item.isActive ? "green" : "red"}
+        />
+      ),
+    },
     {
       title: "Actions",
       key: "actions",

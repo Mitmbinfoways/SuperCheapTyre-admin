@@ -15,6 +15,7 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Image from "next/image";
+import Badge from "@/components/ui/Badge";
 
 interface Blog {
   _id: string;
@@ -54,13 +55,17 @@ const BlogListPage: React.FC = () => {
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
-   
+
   const debounceSearch = useDebounce<string>(search, 300);
 
   const loadBlogs = useCallback(async () => {
     updateLoadingState("fetchingBlogs", true);
     try {
-      const filter = { page: currentPage, limit: itemsPerPage, search: debounceSearch };
+      const filter = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debounceSearch,
+      };
       const data = await getAllBlogs(filter);
       const { blogs, pagination } = data.data;
       setBlogs(blogs as Blog[]);
@@ -114,7 +119,7 @@ const BlogListPage: React.FC = () => {
     try {
       const updatedStatus = !blog.isActive;
       await updateBlog(blog._id, { isActive: updatedStatus });
-      
+
       setBlogs((prev) =>
         prev.map((b) =>
           b._id === blog._id ? { ...b, isActive: updatedStatus } : b,
@@ -138,11 +143,11 @@ const BlogListPage: React.FC = () => {
   const tableData: BlogWithId[] = blogs.map((p) => ({ ...p, id: p._id }));
 
   const columns: Column<BlogWithId>[] = [
-    { 
-      title: "Sr.No", 
-      key: "index", 
+    {
+      title: "Sr.No",
+      key: "index",
       width: "60px",
-      render: (_, i) => i + 1 
+      render: (_, i) => i + 1,
     },
     {
       title: "Image",
@@ -152,29 +157,37 @@ const BlogListPage: React.FC = () => {
         // Check if there's an image to display
         let hasImage = false;
         let imageUrl = "";
-        
-        if (item.formate === "carousel" && item.images.length > 0 && item.images[0]) {
+
+        if (
+          item.formate === "carousel" &&
+          item.images.length > 0 &&
+          item.images[0]
+        ) {
           // For carousel, use the first image from images array
           hasImage = true;
           imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${item.images[0]}`;
-        } else if (item.formate !== "carousel" && item.items.length > 0 && item.items[0].image) {
+        } else if (
+          item.formate !== "carousel" &&
+          item.items.length > 0 &&
+          item.items[0].image
+        ) {
           // For card/alternative/center, use the imageUrl if available, otherwise construct it
           hasImage = true;
-          imageUrl = item.items[0].imageUrl || `${process.env.NEXT_PUBLIC_API_URL}/${item.items[0].image}`;
+          imageUrl =
+            item.items[0].imageUrl ||
+            `${process.env.NEXT_PUBLIC_API_URL}/${item.items[0].image}`;
         }
-        
-        // If no image, show "No Image" placeholder
         if (!hasImage) {
           return (
-            <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center dark:bg-gray-700">
-              <span className="text-xs text-gray-500 dark:text-gray-400 text-center">No Image</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
+              <span className="text-center text-xs text-gray-500 dark:text-gray-400">
+                No Image
+              </span>
             </div>
           );
         }
-
-        // If we have an image, display it
         return (
-          <div className="h-12 w-12 rounded overflow-hidden">
+          <div className="h-12 w-12 overflow-hidden rounded">
             <Image
               src={imageUrl}
               alt={item.title}
@@ -182,15 +195,15 @@ const BlogListPage: React.FC = () => {
               height={48}
               className="h-full w-full object-cover"
               onError={(e) => {
-                // If image fails to load, show the "No Image" placeholder
                 const target = e.target as HTMLImageElement;
                 target.style.display = "none";
-                // Add a fallback element
                 const parent = target.parentElement;
                 if (parent) {
                   const fallback = document.createElement("div");
-                  fallback.className = "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
-                  fallback.innerHTML = '<span class="text-xs text-gray-500 dark:text-gray-400 text-center">No Image</span>';
+                  fallback.className =
+                    "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
+                  fallback.innerHTML =
+                    '<span class="text-xs text-gray-500 dark:text-gray-400 text-center">No Image</span>';
                   parent.appendChild(fallback);
                 }
               }}
@@ -199,48 +212,42 @@ const BlogListPage: React.FC = () => {
         );
       },
     },
-    { 
-      title: "Title", 
+    {
+      title: "Title",
       key: "title",
       width: "200px",
       render: (item) => (
-        <div className="truncate max-w-[200px]" title={item.title}>
+        <div className="max-w-[200px] truncate" title={item.title}>
           {item.title}
         </div>
-      )
+      ),
     },
     {
       title: "Tags",
       key: "tags",
       width: "150px",
       render: (item) => {
-        // Handle cases where tags might be stored incorrectly as a single string element
         let displayTags: string[] = [];
-        
         if (Array.isArray(item.tags) && item.tags.length > 0) {
-          // Check if the first element is a string that contains commas
-          if (typeof item.tags[0] === 'string' && item.tags[0].includes(',')) {
-            // Split the first element by comma to get individual tags
-            displayTags = item.tags[0].split(',').map(tag => tag.trim());
+          if (typeof item.tags[0] === "string" && item.tags[0].includes(",")) {
+            displayTags = item.tags[0].split(",").map((tag) => tag.trim());
           } else {
-            // Tags are already properly formatted
             displayTags = item.tags;
           }
         }
-        
         return (
           <div className="flex flex-wrap gap-1">
             {displayTags && displayTags.length > 0 ? (
               displayTags.map((tag, index) => (
-                <span 
-                  key={index} 
-                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200"
+                <span
+                  key={index}
+                  className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                 >
                   {tag}
                 </span>
               ))
             ) : (
-              <span className="text-gray-500 text-xs">No tags</span>
+              <span className="text-xs text-gray-500">No tags</span>
             )}
           </div>
         );
@@ -251,11 +258,7 @@ const BlogListPage: React.FC = () => {
       key: "formate",
       width: "120px",
       align: "center",
-      render: (item) => (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {item.formate}
-        </span>
-      ),
+      render: (item) => <Badge label={item.formate} color={"purple"} />,
     },
     {
       title: "Status",
@@ -263,13 +266,10 @@ const BlogListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          item.isActive 
-            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-        }`}>
-          {item.isActive ? 'Active' : 'Inactive'}
-        </span>
+        <Badge
+          label={item.isActive ? "Active" : "Inactive"}
+          color={item.isActive ? "green" : "red"}
+        />
       ),
     },
     {
@@ -350,7 +350,10 @@ const BlogListPage: React.FC = () => {
         {loadingStates.fetchingBlogs ? (
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-8 rounded bg-gray-200 dark:bg-gray-700" />
+              <div
+                key={i}
+                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
+              />
             ))}
           </div>
         ) : tableData.length === 0 ? (

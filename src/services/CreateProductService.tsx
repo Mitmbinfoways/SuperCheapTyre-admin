@@ -32,6 +32,7 @@ export interface Product {
   tyreSpecifications?: TyreSpecifications;
   wheelSpecifications?: WheelSpecifications;
   isActive: boolean;
+  isPopular: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +49,7 @@ export interface ProductPayload {
   tyreSpecifications?: TyreSpecifications;
   wheelSpecifications?: WheelSpecifications;
   isActive?: boolean;
+  isPopular?: boolean;
 }
 
 export type UpdateProductPayload = Partial<ProductPayload> & {

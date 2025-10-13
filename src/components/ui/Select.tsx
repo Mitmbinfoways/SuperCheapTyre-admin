@@ -246,11 +246,7 @@ const Select: React.FC<SelectProps> = ({
         </div>
       )}
 
-      {error && (
-        <p className="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
-          <span className="font-medium">{error}</span>
-        </p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };

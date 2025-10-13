@@ -2,13 +2,13 @@
 
 import React from "react";
 
-type ModernSwitchProps = {
+type ToggleSwitchProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
 };
 
-const ModernSwitch: React.FC<ModernSwitchProps> = ({
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   checked,
   onChange,
   disabled = false,
@@ -41,4 +41,4 @@ const ModernSwitch: React.FC<ModernSwitchProps> = ({
   );
 };
 
-export default ModernSwitch;
+export default ToggleSwitch;

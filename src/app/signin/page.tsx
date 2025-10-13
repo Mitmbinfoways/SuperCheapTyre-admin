@@ -9,6 +9,7 @@ import Image from "next/image";
 import { signIn } from "@/services/SignInService";
 import { Toast } from "@/components/ui/Toast";
 import logo from "../../../public/logo_dark.svg";
+import Darklogo from "../../../public/logo_light.svg";
 
 interface FieldErrors {
   email?: string;
@@ -88,9 +89,8 @@ export default function LoginPage() {
 
       router.replace("/");
     } catch (error: any) {
-      console.log(error.response.data.errorData);
-      const apiMessage =
-      error.response.data.errorData || "Failed to sign in";
+      console.log(error.response?.data?.errorData);
+      const apiMessage = error.response?.data?.errorData || "Failed to sign in";
       setErrorMessage(apiMessage);
     } finally {
       setIsLoading(false);
@@ -98,12 +98,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-        <div className="w-full relative mb-6 flex h-24 justify-center">
-          <Image src={logo} alt="Logo" fill className="object-contain" />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg dark:bg-gray-800">
+        <div className="relative mb-6 flex h-24 w-full justify-center">
+          <Image
+            src={logo}
+            alt="Logo"
+            fill
+            className="object-contain dark:hidden"
+          />
+          <Image
+            src={Darklogo}
+            alt="Logo"
+            fill
+            className="hidden object-contain dark:block"
+          />
         </div>
-        <h2 className="mb-6 text-center text-2xl font-bold text-gray-900">
+        <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
           Sign in to SuperCheapTyre
         </h2>
 
@@ -126,7 +137,7 @@ export default function LoginPage() {
               <div className="mb-2 text-sm">
                 <a
                   href="/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Forgot password?
                 </a>
@@ -143,7 +154,7 @@ export default function LoginPage() {
           </div>
 
           {errorMessage && (
-            <p className="text-sm text-red-600" role="alert">
+            <p className="text-sm text-red-600 dark:text-red-400" role="alert">
               {errorMessage}
             </p>
           )}

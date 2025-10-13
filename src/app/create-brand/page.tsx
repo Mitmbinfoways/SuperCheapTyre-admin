@@ -13,7 +13,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
-import ToggleSwitch from "@/components/ui/Toggle";
 
 const CreateBrandPage = () => {
   const router = useRouter();
@@ -25,7 +24,7 @@ const CreateBrandPage = () => {
   const [formData, setFormData] = useState<any>({
     name: "",
     isActive: true,
-    image: null,
+    images: [],
   });
 
   const [errors, setErrors] = useState<any>({});
@@ -39,7 +38,6 @@ const CreateBrandPage = () => {
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -51,40 +49,45 @@ const CreateBrandPage = () => {
         const res = await getBrandById(editId);
         const brand = res?.data || res;
         if (!brand) throw new Error("Brand not found");
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
         setFormData((prev: any) => ({
           ...prev,
           name: brand.name || "",
           isActive: brand.isActive,
+          images: brand.image
+            ? [
+                {
+                  id: "brand-image",
+                  url: `${BASE_URL}/Brand/${brand.image}`,
+                },
+              ]
+            : [],
         }));
       } catch (error: any) {
         console.log(error);
+        Toast({
+          message: "Failed to load brand",
+          type: "error",
+        });
       }
     };
     loadBrand();
   }, [editId]);
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    // Remove error for this field
     setErrors((prev: any) => ({ ...prev, [name]: undefined }));
-
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  // Sync image file selection from ImageUploader
   const handleFilesSelected = (files: File[]) => {
     if (!files || files.length === 0) return;
-    setImageFile(files[0]);
-    setFormData((prev: any) => ({ ...prev, image: files[0] }));
+    setImageFile(files[0]); 
   };
 
-  // Remove image from previews and recompute file list based on images array
   const handleRemoveImage = () => {
     setImageFile(null);
-    setFormData((prev: any) => ({ ...prev, image: null }));
+    setFormData((prev: any) => ({ ...prev, images: [] }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -112,16 +115,14 @@ const CreateBrandPage = () => {
         (!isEdit && res?.statusCode === 201)
       ) {
         Toast({
-          message:
-            res.message || (isEdit ? "Brand updated" : "Brand created"),
+          message: res.message || (isEdit ? "Brand updated" : "Brand created"),
           type: "success",
         });
-        setFormData((prev: any) => ({
-          ...prev,
+        setFormData({
           name: "",
           isActive: true,
-          image: null,
-        }));
+          images: [],
+        });
         setImageFile(null);
         router.push("/brands");
       } else {
@@ -133,23 +134,12 @@ const CreateBrandPage = () => {
     } catch (error: any) {
       setApiError(
         error?.response?.data?.errorData ||
-          "Something went wrong Please try again",
+          "Something went wrong. Please try again",
       );
       console.error(error);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Prepare images for ImageUploader component
-  const prepareImages = () => {
-    if (formData.image && imageFile) {
-      return [{
-        id: 'brand-image',
-        url: URL.createObjectURL(imageFile)
-      }];
-    }
-    return [];
   };
 
   return (
@@ -163,7 +153,9 @@ const CreateBrandPage = () => {
             </h1>
           </div>
           <p className="text-gray-600">
-            {isEdit ? "Edit an existing brand" : "Add a new brand to your inventory"}
+            {isEdit
+              ? "Edit an existing brand"
+              : "Add a new brand to your inventory"}
           </p>
         </div>
 
@@ -177,16 +169,15 @@ const CreateBrandPage = () => {
           <div className="flex flex-col gap-6 rounded-xl border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:flex-row">
             <div className="flex-1">
               <ImageUploader
-                images={prepareImages()}
-                onChange={(images) => {
-                  if (images.length === 0) {
-                    handleRemoveImage();
-                  }
-                }}
+                images={formData.images}
+                onChange={(images) =>
+                  setFormData((prev: any) => ({ ...prev, images }))
+                }
                 onFilesSelected={handleFilesSelected}
                 onRemove={handleRemoveImage}
                 maxFiles={1}
                 multiple={false}
+                replaceImages={true}
               />
             </div>
 
@@ -211,15 +202,6 @@ const CreateBrandPage = () => {
                       error={errors.name}
                     />
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <FormLabel label="Active" />
-                    <ToggleSwitch
-                      checked={formData.isActive}
-                      onChange={(checked) => 
-                        setFormData((prev: any) => ({ ...prev, isActive: checked }))
-                      }
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -238,10 +220,10 @@ const CreateBrandPage = () => {
             <Button variant="primary" disabled={isSubmitting}>
               {isEdit
                 ? isSubmitting
-                  ? "Update..."
+                  ? "Updating..."
                   : "Update Brand"
                 : isSubmitting
-                  ? "Create..."
+                  ? "Creating..."
                   : "Create Brand"}
             </Button>
           </div>
