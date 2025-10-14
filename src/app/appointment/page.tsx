@@ -18,9 +18,13 @@ import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 
-// Extend the Appointment type to include Employee field
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
+  slotDetails: {
+    startTime: string;
+    endTime: string;
+    isBreak: boolean;
+  };
 }
 
 const AppointmentsPage = () => {
@@ -35,6 +39,8 @@ const AppointmentsPage = () => {
     { label: string; value: string }[]
   >([]);
   const itemsPerPage = 10;
+
+  console.log(appointments);
 
   const debounceSearch = useDebounce<string>(search, 300);
 
@@ -143,6 +149,18 @@ const AppointmentsPage = () => {
       key: "date",
       render: (item) =>
         item.date ? new Date(item.date).toLocaleDateString() : "-",
+    },
+    {
+      title: "Time",
+      key: "slotDetails",
+      render: (item) =>
+        item.slotDetails ? (
+          <span>
+            {item.slotDetails.startTime} - {item.slotDetails.endTime}
+          </span>
+        ) : (
+          "-"
+        ),
     },
     {
       title: "Status",

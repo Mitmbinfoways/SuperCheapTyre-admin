@@ -108,6 +108,8 @@ const BlogListPage: React.FC = () => {
     router.push(`/create-blog?id=${blog._id}`);
   };
 
+  console.log(blogs);
+
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseDeleteDialog = () => {
@@ -226,7 +228,9 @@ const BlogListPage: React.FC = () => {
       key: "content",
       width: "180px",
       render: (item) => (
-        <div className="line-clamp-3">{item.content}</div>
+        <div className="line-clamp-3">
+          {item.content ? item.content : item.items[0].content}
+        </div>
       ),
     },
     {

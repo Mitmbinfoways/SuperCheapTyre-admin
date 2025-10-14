@@ -8,7 +8,7 @@ export interface BlogItem {
 }
 
 // Update the interface to properly handle File objects
-interface BlogItemWithFile extends Omit<BlogItem, 'image'> {
+interface BlogItemWithFile extends Omit<BlogItem, "image"> {
   image: File | string;
 }
 
@@ -40,6 +40,7 @@ export interface UpdateBlogPayload {
   formate?: "carousel" | "alternative" | "card" | "center";
   content?: string;
   items?: BlogItemWithFile[];
+  existingImages?: string[];
   tags?: string[]; // This should always be an array of strings
   isActive?: boolean;
   images?: File[];
@@ -77,9 +78,7 @@ export const getAllBlogs = async (
   return response.data;
 };
 
-export const getBlogById = async (
-  id: string,
-): Promise<ApiResponse<Blog>> => {
+export const getBlogById = async (id: string): Promise<ApiResponse<Blog>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/blog/${id}`;
   const response = await getMethod<ApiResponse<Blog>>(url);
   return response.data;
@@ -96,14 +95,22 @@ export const createBlog = async (
     if (key === "images" && Array.isArray(value)) {
       value.forEach((file) => formData.append("images", file));
     } else if (key === "items" && Array.isArray(value)) {
-      const itemsWithoutFiles = value.map(item => ({
+      const itemsWithoutFiles = value.map((item) => ({
         content: item.content,
-        image: item.image instanceof File ? 'new_upload' : (item.image || 'placeholder.jpg')
+        image:
+          item.image instanceof File
+            ? "new_upload"
+            : item.image || "placeholder.jpg",
       }));
       formData.append("items", JSON.stringify(itemsWithoutFiles));
     } else if (key === "tags" && Array.isArray(value)) {
-      value.forEach(tag => formData.append("tags", tag));
-    } else if (typeof value === "object" && value !== null && key !== "items" && key !== "images") {
+      value.forEach((tag) => formData.append("tags", tag));
+    } else if (
+      typeof value === "object" &&
+      value !== null &&
+      key !== "items" &&
+      key !== "images"
+    ) {
       formData.append(key, JSON.stringify(value));
     } else if (value !== undefined && value !== null) {
       formData.append(key, String(value));
@@ -146,15 +153,23 @@ export const updateBlog = async (
       value.forEach((file) => formData.append("images", file));
     } else if (key === "items" && Array.isArray(value)) {
       // For non-carousel formats, we need to handle images differently
-      const itemsWithoutFiles = value.map(item => ({
+      const itemsWithoutFiles = value.map((item) => ({
         content: item.content,
-        image: item.image instanceof File ? 'new_upload' : (item.image || 'placeholder.jpg')
+        image:
+          item.image instanceof File
+            ? "new_upload"
+            : item.image || "placeholder.jpg",
       }));
       formData.append("items", JSON.stringify(itemsWithoutFiles));
     } else if (key === "tags" && Array.isArray(value)) {
       // Send each tag as a separate form field to create an array on the backend
-      value.forEach(tag => formData.append("tags", tag));
-    } else if (typeof value === "object" && value !== null && key !== "items" && key !== "images") {
+      value.forEach((tag) => formData.append("tags", tag));
+    } else if (
+      typeof value === "object" &&
+      value !== null &&
+      key !== "items" &&
+      key !== "images"
+    ) {
       formData.append(key, JSON.stringify(value));
     } else if (value !== undefined && value !== null) {
       formData.append(key, String(value));

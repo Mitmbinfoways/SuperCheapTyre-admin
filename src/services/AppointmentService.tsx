@@ -11,6 +11,11 @@ export interface Appointment {
   date: string;
   slotId: string;
   status: string;
+  slotDetails: {
+    startTime: string;
+    endTime: string;
+    isBreak: boolean;
+  };
   timeSlotId: string;
   notes: string;
 }

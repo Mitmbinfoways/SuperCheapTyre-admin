@@ -45,7 +45,7 @@ const CreateBlogPage = () => {
     content: "",
     tags: [] as string[],
     tagInput: "",
-    isActive: true, // Set to true by default
+    isActive: true,
   });
 
   // Carousel format data
@@ -65,16 +65,14 @@ const CreateBlogPage = () => {
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
 
-  // Create a map of object URLs for File objects to avoid recreating them on every render
+  // Create a map of object URLs for File objects
   const itemImageUrls = useMemo(() => {
     const urls: Record<number, string> = {};
     items.forEach((item, index) => {
       if (item.image && item.image instanceof File) {
-        // Check if we already have a URL for this file
         if (objectUrlsRef.current[index]) {
           urls[index] = objectUrlsRef.current[index];
         } else {
-          // Create a new URL and store it
           const url = URL.createObjectURL(item.image);
           objectUrlsRef.current[index] = url;
           urls[index] = url;
@@ -87,7 +85,6 @@ const CreateBlogPage = () => {
   // Clean up object URLs when component unmounts
   useEffect(() => {
     return () => {
-      // Clean up all object URLs to prevent memory leaks
       Object.values(objectUrlsRef.current).forEach((url) => {
         URL.revokeObjectURL(url);
       });
@@ -104,12 +101,10 @@ const CreateBlogPage = () => {
         const blog = res?.data || res;
         if (!blog) throw new Error("Blog not found");
 
-        // Handle tags - could be array or string
         let tagsArray: string[] = [];
         if (Array.isArray(blog.tags)) {
           tagsArray = blog.tags;
         } else if (typeof blog.tags === "string") {
-          // If it's a string, split by comma
           tagsArray = (blog.tags as string)
             .split(",")
             .map((tag: string) => tag.trim());
@@ -124,23 +119,20 @@ const CreateBlogPage = () => {
           isActive: blog.isActive,
         });
 
-        // For carousel format, show existing images as previews
         if (
           blog.formate === "carousel" &&
           blog.images &&
           blog.images.length > 0
         ) {
-          // We'll store the existing image URLs for preview purposes
           setExistingCarouselImages(blog.images);
         } else if (
           blog.formate !== "carousel" &&
           blog.items &&
           blog.items.length > 0
         ) {
-          // For card/alternative/center formats, preload items with existing image URLs
           setItems(
             blog.items.map((item: any) => ({
-              image: null, // We don't preload actual files, but we can show previews
+              image: null,
               existingImageUrl: item.image
                 ? `${process.env.NEXT_PUBLIC_API_URL}/${item.image}`
                 : null,
@@ -162,7 +154,12 @@ const CreateBlogPage = () => {
       newErrors.title = "Blog title is required";
     }
 
-    if (format === "carousel" && carouselImages.length === 0 && !isEdit) {
+    if (
+      format === "carousel" &&
+      carouselImages.length === 0 &&
+      existingCarouselImages.length === 0 &&
+      !isEdit
+    ) {
       newErrors.images = "At least one image is required for carousel format";
     }
 
@@ -207,13 +204,10 @@ const CreateBlogPage = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (!files || files.length === 0) return;
-
-    // Add new files to the existing carousel images without removing existing ones
     setCarouselImages((prev) => [...prev, ...files]);
   };
 
   const handleRemoveImage = (index: number) => {
-    console.log("Removing image at index:", index);
     setCarouselImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -226,11 +220,9 @@ const CreateBlogPage = () => {
       const newItems = [...prev];
       newItems[index] = { ...newItems[index], [field]: value };
 
-      // If we're changing the image, we might need to update the existingImageUrl
       if (field === "image" && value === null) {
         newItems[index].existingImageUrl = null;
 
-        // Clean up the object URL if it exists
         if (
           prev[index].image &&
           prev[index].image instanceof File &&
@@ -241,11 +233,9 @@ const CreateBlogPage = () => {
         }
       }
 
-      // If we're setting a new image file, clear the existingImageUrl
       if (field === "image" && value instanceof File) {
         newItems[index].existingImageUrl = null;
 
-        // Clean up the previous object URL if it exists
         if (
           prev[index].image &&
           prev[index].image instanceof File &&
@@ -315,27 +305,44 @@ const CreateBlogPage = () => {
       let payload: BlogPayload | UpdateBlogPayload = {
         title: formData.title,
         formate: format,
-        isActive: true, // Always set to true
+        isActive: true,
         tags: formData.tags,
       };
 
       if (format === "carousel") {
         (payload as BlogPayload).content = formData.content;
-
         (payload as BlogPayload).images = carouselImages;
+        
+        // For edit mode, send existing images that should be kept
+        if (isEdit && existingCarouselImages.length > 0) {
+          (payload as UpdateBlogPayload).existingImages = existingCarouselImages;
+        }
       } else {
-        (payload as BlogPayload).items = items.map((item) => ({
-          content: item.content,
-          image:
-            item.image instanceof File
-              ? item.image // Pass the actual File object
-              : item.existingImageUrl
-                ? item.existingImageUrl.replace(
-                    `${process.env.NEXT_PUBLIC_API_URL}/`,
-                    "",
-                  )
-                : "placeholder.jpg",
-        }));
+        // For card/alternative/center formats
+        (payload as BlogPayload).items = items.map((item) => {
+          if (item.image instanceof File) {
+            // New image uploaded
+            return {
+              content: item.content,
+              image: item.image,
+            };
+          } else if (item.existingImageUrl) {
+            // Keep existing image
+            return {
+              content: item.content,
+              image: item.existingImageUrl.replace(
+                `${process.env.NEXT_PUBLIC_API_URL}/`,
+                "",
+              ),
+            };
+          } else {
+            // Fallback
+            return {
+              content: item.content,
+              image: "new_upload", // This will be handled by backend
+            };
+          }
+        });
       }
 
       const res =
@@ -370,7 +377,6 @@ const CreateBlogPage = () => {
     }
   };
 
-  // Format options for the select dropdown
   const formatOptions = [
     { label: "Carousel", value: "carousel" },
     { label: "Alternative", value: "alternative" },
@@ -500,13 +506,20 @@ const CreateBlogPage = () => {
                       onChange={(images) => {
                         const currentImageIds = images.map((img) => img.id);
 
-                        const updatedFiles = carouselImages.filter(
+                        // Update existing carousel images
+                        const updatedExistingImages = existingCarouselImages.filter(
                           (_, index) => {
-                            const imageId = `new-${index}`;
+                            const imageId = `existing-${index}`;
                             return currentImageIds.includes(imageId);
                           },
                         );
+                        setExistingCarouselImages(updatedExistingImages);
 
+                        // Update new carousel images
+                        const updatedFiles = carouselImages.filter((_, index) => {
+                          const imageId = `new-${index}`;
+                          return currentImageIds.includes(imageId);
+                        });
                         setCarouselImages(updatedFiles);
                       }}
                       onFilesSelected={handleFilesSelected}
@@ -515,17 +528,10 @@ const CreateBlogPage = () => {
                           setExistingCarouselImages((prev) =>
                             prev.filter((_, i) => i !== index),
                           );
-                          console.log(
-                            `Removing existing image at index: ${index}`,
-                            existingCarouselImages,
-                          );
                         } else {
                           const newImageIndex =
                             index - existingCarouselImages.length;
                           handleRemoveImage(newImageIndex);
-                          console.log(
-                            `Removing new image at index: ${newImageIndex}`,
-                          );
                         }
                       }}
                       multiple={true}
@@ -565,7 +571,6 @@ const CreateBlogPage = () => {
               </div>
             </div>
           ) : (
-            // Card/Alternative/Center Format
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -635,9 +640,6 @@ const CreateBlogPage = () => {
                                   "existingImageUrl",
                                   null,
                                 );
-                              } else {
-                                // When there are images, it means a new image was uploaded
-                                // We don't need to do anything here as onFilesSelected already handles this
                               }
                             }}
                             onFilesSelected={(files) =>
