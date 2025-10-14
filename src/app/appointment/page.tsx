@@ -17,6 +17,7 @@ import Select from "@/components/ui/Select";
 import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -252,14 +253,7 @@ const AppointmentsPage = () => {
 
       <div>
         {loading ? (
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
-              />
-            ))}
-          </div>
+          <Skeleton />
         ) : error ? (
           <div className="py-8 text-center text-red-600 dark:text-red-400">
             {error}

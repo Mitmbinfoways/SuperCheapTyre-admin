@@ -18,6 +18,7 @@ import TextField from "@/components/ui/TextField";
 import DatePicker from "@/components/ui/DatePicker";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Holiday = {
   _id: string;
@@ -178,15 +179,6 @@ const AddHolidayPage: React.FC = () => {
     setDeleteHolidayId(null);
     setError({});
   };
-
-  const LoadingTable = () => (
-    <div className="animate-pulse space-y-4">
-      <div className="h-10 rounded bg-gray-200 dark:bg-gray-700"></div>
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-8 rounded bg-gray-100 dark:bg-gray-800"></div>
-      ))}
-    </div>
-  );
 
   const columns: Column<HolidayWithId>[] = [
     { title: "Index", key: "index", render: (_, index) => index + 1 },
@@ -374,8 +366,8 @@ const AddHolidayPage: React.FC = () => {
       </CommonDialog>
 
       <div>
-        {loadingStates.fetchingHolidays ? (
-          <LoadingTable />
+        {loadingStates.fetchingHolidays || loadingStates.deletingHoliday ? (
+          <Skeleton />
         ) : tableData.length === 0 ? (
           <EmptyState message="No holidays found." />
         ) : (

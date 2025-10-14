@@ -21,6 +21,7 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
+import Skeleton from "@/components/ui/skeleton";
 
 type Product = {
   _id: string;
@@ -322,7 +323,9 @@ const ProductListPage: React.FC = () => {
       </CommonDialog>
 
       <div>
-        {tableData.length === 0 && !loadingStates.fetchingProducts ? (
+        {loadingStates.fetchingProducts || loadingStates.deletingProduct ? (
+          <Skeleton />
+        ) : tableData.length === 0 && !loadingStates.fetchingProducts ? (
           <EmptyState message="No products found." />
         ) : (
           <>

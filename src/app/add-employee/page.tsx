@@ -20,6 +20,7 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface Technician {
   _id: string;
@@ -73,8 +74,6 @@ const AddTechnicianPage: React.FC = () => {
   const updateLoading = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
-
-  console.log(technicians);
 
   const tableData = technicians.map((t) => ({ ...t, id: t._id }));
 
@@ -411,8 +410,8 @@ const AddTechnicianPage: React.FC = () => {
 
       {/* Table */}
       <div>
-        {loadingStates.fetching ? (
-          <p className="text-center text-gray-500">Loading technicians...</p>
+        {loadingStates.fetching || loadingStates.deleting ? (
+          <Skeleton />
         ) : tableData.length === 0 ? (
           <EmptyState message="No technicians found." />
         ) : (

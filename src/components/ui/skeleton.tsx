@@ -1,16 +1,27 @@
-import { cn } from "@/lib/utils";
+import React from "react";
 
-export function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn(
-        "animate-pulse rounded-md bg-neutral-100 dark:bg-dark-2",
-        className,
-      )}
-      {...props}
-    />
-  );
+interface SkeletonProps {
+  count?: number; 
+  height?: string | number;
+  className?: string; 
 }
+
+const Skeleton: React.FC<SkeletonProps> = ({
+  count = 8,
+  height = "2rem",
+  className = "",
+}) => {
+  return (
+    <div className={`animate-pulse space-y-4 ${className}`}>
+      {[...Array(count)].map((_, i) => (
+        <div
+          key={i}
+          className={`rounded bg-gray-200 dark:bg-gray-600`}
+          style={{ height }}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default Skeleton;

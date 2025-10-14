@@ -119,7 +119,6 @@ const OrdersPage = () => {
     );
   };
 
-  // Define table columns (removed time slot column)
   const columns = [
     { 
       title: "Sr.No", 

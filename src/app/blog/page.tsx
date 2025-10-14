@@ -16,6 +16,7 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
+import Skeleton from "@/components/ui/skeleton";
 
 interface Blog {
   _id: string;
@@ -328,14 +329,7 @@ const BlogListPage: React.FC = () => {
       {/* Table */}
       <div>
         {loadingStates.fetchingBlogs ? (
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
-              />
-            ))}
-          </div>
+         <Skeleton />
         ) : tableData.length === 0 ? (
           <EmptyState message="No blogs found." />
         ) : (

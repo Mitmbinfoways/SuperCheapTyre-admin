@@ -11,6 +11,7 @@ import {
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Contact = ContactType;
 
@@ -79,14 +80,7 @@ const ContactList: React.FC = () => {
 
       <div>
         {loading ? (
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
-              ></div>
-            ))}
-          </div>
+          <Skeleton/>
         ) : error ? (
           <div className="py-8 text-center text-red-600 dark:text-red-400">
             {error}

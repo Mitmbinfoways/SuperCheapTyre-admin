@@ -22,6 +22,7 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import { getBrandImageUrl } from "@/lib/utils";
+import Skeleton from "@/components/ui/Skeleton";
 
 type BrandWithId = Brand & { id: string };
 
@@ -156,7 +157,7 @@ const BrandListPage: React.FC = () => {
               className="h-full w-full rounded object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = "/placeholder-image.png"; // Fallback image
+                target.src = "/placeholder-image.png";
               }}
             />
           </div>
@@ -259,15 +260,8 @@ const BrandListPage: React.FC = () => {
 
       {/* Table */}
       <div>
-        {loadingStates.fetchingBrands ? (
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-8 rounded bg-gray-200 dark:bg-gray-700"
-              />
-            ))}
-          </div>
+        {loadingStates.fetchingBrands || loadingStates.deletingBrand ? (
+          <Skeleton />
         ) : tableData.length === 0 ? (
           <EmptyState message="No brands found." />
         ) : (
