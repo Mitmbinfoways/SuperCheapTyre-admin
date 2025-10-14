@@ -1,4 +1,4 @@
-import { getMethod } from "./methods";
+import { getMethod, patchMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -33,6 +33,21 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+export interface AppointmentPayload {
+  firstname: string;
+  lastname: string;
+  phone: string;
+  email: string;
+  date: string;
+  slotId: string;
+  timeSlotId: string;
+  notes?: string;
+  status?: string;
+  Employee?: string;
+}
+
+export type UpdateAppointmentPayload = Partial<AppointmentPayload>;
+
 interface AppointmentFilter {
   currentPage?: number;
   itemsPerPage?: number;
@@ -42,14 +57,10 @@ interface AppointmentFilter {
 }
 
 export const GetAllAppointments = async (
-  filter: AppointmentFilter = {}
+  filter: AppointmentFilter = {},
 ): Promise<ApiResponse<AppointmentResponse>> => {
   try {
-    const {
-      currentPage = 1,
-      itemsPerPage = 10,
-      search,
-    } = filter;
+    const { currentPage = 1, itemsPerPage = 10, search } = filter;
 
     const params: string[] = [];
     params.push(`page=${currentPage}`);
@@ -62,8 +73,28 @@ export const GetAllAppointments = async (
     console.error("Failed to fetch appointments:", error);
     return {
       statusCode: error?.response?.status || 500,
-      data: { items: [], pagination: { totalItems: 0, totalPages: 0, currentPage: 1, pageSize: 10 } },
+      data: {
+        items: [],
+        pagination: {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: 1,
+          pageSize: 10,
+        },
+      },
       message: error?.message || "Failed to fetch appointments",
     };
   }
+};
+
+export const updateAppointment = async (
+  id: string,
+  payload: UpdateAppointmentPayload,
+): Promise<ApiResponse<Appointment>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/appointment/${id}`;
+  const response = await patchMethod<
+    ApiResponse<Appointment>,
+    UpdateAppointmentPayload
+  >(url, payload);
+  return response.data;
 };

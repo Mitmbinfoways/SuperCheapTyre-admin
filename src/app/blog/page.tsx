@@ -21,6 +21,7 @@ interface Blog {
   _id: string;
   title: string;
   formate: string;
+  content: string;
   images: string[];
   items: { image: string; imageUrl?: string; content: string }[];
   tags: string[];
@@ -140,6 +141,8 @@ const BlogListPage: React.FC = () => {
     }
   };
 
+  console.log(blogs);
+
   const tableData: BlogWithId[] = blogs.map((p) => ({ ...p, id: p._id }));
 
   const columns: Column<BlogWithId>[] = [
@@ -154,16 +157,13 @@ const BlogListPage: React.FC = () => {
       key: "image",
       width: "80px",
       render: (item) => {
-        // Check if there's an image to display
         let hasImage = false;
         let imageUrl = "";
-
         if (
           item.formate === "carousel" &&
           item.images.length > 0 &&
           item.images[0]
         ) {
-          // For carousel, use the first image from images array
           hasImage = true;
           imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${item.images[0]}`;
         } else if (
@@ -171,7 +171,6 @@ const BlogListPage: React.FC = () => {
           item.items.length > 0 &&
           item.items[0].image
         ) {
-          // For card/alternative/center, use the imageUrl if available, otherwise construct it
           hasImage = true;
           imageUrl =
             item.items[0].imageUrl ||
@@ -215,43 +214,20 @@ const BlogListPage: React.FC = () => {
     {
       title: "Title",
       key: "title",
-      width: "200px",
+      width: "150px",
       render: (item) => (
-        <div className="max-w-[200px] truncate" title={item.title}>
+        <div className="line-clamp-2" title={item.title}>
           {item.title}
         </div>
       ),
     },
     {
-      title: "Tags",
-      key: "tags",
-      width: "150px",
-      render: (item) => {
-        let displayTags: string[] = [];
-        if (Array.isArray(item.tags) && item.tags.length > 0) {
-          if (typeof item.tags[0] === "string" && item.tags[0].includes(",")) {
-            displayTags = item.tags[0].split(",").map((tag) => tag.trim());
-          } else {
-            displayTags = item.tags;
-          }
-        }
-        return (
-          <div className="flex flex-wrap gap-1">
-            {displayTags && displayTags.length > 0 ? (
-              displayTags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  {tag}
-                </span>
-              ))
-            ) : (
-              <span className="text-xs text-gray-500">No tags</span>
-            )}
-          </div>
-        );
-      },
+      title: "Content",
+      key: "content",
+      width: "180px",
+      render: (item) => (
+        <div className="line-clamp-3">{item.content}</div>
+      ),
     },
     {
       title: "Format",
@@ -346,7 +322,7 @@ const BlogListPage: React.FC = () => {
       </CommonDialog>
 
       {/* Table */}
-      <div className="h-[calc(100vh-200px)] overflow-y-auto">
+      <div>
         {loadingStates.fetchingBlogs ? (
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
@@ -357,7 +333,7 @@ const BlogListPage: React.FC = () => {
             ))}
           </div>
         ) : tableData.length === 0 ? (
-          <EmptyState message="No blogs found." className="h-full" />
+          <EmptyState message="No blogs found." />
         ) : (
           <>
             <Table columns={columns} data={tableData} />

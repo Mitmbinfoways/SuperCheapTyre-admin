@@ -160,9 +160,9 @@ const OrdersPage = () => {
       render: (order: Order) => getTotalItems(order.items)
     },
     {
-      title: "Total (£)",
+      title: "Total ($)",
       key: "total",
-      render: (order: Order) => `£${order.total.toFixed(2)}`
+      render: (order: Order) => `$${order.total.toFixed(2)}`
     }
   ];
 

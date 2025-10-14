@@ -49,19 +49,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         alert(`File ${file.name} exceeds ${maxSizeMB}MB`);
         return;
       }
-
       const imageItem: ImageItem = {
         id: crypto.randomUUID(),
         url: URL.createObjectURL(file),
         file,
       };
-
       newImages.push(imageItem);
       validFileObjects.push(file);
     });
 
-    // If replaceImages is true, replace existing images with new ones
-    // Otherwise, add new images to existing ones
     const finalImages = replaceImages ? newImages : [...images, ...newImages];
     onChange(finalImages.slice(0, maxFiles));
 
@@ -95,14 +91,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   return (
     <div className="space-y-4 p-6">
       {/* Header */}
-      <div className="mb-8 flex items-center gap-2">
+      <div className="mb-5 flex items-center gap-2">
         <CiImageOn className="h-5 w-5 text-blue-600" />
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
           Product Images
-        </h2>
+        </h2> 
       </div>
 
-      {/* Upload Area */}
       <div
         className="flex cursor-pointer flex-col justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-6 py-20 text-center transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
         onClick={() => inputRef.current?.click()}

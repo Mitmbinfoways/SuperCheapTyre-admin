@@ -414,7 +414,7 @@ const AddTechnicianPage: React.FC = () => {
         {loadingStates.fetching ? (
           <p className="text-center text-gray-500">Loading technicians...</p>
         ) : tableData.length === 0 ? (
-          <EmptyState message="No technicians found." className="h-full" />
+          <EmptyState message="No technicians found." />
         ) : (
           <>
             <Table columns={columns} data={tableData} />

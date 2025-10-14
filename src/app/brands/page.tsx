@@ -168,7 +168,7 @@ const BrandListPage: React.FC = () => {
       key: "name",
       width: "150px",
       render: (item) => (
-        <div className="max-w-[150px] truncate" title={item.name}>
+        <div className="line-clamp-2" title={item.name}>
           {item.name}
         </div>
       ),
@@ -258,7 +258,7 @@ const BrandListPage: React.FC = () => {
       </CommonDialog>
 
       {/* Table */}
-      <div className="h-[calc(100vh-200px)]">
+      <div>
         {loadingStates.fetchingBrands ? (
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
@@ -269,7 +269,7 @@ const BrandListPage: React.FC = () => {
             ))}
           </div>
         ) : tableData.length === 0 ? (
-          <EmptyState message="No brands found." className="h-full" />
+          <EmptyState message="No brands found." />
         ) : (
           <>
             <Table columns={columns} data={tableData} />

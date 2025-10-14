@@ -7,7 +7,7 @@ interface EmptyStateProps {
 
 const EmptyState: React.FC<EmptyStateProps> = ({ message, className = "" }) => {
   return (
-    <div className={`flex h-full w-full items-center justify-center ${className}`}>
+    <div className={`flex h-96 w-full items-center justify-center ${className}`}>
       <div className="text-center">
         <div className="mb-4 flex justify-center">
           <svg

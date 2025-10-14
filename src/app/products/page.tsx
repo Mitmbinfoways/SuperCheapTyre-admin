@@ -177,7 +177,7 @@ const ProductListPage: React.FC = () => {
       key: "name",
       width: "150px",
       render: (item) => (
-        <div className="max-w-[150px] truncate" title={item.name}>
+        <div className="line-clamp-2" title={item.name}>
           {item.name}
         </div>
       ),
@@ -199,7 +199,7 @@ const ProductListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-        <div className="max-w-[100px] truncate" title={item.brand}>
+        <div className="line-clamp-2" title={item.brand}>
           {item.brand}
         </div>
       ),
@@ -321,10 +321,9 @@ const ProductListPage: React.FC = () => {
         </p>
       </CommonDialog>
 
-      {/* Table */}
-      <div className="h-[calc(100vh-200px)]">
+      <div>
         {tableData.length === 0 && !loadingStates.fetchingProducts ? (
-          <EmptyState message="No products found." className="h-full" />
+          <EmptyState message="No products found." />
         ) : (
           <>
             <Table columns={columns} data={tableData} />

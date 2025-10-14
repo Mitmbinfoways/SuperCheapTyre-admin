@@ -130,7 +130,6 @@ export const updateProduct = async (
 ): Promise<ApiResponse<Product>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/product/${id}`;
   const formData = new FormData();
-
   // Append keep list first if provided (backend reads req.body.images)
   if (Array.isArray(payload.keepImages)) {
     formData.append("images", JSON.stringify(payload.keepImages));

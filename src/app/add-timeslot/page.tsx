@@ -434,16 +434,13 @@ const AddTimeSlotPage: React.FC = () => {
           )}
         </div>
 
-        <div className="h-[calc(100vh-200px)]">
+        <div>
           {loading ? (
             <div className="py-12 text-center text-gray-500 dark:text-gray-400">
               Loading time slots...
             </div>
           ) : timeSlots.length === 0 ? (
-            <EmptyState 
-              message="No time slots created yet. Click 'Create New Time Slot' to get started." 
-              className="h-full" 
-            />
+            <EmptyState message="No time slots created yet. Click 'Create New Time Slot' to get started." />
           ) : (
             <Accordion
               items={timeSlots.map((slot) => ({

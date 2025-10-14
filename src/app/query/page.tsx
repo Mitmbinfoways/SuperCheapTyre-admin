@@ -77,7 +77,7 @@ const ContactList: React.FC = () => {
         />
       </div>
 
-      <div className="h-[calc(100vh-200px)]">
+      <div>
         {loading ? (
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
@@ -92,7 +92,7 @@ const ContactList: React.FC = () => {
             {error}
           </div>
         ) : contacts.length === 0 ? (
-          <EmptyState message="No contacts found." className="h-full" />
+          <EmptyState message="No contacts found."/>
         ) : (
           <>
             <Table

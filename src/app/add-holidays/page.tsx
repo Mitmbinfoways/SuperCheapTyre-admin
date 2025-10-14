@@ -377,7 +377,7 @@ const AddHolidayPage: React.FC = () => {
         {loadingStates.fetchingHolidays ? (
           <LoadingTable />
         ) : tableData.length === 0 ? (
-          <EmptyState message="No holidays found." className="h-full" />
+          <EmptyState message="No holidays found." />
         ) : (
           <div
             className={
