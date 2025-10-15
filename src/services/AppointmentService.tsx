@@ -16,6 +16,10 @@ export interface Appointment {
     endTime: string;
     isBreak: boolean;
   };
+  technicianDetails: {
+    firstName: string;
+    lastName: string;
+  };
   timeSlotId: string;
   notes: string;
 }

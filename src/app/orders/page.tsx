@@ -20,6 +20,8 @@ const OrdersPage = () => {
   const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+  console.log(orders)
+
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
   });
@@ -109,10 +111,10 @@ const OrdersPage = () => {
 
     return (
       <tr>
-        <td colSpan={6} className="p-0">
+        <td colSpan={7} className="p-0">
           <div
             className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+              isExpanded ? "opacity-100" : "max-h-0 opacity-0"
             }`}
           >
             <div className="bg-gray-50 p-4 dark:bg-gray-800">
@@ -133,10 +135,10 @@ const OrdersPage = () => {
                       </p>
                       <div className="mt-2 flex justify-between text-sm">
                         <span>Qty: {item.quantity}</span>
-                        <span>£{item.productDetails.price.toFixed(2)}</span>
+                        <span>$ {item.productDetails.price.toFixed(2)}</span>
                       </div>
                       <div className="mt-1 text-right font-medium">
-                        Total: £
+                        Total: ${" "}
                         {(item.productDetails.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
@@ -174,23 +176,30 @@ const OrdersPage = () => {
       render: (order: Order) => order.customer.name,
     },
     {
-      title: "Phone",
-      key: "customer.phone",
-      render: (order: Order) => order.customer.phone,
-    },
-    {
       title: "Email",
       key: "customer.email",
       render: (order: Order) => order.customer.email,
     },
     {
+      title: "Phone",
+      key: "customer.phone",
+      render: (order: Order) => order.customer.phone,
+    },
+    {
       title: "Product Count",
       key: "itemsCount",
-      render: (order: Order) => getTotalItems(order.items),
+      render: (order: Order) => (
+        <div className="text-center">{getTotalItems(order.items)}</div>
+      ),
     },
     {
       title: "Total ($)",
       key: "total",
+      render: (order: Order) => `$${order.total.toFixed(2)}`,
+    },
+    {
+      title: "Actions",
+      key: "actions",
       render: (order: Order) => `$${order.total.toFixed(2)}`,
     },
   ];
@@ -201,7 +210,7 @@ const OrdersPage = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Orders
         </h1>

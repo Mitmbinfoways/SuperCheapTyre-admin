@@ -26,6 +26,10 @@ interface ExtendedAppointment extends Appointment {
     endTime: string;
     isBreak: boolean;
   };
+  technicianDetails: {
+    firstName: string;
+    lastName: string;
+  };
 }
 
 const AppointmentsPage = () => {
@@ -41,13 +45,7 @@ const AppointmentsPage = () => {
   >([]);
   const itemsPerPage = 10;
 
-  console.log(appointments);
-
   const debounceSearch = useDebounce<string>(search, 300);
-
-  const [allTechnicians, setAllTechnicians] = useState<
-    { label: string; value: string }[]
-  >([]);
 
   const loadTechnicians = useCallback(async () => {
     try {
@@ -60,11 +58,7 @@ const AppointmentsPage = () => {
         value: tech._id,
         isActive: tech.isActive,
       }));
-
-      // Separate active ones for dropdown
       const activeOptions = allOptions.filter((tech) => tech.isActive);
-
-      setAllTechnicians(allOptions);
       setTechnicianOptions(activeOptions);
     } catch (e: any) {
       const errorMessage =
@@ -110,6 +104,7 @@ const AppointmentsPage = () => {
           appt._id === appointmentId ? { ...appt, Employee: employeeId } : appt,
         );
         setAppointments(updatedAppointments);
+        fetchAppointments();
         setEditingId(null);
 
         Toast({
@@ -187,9 +182,8 @@ const AppointmentsPage = () => {
           />
         ) : (
           <span className="text-sm">
-            {item.Employee
-              ? allTechnicians.find((opt) => opt.value === item.Employee)
-                  ?.label || "Unknown Employee"
+            {item.technicianDetails
+              ? `${item.technicianDetails.firstName} ${item.technicianDetails.lastName}`
               : "-"}
           </span>
         ),
