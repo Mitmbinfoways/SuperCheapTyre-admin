@@ -93,6 +93,7 @@ const Page = () => {
 
   const handleUpdate = async () => {
     if (!parsedAdmin?._id) return;
+
     const errors: any = {};
     if (!formData.name) errors.name = "Name is required";
     if (!formData.email) errors.email = "Email is required";
@@ -114,14 +115,16 @@ const Page = () => {
       );
 
       if (response.statusCode === 200) {
-        setProfile(response.data);
+        const updatedAdmin = response.data;
+        setProfile(updatedAdmin);
         showToast("Profile updated successfully", "success");
         setFormData({
-          name: response.data.name,
-          email: response.data.email,
-          phone: response.data.phone || "",
-          avatar: response.data.avatar || "",
+          name: updatedAdmin.name,
+          email: updatedAdmin.email,
+          phone: updatedAdmin.phone || "",
+          avatar: updatedAdmin.avatar || "",
         });
+        localStorage.setItem("adminUser", JSON.stringify(updatedAdmin));
         setIsEditing(false);
         setSelectedFile(null);
         setPreview(null);
@@ -190,7 +193,7 @@ const Page = () => {
         <div className="w-full max-w-lg">
           {isEditing ? (
             <div>
-              <h2 className="mb-4 text-2xl font-bold text-gray-800">
+              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-300">
                 Update Profile
               </h2>
               <div className="space-y-4">
@@ -247,7 +250,7 @@ const Page = () => {
                       alt="avatar"
                       width={48}
                       height={48}
-                      className="h-24 w-24 rounded-full object-cover"
+                      className="mt-3 h-24 w-24 rounded-full object-cover"
                     />
                   )}
                 </div>
@@ -274,7 +277,7 @@ const Page = () => {
             </div>
           ) : isChangingPassword ? (
             <div>
-              <h2 className="mb-4 text-2xl font-bold text-gray-800">
+              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-300">
                 Change Password
               </h2>
               <div className="space-y-4">

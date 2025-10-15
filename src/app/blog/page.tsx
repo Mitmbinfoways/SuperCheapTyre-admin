@@ -16,7 +16,7 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
-import Skeleton from "@/components/ui/skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 
 interface Blog {
   _id: string;
@@ -159,34 +159,27 @@ const BlogListPage: React.FC = () => {
       title: "Image",
       key: "image",
       width: "80px",
-      render: (item) => {
-        let hasImage = false;
-        let imageUrl = "";
+      render: (item: {
+        formate: string;
+        images: string[];
+        items: { image?: string; imageUrl?: string }[];
+        title: string;
+      }) => {
+        let imageUrl: string = "../../../public/default-image.png";
         if (
           item.formate === "carousel" &&
           item.images.length > 0 &&
           item.images[0]
         ) {
-          hasImage = true;
           imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${item.images[0]}`;
         } else if (
           item.formate !== "carousel" &&
           item.items.length > 0 &&
           item.items[0].image
         ) {
-          hasImage = true;
           imageUrl =
             item.items[0].imageUrl ||
             `${process.env.NEXT_PUBLIC_API_URL}/${item.items[0].image}`;
-        }
-        if (!hasImage) {
-          return (
-            <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
-              <span className="text-center text-xs text-gray-500 dark:text-gray-400">
-                No Image
-              </span>
-            </div>
-          );
         }
         return (
           <div className="h-12 w-12 overflow-hidden rounded">
@@ -196,19 +189,6 @@ const BlogListPage: React.FC = () => {
               width={48}
               height={48}
               className="h-full w-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = "none";
-                const parent = target.parentElement;
-                if (parent) {
-                  const fallback = document.createElement("div");
-                  fallback.className =
-                    "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
-                  fallback.innerHTML =
-                    '<span class="text-xs text-gray-500 dark:text-gray-400 text-center">No Image</span>';
-                  parent.appendChild(fallback);
-                }
-              }}
             />
           </div>
         );
@@ -329,7 +309,7 @@ const BlogListPage: React.FC = () => {
       {/* Table */}
       <div>
         {loadingStates.fetchingBlogs ? (
-         <Skeleton />
+          <Skeleton />
         ) : tableData.length === 0 ? (
           <EmptyState message="No blogs found." />
         ) : (

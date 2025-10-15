@@ -35,6 +35,8 @@ export function UserInfo() {
     typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
   const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
 
+  console.log(parsedAdmin)
+
   const USER = {
     name: "John Smith",
     email: "johnson@nextadmin.com",
@@ -48,8 +50,8 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-3">
           <Image
-            src={USER.img}
-            className="size-12"
+            src={getAdminProfile(parsedAdmin?.avatar)}
+            className="size-12 rounded-full"
             alt={`Avatar of ${USER.name}`}
             role="presentation"
             width={200}

@@ -21,7 +21,7 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
-import Skeleton from "@/components/ui/skeleton";
+import Skeleton from "@/components/ui/Skeleton";
 
 type Product = {
   _id: string;

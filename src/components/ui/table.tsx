@@ -43,8 +43,6 @@ function Table<T extends { id?: string | number; _id?: string }>({
   }
 
   if (data.length === 0) {
-    // If no emptyMessage is provided, don't render anything
-    // The parent component should handle the empty state
     if (!emptyMessage) {
       return null;
     }

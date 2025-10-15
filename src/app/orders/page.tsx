@@ -1,40 +1,55 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { getAllOrders, Order, OrderItem } from '@/services/OrderServices';
-import Pagination from '@/components/ui/Pagination';
-import Image from 'next/image';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
+import Pagination from "@/components/ui/Pagination";
+import Image from "next/image";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { Toast } from "@/components/ui/Toast";
+import Skeleton from "@/components/ui/Skeleton";
+import EmptyState from "@/components/EmptyState";
+
+type LoadingStates = {
+  fetchingOrders: boolean;
+};
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
+  const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    fetchingOrders: false,
+  });
+
+  const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
+    setLoadingStates((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const fetchOrders = useCallback(async () => {
+    updateLoadingState("fetchingOrders", true);
+    try {
+      const response = await getAllOrders({
+        page: currentPage,
+        limit: pageSize,
+      });
+      setOrders(response.data.orders);
+      setTotalPages(response.data.pagination.totalPages);
+    } catch (e: any) {
+      Toast({
+        type: "error",
+        message: e?.response?.data?.errorData || "Failed to fetch orders",
+      });
+    } finally {
+      updateLoadingState("fetchingOrders", false);
+    }
+  }, [currentPage, pageSize]);
 
   useEffect(() => {
     fetchOrders();
-  }, [currentPage]);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await getAllOrders({ page: currentPage, limit: pageSize });
-      setOrders(response.data.orders);
-      setTotalPages(response.data.pagination.totalPages);
-      setTotalItems(response.data.pagination.totalItems);
-      setPageSize(response.data.pagination.pageSize);
-    } catch (err) {
-      setError('Failed to fetch orders');
-      console.error('Error fetching orders:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchOrders]);
 
   // Calculate total items in an order
   const getTotalItems = (items: OrderItem[]) => {
@@ -48,22 +63,22 @@ const OrdersPage = () => {
 
   // Render product image
   const renderProductImage = (item: OrderItem) => {
-    // Based on the backend implementation, images are stored in /Product directory
-    // So the URL should be: {API_URL}/Product/{filename}
-    const imageUrl = item.productDetails.images?.[0] 
+    const imageUrl = item.productDetails.images?.[0]
       ? `${process.env.NEXT_PUBLIC_API_URL}/Product/${item.productDetails.images[0]}`
       : null;
 
     if (!imageUrl) {
       return (
-        <div className="h-12 w-12 rounded bg-gray-200 flex items-center justify-center dark:bg-gray-700">
-          <span className="text-xs text-gray-500 dark:text-gray-400">No Image</span>
+        <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            No Image
+          </span>
         </div>
       );
     }
 
     return (
-      <div className="h-12 w-12 rounded overflow-hidden">
+      <div className="h-12 w-12 overflow-hidden rounded">
         <Image
           src={imageUrl}
           alt={item.productDetails.name}
@@ -76,8 +91,10 @@ const OrdersPage = () => {
             const parent = target.parentElement;
             if (parent) {
               const fallback = document.createElement("div");
-              fallback.className = "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
-              fallback.innerHTML = '<span class="text-xs text-gray-500 dark:text-gray-400">No Image</span>';
+              fallback.className =
+                "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
+              fallback.innerHTML =
+                '<span class="text-xs text-gray-500 dark:text-gray-400">No Image</span>';
               parent.appendChild(fallback);
             }
           }}
@@ -86,32 +103,46 @@ const OrdersPage = () => {
     );
   };
 
-  // Render product details in table row with 3 products per row
+  // Render product details in table row with smooth transition
   const renderProductDetails = (items: OrderItem[], orderId: string) => {
-    if (expandedOrderId !== orderId) return null;
-    
+    const isExpanded = expandedOrderId === orderId;
+
     return (
       <tr>
         <td colSpan={6} className="p-0">
-          <div className="p-4 bg-gray-50 dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-3">Product Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.map((item) => (
-                <div key={item._id} className="flex items-center gap-4 p-3 border rounded-lg bg-white dark:bg-gray-700">
-                  {renderProductImage(item)}
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm">{item.productDetails.name}</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">SKU: {item.productDetails.sku}</p>
-                    <div className="flex justify-between mt-2 text-sm">
-                      <span>Qty: {item.quantity}</span>
-                      <span>£{item.productDetails.price.toFixed(2)}</span>
-                    </div>
-                    <div className="text-right font-medium mt-1">
-                      Total: £{(item.productDetails.price * item.quantity).toFixed(2)}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="bg-gray-50 p-4 dark:bg-gray-800">
+              <h3 className="mb-3 text-lg font-semibold">Product Details</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {items.map((item) => (
+                  <div
+                    key={item._id}
+                    className="flex items-center gap-4 rounded-lg border bg-white p-3 dark:bg-gray-700"
+                  >
+                    {renderProductImage(item)}
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium">
+                        {item.productDetails.name}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-300">
+                        SKU: {item.productDetails.sku}
+                      </p>
+                      <div className="mt-2 flex justify-between text-sm">
+                        <span>Qty: {item.quantity}</span>
+                        <span>£{item.productDetails.price.toFixed(2)}</span>
+                      </div>
+                      <div className="mt-1 text-right font-medium">
+                        Total: £
+                        {(item.productDetails.price * item.quantity).toFixed(2)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </td>
@@ -120,15 +151,14 @@ const OrdersPage = () => {
   };
 
   const columns = [
-    { 
-      title: "Sr.No", 
-      key: "index", 
+    {
+      title: "Sr.No",
+      key: "index",
       width: "80px",
       render: (_: Order, i: number) => (
         <div className="flex items-center">
           {(currentPage - 1) * pageSize + i + 1}
-          <span className="ml-2">
-            {/* Arrow rotates based on expanded state */}
+          <span className="ml-2 transition-transform duration-300">
             {expandedOrderId === orders[i]?._id ? (
               <IoIosArrowUp className="text-gray-500 dark:text-gray-400" />
             ) : (
@@ -136,132 +166,114 @@ const OrdersPage = () => {
             )}
           </span>
         </div>
-      )
+      ),
     },
     {
       title: "Customer Name",
       key: "customer.name",
-      render: (order: Order) => order.customer.name
+      render: (order: Order) => order.customer.name,
     },
     {
       title: "Phone",
       key: "customer.phone",
-      render: (order: Order) => order.customer.phone
+      render: (order: Order) => order.customer.phone,
     },
     {
       title: "Email",
       key: "customer.email",
-      render: (order: Order) => order.customer.email
+      render: (order: Order) => order.customer.email,
     },
     {
       title: "Product Count",
       key: "itemsCount",
-      render: (order: Order) => getTotalItems(order.items)
+      render: (order: Order) => getTotalItems(order.items),
     },
     {
       title: "Total ($)",
       key: "total",
-      render: (order: Order) => `$${order.total.toFixed(2)}`
-    }
+      render: (order: Order) => `$${order.total.toFixed(2)}`,
+    },
   ];
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Orders</h1>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Orders</h1>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-red-500 text-center py-8">{error}</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Orders</h1>
-      <div className="bg-white rounded-lg shadow">
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead className="bg-lightblue dark:bg-gray-800">
-              <tr>
-                {columns.map((col) => (
-                  <th
-                    key={col.key as string}
-                    className={`px-4 py-3 text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200 text-left`}
-                    style={col.width ? { width: col.width } : undefined}
-                  >
-                    {col.title}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-700">
-              {orders.map((order, index) => (
-                <React.Fragment key={order._id}>
-                  <tr
-                    className={`transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800 border-b last:border-b-0 border-gray-200 dark:border-gray-700 cursor-pointer ${
-                      expandedOrderId === order._id ? 'bg-gray-50 dark:bg-gray-800' : ''
-                    }`}
-                    onClick={() => toggleExpandedOrder(order._id)}
-                  >
-                    {columns.map((col) => (
-                      <td
-                        key={col.key as string}
-                        className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-200`}
-                        style={col.width ? { width: col.width } : undefined}
-                      >
-                        {col.render ? col.render(order, index) : (order as any)[col.key]}
-                      </td>
-                    ))}
-                  </tr>
-                  {renderProductDetails(order.items, order._id)}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {orders.length === 0 && !loading && (
-          <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">No orders found.</p>
-          </div>
-        )}
-        
-        {totalPages > 1 && (
-          <div className="flex justify-center p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        )}
+    <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
+          Manage Orders
+        </h1>
       </div>
-      
-      <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-        Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalItems)} of {totalItems} orders
+
+      <div>
+        {loadingStates.fetchingOrders ? (
+          <Skeleton />
+        ) : orders.length === 0 && !loadingStates.fetchingOrders ? (
+          <EmptyState message="No orders found." />
+        ) : (
+          <>
+            <div className="overflow-hidden rounded-lg bg-white shadow">
+              <div className="overflow-hidden">
+                <table className="w-full table-auto">
+                  <thead className="bg-lightblue dark:bg-gray-800">
+                    <tr>
+                      {columns.map((col) => (
+                        <th
+                          key={col.key as string}
+                          className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200`}
+                          style={col.width ? { width: col.width } : undefined}
+                        >
+                          {col.title}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="border-b border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                    {orders.map((order, index) => (
+                      <React.Fragment key={order._id}>
+                        <tr
+                          className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${
+                            expandedOrderId === order._id
+                              ? "bg-gray-50 dark:bg-gray-800"
+                              : ""
+                          }`}
+                          onClick={() => toggleExpandedOrder(order._id)}
+                        >
+                          {columns.map((col) => (
+                            <td
+                              key={col.key as string}
+                              className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-200`}
+                              style={
+                                col.width ? { width: col.width } : undefined
+                              }
+                            >
+                              {col.render
+                                ? col.render(order, index)
+                                : (order as any)[col.key]}
+                            </td>
+                          ))}
+                        </tr>
+                        {renderProductDetails(order.items, order._id)}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-4 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
