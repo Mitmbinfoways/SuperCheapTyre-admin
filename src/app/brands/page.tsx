@@ -62,7 +62,6 @@ const BrandListPage: React.FC = () => {
       };
       const data = await getAllBrands(filter);
       const { items, pagination } = data.data;
-      console.log(items);
       setBrands(items as Brand[]);
       setTotalPages(pagination.totalPages);
     } catch (e: any) {

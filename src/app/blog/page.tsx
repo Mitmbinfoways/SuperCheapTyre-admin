@@ -109,8 +109,6 @@ const BlogListPage: React.FC = () => {
     router.push(`/create-blog?id=${blog._id}`);
   };
 
-  console.log(blogs);
-
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseDeleteDialog = () => {
@@ -143,8 +141,6 @@ const BlogListPage: React.FC = () => {
       updateLoadingState("togglingStatus", false);
     }
   };
-
-  console.log(blogs);
 
   const tableData: BlogWithId[] = blogs.map((p) => ({ ...p, id: p._id }));
 

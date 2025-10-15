@@ -55,8 +55,6 @@ const ProductListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
-  console.log(products);
-
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingProducts: false,
     deletingProduct: false,

@@ -79,8 +79,6 @@ export default function LoginPage() {
       const token = response?.data?.token;
       const admin = response?.data?.admin;
 
-      console.log(admin)
-
       if (token) sessionStorage.setItem("authToken", token);
       if (admin) localStorage.setItem("adminUser", JSON.stringify(admin));
 
