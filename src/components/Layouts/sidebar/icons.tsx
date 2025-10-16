@@ -358,3 +358,23 @@ export function ChatBubbleLeftRightIcon(props: PropsType) {
     </svg>
   );
 }
+
+export function EyeIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1.5 12C1.5 12 4.5 3 12 3s10.5 9 10.5 9-3 9-10.5 9S1.5 12 1.5 12zm10.5-6a6 6 0 100 12 6 6 0 000-12z"
+      />
+    </svg>
+  );
+}

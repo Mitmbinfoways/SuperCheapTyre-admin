@@ -23,6 +23,23 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Measurements",
+        url: "/measurements",
+        icon: Icons.PackageIcon,
+        items: [
+          {
+            title: "Add Measurement",
+            url: "/measurements",
+            icon: Icons.PlusCircleIcon,
+          },
+          {
+            title: "Show Measurements",
+            url: "/measurements/show",
+            icon: Icons.EyeIcon,
+          },
+        ],
+      },
+      {
         title: "Brands",
         url: "/brands",
         icon: Icons.PackageIcon,
