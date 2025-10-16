@@ -133,10 +133,10 @@ const OrdersPage = () => {
                       </p>
                       <div className="mt-2 flex justify-between text-sm">
                         <span>Qty: {item.quantity}</span>
-                        <span>$ {item.productDetails.price.toFixed(2)}</span>
+                        <span>AU$ {item.productDetails.price.toFixed(2)}</span>
                       </div>
                       <div className="mt-1 text-right font-medium">
-                        Total: ${" "}
+                        Total: AU${" "}
                         {(item.productDetails.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
@@ -191,14 +191,14 @@ const OrdersPage = () => {
       ),
     },
     {
-      title: "Total ($)",
+      title: "Total (AU$)",
       key: "total",
-      render: (order: Order) => `$${order.total.toFixed(2)}`,
+      render: (order: Order) => `AU$${order.total.toFixed(2)}`,
     },
     {
       title: "Actions",
       key: "actions",
-      render: (order: Order) => `$${order.total.toFixed(2)}`,
+      render: (order: Order) => `${order.total.toFixed(2)}`,
     },
   ];
 

@@ -42,6 +42,7 @@ export default function ForgotPasswordPage() {
     try {
       await RequestReset({ email });
       setEmail("");
+      Toast({ message: "Password reset link sent to mail", type: "success" });
     } catch (err: any) {
       Toast({ message: err.message || "Something went wrong", type: "error" });
     } finally {
@@ -50,13 +51,13 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-xl">
         {/* Title */}
-        <h2 className="mb-2 text-center text-2xl font-bold text-gray-900">
+        <h2 className="mb-2 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
           Forgot Password
         </h2>
-        <p className="mb-6 text-center text-sm text-gray-500">
+        <p className="mb-6 text-center text-sm text-gray-500 dark:text-gray-300">
           Enter your email to reset your password
         </p>
 

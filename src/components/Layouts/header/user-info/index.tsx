@@ -50,14 +50,14 @@ export function UserInfo() {
           <Image
             src={getAdminProfile(admin?.avatar)}
             className="size-12 rounded-full"
-            alt={`Avatar of ${USER.name}`}
+            alt={`Avatar of ${admin.name}`}
             role="presentation"
             width={200}
             height={200}
             loading="lazy"
           />
           <figcaption className="flex items-center gap-1 font-medium text-dark dark:text-dark-6 max-[1024px]:sr-only">
-            <span>{USER.name}</span>
+            <span>{admin.name}</span>
 
             <ChevronUpIcon
               aria-hidden
@@ -87,12 +87,12 @@ export function UserInfo() {
             loading="lazy"
           />
 
-          <figcaption className="space-y-1 text-base font-medium">
+          <figcaption className="space-y-1 text-base font-medium overflow-hidden">
             <div className="mb-2 leading-none text-dark dark:text-gray-300">
-              {USER.name}
+              {admin.name}
             </div>
 
-            <div className="leading-none text-gray-6">{USER.email}</div>
+            <div className="leading-none line-clamp-1 text-gray-6">{admin.email}</div>
           </figcaption>
         </figure>
 

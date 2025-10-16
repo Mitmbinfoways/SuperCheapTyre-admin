@@ -178,7 +178,7 @@ const Page = () => {
   return (
     <div className="flex px-4 py-8">
       {isLoading ? (
-        <div className="flex h-96 w-full items-center justify-center rounded bg-white dark:bg-gray-800">
+        <div className="flex rounded-2xl h-96 w-full items-center justify-center bg-white dark:bg-gray-800">
           <div className="text-lg text-gray-800 dark:text-gray-100">
             Loading...
           </div>
@@ -326,7 +326,7 @@ const Page = () => {
             </div>
           ) : (
             profile && (
-              <div className="flex flex-col gap-6 rounded-xl p-6 shadow">
+              <div className="flex flex-col gap-6 rounded-xl p-6">
                 {profile.avatar && (
                   <Image
                     src={getAdminProfile(profile.avatar)}
