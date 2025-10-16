@@ -23,7 +23,9 @@ export function Sidebar() {
   }, []);
 
   const toggleExpanded = (title: string) => {
-    setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
+    setExpandedItems((prev) =>
+      prev.includes(title) ? prev.filter((item) => item !== title) : [title],
+    );
   };
 
   useEffect(() => {
@@ -31,20 +33,24 @@ export function Sidebar() {
       return section.items.some((item) => {
         return (item.items as NavSubItem[]).some((subItem) => {
           if (subItem?.url === pathname) {
-            if (!expandedItems.includes(item.title)) {
-              toggleExpanded(item.title);
-            }
+            setExpandedItems((prev) => {
+              // Only add if not already in the list
+              if (!prev.includes(item.title)) {
+                return [item.title];
+              }
+              return prev;
+            });
             return true;
           }
         });
       });
     });
-  }, [pathname, expandedItems]);
+  }, [pathname]);
 
   if (!mounted) {
     return (
       <aside
-        className="max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark sticky top-0 h-screen w-full"
+        className="sticky top-0 h-screen w-full max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark"
         aria-label="Main navigation"
       >
         <div className="flex h-full flex-col py-10 pl-5 pr-2">
@@ -85,7 +91,7 @@ export function Sidebar() {
         aria-hidden={!isOpen}
         inert={!isOpen}
       >
-        <div className="flex h-full flex-col pt-4 pb-10 pl-6 pr-2">
+        <div className="flex h-full flex-col pb-10 pl-6 pr-2 pt-4">
           <div className="relative pr-8">
             <Link
               href={"/"}

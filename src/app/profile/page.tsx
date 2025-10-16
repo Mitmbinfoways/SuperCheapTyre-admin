@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Image from "next/image";
 import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
-import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
 import { Toast } from "@/components/ui/Toast";
+import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
 import { getAdminProfile } from "@/lib/utils";
-import Image from "next/image";
+import { RootState } from "@/Store/Store";
+import { updateAdmin } from "@/Store/Slice/authSlice";
 
 const Page = () => {
+  const dispatch = useDispatch();
+  const { admin } = useSelector((state: RootState) => state.auth);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -40,59 +46,52 @@ const Page = () => {
   });
   const [profile, setProfile] = useState<Admin | null>(null);
 
-  const showToast = (
-    message: string,
-    type: "success" | "error" = "success",
-  ) => {
+  const showToast = (message: string, type: "success" | "error" = "success") =>
     Toast({ message, type });
-  };
-
-  const storedAdmin =
-    typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
-  const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
 
   const fetchProfile = useCallback(async () => {
-    if (!parsedAdmin?._id) return;
+    if (!admin?._id) return;
     setIsLoading(true);
     try {
-      const response = await GetAdminById(parsedAdmin._id);
+      const response = await GetAdminById(admin._id);
       if (response.statusCode === 200) {
-        setProfile(response.data);
+        const data = response.data;
+        setProfile(data);
         setFormData({
-          name: response.data.name,
-          email: response.data.email,
-          phone: response.data.phone || "",
-          avatar: response.data.avatar || "",
+          name: data.name,
+          email: data.email,
+          phone: data.phone || "",
+          avatar: data.avatar || "",
         });
-      } else {
-        showToast("Failed to fetch profile", "error");
-      }
+        dispatch(updateAdmin(data));
+      } else showToast("Failed to fetch profile", "error");
     } catch (error) {
       console.error(error);
       showToast("Failed to fetch profile", "error");
     } finally {
       setIsLoading(false);
     }
-  }, [parsedAdmin?._id]);
+  }, [admin?._id, dispatch]);
 
   useEffect(() => {
-    if (parsedAdmin?._id) fetchProfile();
-  }, [fetchProfile, parsedAdmin?._id]);
+    if (admin?._id) fetchProfile();
+  }, [fetchProfile, admin?._id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setFormErrors({ ...formErrors, [e.target.name]: "" }); // clear error on change
+    setFormErrors({ ...formErrors, [e.target.name]: "" });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-      setPreview(URL.createObjectURL(e.target.files[0]));
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
   const handleUpdate = async () => {
-    if (!parsedAdmin?._id) return;
+    if (!admin?._id) return;
 
     const errors: any = {};
     if (!formData.name) errors.name = "Name is required";
@@ -100,13 +99,13 @@ const Page = () => {
     if (!formData.phone) errors.phone = "Phone is required";
     setFormErrors(errors);
 
-    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(errors).length) return;
 
     setIsLoading(true);
     try {
       const response = await UpdateProfile(
         {
-          id: parsedAdmin._id,
+          id: admin._id,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -115,22 +114,15 @@ const Page = () => {
       );
 
       if (response.statusCode === 200) {
-        const updatedAdmin = response.data;
-        setProfile(updatedAdmin);
+        const updated = response.data;
+        setProfile(updated);
+        dispatch(updateAdmin(updated));
         showToast("Profile updated successfully", "success");
-        setFormData({
-          name: updatedAdmin.name,
-          email: updatedAdmin.email,
-          phone: updatedAdmin.phone || "",
-          avatar: updatedAdmin.avatar || "",
-        });
-        localStorage.setItem("adminUser", JSON.stringify(updatedAdmin));
+
         setIsEditing(false);
         setSelectedFile(null);
         setPreview(null);
-      } else {
-        showToast("Failed to update profile", "error");
-      }
+      } else showToast("Failed to update profile", "error");
     } catch (error) {
       console.error(error);
       showToast("Failed to update profile", "error");
@@ -151,12 +143,12 @@ const Page = () => {
     if (!passwordData.newPassword)
       errors.newPassword = "New password is required";
     setPasswordErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(errors).length) return;
 
     setIsLoading(true);
     try {
       const response = await UpdateProfile({
-        id: parsedAdmin?._id,
+        id: admin?._id,
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
       });
@@ -167,8 +159,8 @@ const Page = () => {
         setIsChangingPassword(false);
       } else {
         setPasswordErrors({
-          ...errors,
           oldPassword: "Failed to change password",
+          newPassword: "",
         });
       }
     } catch (error: any) {
@@ -186,14 +178,16 @@ const Page = () => {
   return (
     <div className="flex px-4 py-8">
       {isLoading ? (
-        <div className="flex h-96 w-full items-center justify-center rounded bg-white">
-          <div className="text-lg">Loading...</div>
+        <div className="flex h-96 w-full items-center justify-center rounded bg-white dark:bg-gray-800">
+          <div className="text-lg text-gray-800 dark:text-gray-100">
+            Loading...
+          </div>
         </div>
       ) : (
         <div className="w-full max-w-lg">
           {isEditing ? (
-            <div>
-              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-300">
+            <div className="rounded-xl p-6 shadow">
+              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
                 Update Profile
               </h2>
               <div className="space-y-4">
@@ -246,10 +240,10 @@ const Page = () => {
                   />
                   {(preview || formData.avatar) && (
                     <Image
-                      src={preview || `${getAdminProfile(formData.avatar)}`}
+                      src={preview || getAdminProfile(formData.avatar)}
                       alt="avatar"
-                      width={48}
-                      height={48}
+                      width={96}
+                      height={96}
                       className="mt-3 h-24 w-24 rounded-full object-cover"
                     />
                   )}
@@ -276,8 +270,8 @@ const Page = () => {
               </div>
             </div>
           ) : isChangingPassword ? (
-            <div>
-              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-300">
+            <div className="rounded-xl p-6 shadow">
+              <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
                 Change Password
               </h2>
               <div className="space-y-4">
@@ -332,21 +326,21 @@ const Page = () => {
             </div>
           ) : (
             profile && (
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-6 rounded-xl p-6 shadow">
                 {profile.avatar && (
                   <Image
-                    src={`${getAdminProfile(profile.avatar)}`}
+                    src={getAdminProfile(profile.avatar)}
                     alt="avatar"
-                    width={48}
-                    height={48}
+                    width={96}
+                    height={96}
                     className="h-24 w-24 rounded-full object-cover"
                   />
                 )}
                 <div className="w-full space-y-3">
-                  <h1 className="break-words text-3xl font-bold">
+                  <h1 className="break-words text-3xl font-bold text-gray-800 dark:text-gray-100">
                     {profile.name}
                   </h1>
-                  <div className="mt-4 space-y-1 break-words text-base text-gray-700">
+                  <div className="mt-4 space-y-1 break-words text-base text-gray-700 dark:text-gray-300">
                     <p>
                       <span className="font-semibold">Email:</span>{" "}
                       {profile.email}

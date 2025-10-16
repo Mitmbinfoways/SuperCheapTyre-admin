@@ -7,14 +7,20 @@ import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { Toast } from "@/components/ui/Toast";
 import { createMeasurement } from "@/services/MeasurementService";
+import { useRouter } from "next/navigation";
 
 const MeasurementsPage = () => {
+  const router = useRouter();
+
   const [category, setCategory] = useState<string>("");
   const [measurementType, setMeasurementType] = useState<string>("");
   const [measurementValue, setMeasurementValue] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Measurement types based on category
+  const handleCancel = () => {
+    router.push("/measurements/show");
+  };
+
   const tyreMeasurements = [
     { value: "width", label: "Width" },
     { value: "diameter", label: "Diameter" },
@@ -40,7 +46,7 @@ const MeasurementsPage = () => {
 
   const getValuePlaceholder = () => {
     if (!measurementType) return "Enter value";
-    
+
     const typeLabels: Record<string, string> = {
       width: "Enter width value",
       diameter: "Enter diameter value",
@@ -53,7 +59,7 @@ const MeasurementsPage = () => {
       fitments: "Enter fitments value",
       staggeredOptions: "Enter staggered options value",
     };
-    
+
     return typeLabels[measurementType] || "Enter value";
   };
 
@@ -71,28 +77,27 @@ const MeasurementsPage = () => {
 
     try {
       setIsSubmitting(true);
-      
-      // Create measurement through API
+
       const payload = {
         category: category as "tyre" | "wheel",
         type: measurementType,
         value: measurementValue.trim(),
       };
-      
+
       await createMeasurement(payload);
-      
+
       Toast({
         message: "Measurement added successfully!",
         type: "success",
       });
-      
-      // Reset form
+
       setCategory("");
       setMeasurementType("");
       setMeasurementValue("");
     } catch (error: any) {
       Toast({
-        message: error?.response?.data?.errorData || "Failed to add measurement",
+        message:
+          error?.response?.data?.errorData || "Failed to add measurement",
         type: "error",
       });
     } finally {
@@ -122,8 +127,8 @@ const MeasurementsPage = () => {
               value={category}
               onChange={(value) => {
                 setCategory(value);
-                setMeasurementType(""); // Reset measurement type when category changes
-                setMeasurementValue(""); // Reset measurement value when category changes
+                setMeasurementType("");
+                setMeasurementValue("");
               }}
               options={[
                 { label: "Tyre", value: "tyre" },
@@ -138,7 +143,7 @@ const MeasurementsPage = () => {
               value={measurementType}
               onChange={(value) => {
                 setMeasurementType(value);
-                setMeasurementValue(""); // Reset measurement value when type changes
+                setMeasurementValue(""); 
               }}
               options={getMeasurementOptions()}
               placeholder="Select measurement type"
@@ -148,7 +153,10 @@ const MeasurementsPage = () => {
 
           {measurementType && (
             <div>
-              <FormLabel label={`${measurementType.charAt(0).toUpperCase() + measurementType.slice(1)} Value`} required />
+              <FormLabel
+                label={`${measurementType.charAt(0).toUpperCase() + measurementType.slice(1)} Value`}
+                required
+              />
               <TextField
                 name="measurementValue"
                 value={measurementValue}
@@ -158,7 +166,15 @@ const MeasurementsPage = () => {
             </div>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
             <Button variant="primary" disabled={isSubmitting} type="submit">
               {isSubmitting ? "Adding..." : "Add Measurement"}
             </Button>

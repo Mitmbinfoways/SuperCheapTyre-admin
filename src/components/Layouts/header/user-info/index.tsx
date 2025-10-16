@@ -12,10 +12,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { LogOutIcon, UserIcon } from "./icons";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/Store/Store";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+
+  const { admin } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
     try {
@@ -31,12 +35,6 @@ export function UserInfo() {
     }
   };
 
-  const storedAdmin =
-    typeof window !== "undefined" ? localStorage.getItem("adminUser") : null;
-  const parsedAdmin = storedAdmin ? JSON.parse(storedAdmin) : null;
-
-  console.log(parsedAdmin)
-
   const USER = {
     name: "John Smith",
     email: "johnson@nextadmin.com",
@@ -50,7 +48,7 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-3">
           <Image
-            src={getAdminProfile(parsedAdmin?.avatar)}
+            src={getAdminProfile(admin?.avatar)}
             className="size-12 rounded-full"
             alt={`Avatar of ${USER.name}`}
             role="presentation"
@@ -81,9 +79,9 @@ export function UserInfo() {
 
         <figure className="flex items-center gap-2.5 px-5 py-3.5">
           <Image
-            src={getAdminProfile(parsedAdmin?.avatar) || "/profile.png"}
+            src={getAdminProfile(admin?.avatar) || "/profile.png"}
             className="h-12 w-12 rounded-full object-cover"
-            alt={`Avatar of ${parsedAdmin?.name || USER.name}`}
+            alt={`Avatar of ${admin?.name || USER.name}`}
             width={48}
             height={48}
             loading="lazy"

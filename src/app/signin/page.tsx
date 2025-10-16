@@ -10,6 +10,8 @@ import { signIn } from "@/services/SignInService";
 import { Toast } from "@/components/ui/Toast";
 import logo from "../../../public/logo_dark.svg";
 import Darklogo from "../../../public/logo_light.svg";
+import { setCredentials } from "@/Store/Slice/authSlice";
+import { useDispatch } from "react-redux";
 
 interface FieldErrors {
   email?: string;
@@ -23,6 +25,7 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const existingToken =
@@ -79,8 +82,9 @@ export default function LoginPage() {
       const token = response?.data?.token;
       const admin = response?.data?.admin;
 
-      if (token) sessionStorage.setItem("authToken", token);
-      if (admin) localStorage.setItem("adminUser", JSON.stringify(admin));
+      if (token && admin) {
+        dispatch(setCredentials({ admin, token }));
+      }
 
       Toast({
         message: response?.message || "Login successful",
@@ -89,7 +93,6 @@ export default function LoginPage() {
 
       router.replace("/");
     } catch (error: any) {
-      console.log(error.response?.data?.errorData);
       const apiMessage = error.response?.data?.errorData || "Failed to sign in";
       setErrorMessage(apiMessage);
     } finally {

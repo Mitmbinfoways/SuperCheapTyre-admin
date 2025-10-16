@@ -12,56 +12,17 @@ export const NAV_DATA = [
       },
       {
         title: "Products",
-        url: "/products",
         icon: Icons.ShoppingCartIcon,
-        items: [],
-      },
-      {
-        title: "Create Product",
-        url: "/create-product",
-        icon: Icons.PlusCircleIcon,
-        items: [],
-      },
-      {
-        title: "Measurements",
-        url: "/measurements",
-        icon: Icons.PackageIcon,
         items: [
           {
-            title: "Add Measurement",
-            url: "/measurements",
-            icon: Icons.PlusCircleIcon,
+            title: "Products",
+            url: "/products",
           },
           {
-            title: "Show Measurements",
-            url: "/measurements/show",
-            icon: Icons.EyeIcon,
+            title: "Create Product",
+            url: "/create-product",
           },
         ],
-      },
-      {
-        title: "Brands",
-        url: "/brands",
-        icon: Icons.PackageIcon,
-        items: [],
-      },
-      {
-        title: "Create Brand",
-        url: "/create-brand",
-        icon: Icons.PlusCircleIcon,
-        items: [],
-      },
-      {
-        title: "Blog",
-        url: "/blog",
-        icon: Icons.Alphabet,
-        items: [],
-      },
-      {
-        title: "Create Blog",
-        url: "/create-blog",
-        icon: Icons.PlusCircleIcon,
-        items: [],
       },
       {
         title: "Appointment",
@@ -75,6 +36,37 @@ export const NAV_DATA = [
         icon: Icons.OrdersIcon,
         items: [],
       },
+
+      {
+        title: "Brands",
+        url: "/brands",
+        icon: Icons.PackageIcon,
+        items: [
+          {
+            title: "Brands",
+            url: "/brands",
+          },
+          {
+            title: "Create Brand",
+            url: "/create-brand",
+          },
+        ],
+      },
+      {
+        title: "Blog",
+        url: "/blog",
+        icon: Icons.Alphabet,
+        items: [
+          {
+            title: "Blog",
+            url: "/blog",
+          },
+          {
+            title: "Create Blog",
+            url: "/create-blog",
+          },
+        ],
+      },
       {
         title: "Add Holidays",
         url: "/add-holidays",
@@ -86,6 +78,21 @@ export const NAV_DATA = [
         url: "/add-employee",
         icon: Icons.UserPlusIcon,
         items: [],
+      },
+      {
+        title: "Measurements",
+        url: "/measurements",
+        icon: Icons.PackageIcon,
+        items: [
+          {
+            title: "Measurements",
+            url: "/measurements/show",
+          },
+          {
+            title: "Add Measurement",
+            url: "/measurements",
+          },
+        ],
       },
       {
         title: "Manage TimeSlot",

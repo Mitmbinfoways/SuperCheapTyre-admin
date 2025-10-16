@@ -20,8 +20,6 @@ const OrdersPage = () => {
   const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
-  console.log(orders)
-
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
   });
