@@ -10,16 +10,11 @@ import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Link from "next/link";
 import { FiTrash2 } from "react-icons/fi";
-// Import the new MasterFilter service
 import { getAllMasterFilters, deleteMasterFilterOption } from "@/services/MasterFilterService";
-// Import CommonDialog for delete confirmation
 import CommonDialog from "@/components/ui/Dialogbox";
-// Import Pagination component
 import Pagination from "@/components/ui/Pagination";
-// Import useDebounce hook
 import useDebounce from "@/hooks/useDebounce";
 
-// Define TypeScript interfaces for our data structure
 interface MeasurementItem {
   id: string;
   category: string;
@@ -34,11 +29,9 @@ const ShowMeasurementsPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [masterFilterId, setMasterFilterId] = useState<string>("");
-  // State for delete confirmation dialog
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteMeasurementId, setDeleteMeasurementId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
@@ -63,10 +56,8 @@ const ShowMeasurementsPage = () => {
         const masterFilter = items[0];
         setMasterFilterId(masterFilter._id);
         
-        // Transform the API data into our measurement format
         const transformedMeasurements: MeasurementItem[] = [];
         
-        // Process tyre measurements
         Object.entries(masterFilter.tyres).forEach(([key, values]) => {
           if (Array.isArray(values) && key !== "_id") {
             values.forEach((item: any) => {
@@ -211,6 +202,7 @@ const ShowMeasurementsPage = () => {
       .replace(/^./, (str) => str.toUpperCase());
   };
 
+  
   const columns: Column<MeasurementItem>[] = [
     {
       title: "Sr.No",
