@@ -6,8 +6,9 @@ import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { Toast } from "@/components/ui/Toast";
-import { createMeasurement } from "@/services/MeasurementService";
 import { useRouter } from "next/navigation";
+// Import the updateMasterFilter function from MasterFilterService
+import { updateMasterFilter } from "@/services/MasterFilterService";
 
 const MeasurementsPage = () => {
   const router = useRouter();
@@ -78,13 +79,21 @@ const MeasurementsPage = () => {
     try {
       setIsSubmitting(true);
 
-      const payload = {
-        category: category as "tyre" | "wheel",
-        type: measurementType,
-        value: measurementValue.trim(),
-      };
+      // Prepare the update payload
+      const updatePayload: any = {};
+      
+      if (category === "tyre") {
+        updatePayload.tyres = {
+          [measurementType]: [{ name: measurementValue.trim() }]
+        };
+      } else {
+        updatePayload.wheels = {
+          [measurementType]: [{ name: measurementValue.trim() }]
+        };
+      }
 
-      await createMeasurement(payload);
+      // Use the static ID for the update operation
+      await updateMasterFilter("68ff3a4c7103d681ad65162a", updatePayload);
 
       Toast({
         message: "Measurement added successfully!",
@@ -97,7 +106,7 @@ const MeasurementsPage = () => {
     } catch (error: any) {
       Toast({
         message:
-          error?.response?.data?.errorData || "Failed to add measurement",
+          error?.response?.data?.message || "Failed to add measurement",
         type: "error",
       });
     } finally {

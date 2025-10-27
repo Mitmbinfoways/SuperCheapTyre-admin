@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Table, { Column } from "@/components/ui/table";
 import Button from "@/components/ui/Button";
 import TextField from "@/components/ui/TextField";
@@ -8,44 +8,113 @@ import Select from "@/components/ui/Select";
 import { Toast } from "@/components/ui/Toast";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
-import {
-  getAllMeasurements,
-  deleteMeasurement,
-  Measurement,
-} from "@/services/MeasurementService";
 import Link from "next/link";
 import { FiTrash2 } from "react-icons/fi";
+// Import the new MasterFilter service
+import { getAllMasterFilters, deleteMasterFilterOption } from "@/services/MasterFilterService";
+// Import CommonDialog for delete confirmation
+import CommonDialog from "@/components/ui/Dialogbox";
+// Import Pagination component
+import Pagination from "@/components/ui/Pagination";
+// Import useDebounce hook
+import useDebounce from "@/hooks/useDebounce";
+
+// Define TypeScript interfaces for our data structure
+interface MeasurementItem {
+  id: string;
+  category: string;
+  type: string;
+  value: string;
+}
 
 const ShowMeasurementsPage = () => {
-  const [measurements, setMeasurements] = useState<Measurement[]>([]);
-  const [filteredMeasurements, setFilteredMeasurements] = useState<
-    Measurement[]
-  >([]);
+  const [measurements, setMeasurements] = useState<MeasurementItem[]>([]);
+  const [filteredMeasurements, setFilteredMeasurements] = useState<MeasurementItem[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [masterFilterId, setMasterFilterId] = useState<string>("");
+  // State for delete confirmation dialog
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteMeasurementId, setDeleteMeasurementId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const itemsPerPage = 10;
+
+  const debounceSearch = useDebounce<string>(search, 300);
+
+  const loadMeasurements = useCallback(async () => {
+    setLoading(true);
+    try {
+      const filter = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debounceSearch,
+      };
+      
+      const response = await getAllMasterFilters(filter);
+      const { items, pagination } = response.data;
+      
+      setTotalPages(pagination.totalPages);
+      
+      if (items && items.length > 0) {
+        const masterFilter = items[0];
+        setMasterFilterId(masterFilter._id);
+        
+        // Transform the API data into our measurement format
+        const transformedMeasurements: MeasurementItem[] = [];
+        
+        // Process tyre measurements
+        Object.entries(masterFilter.tyres).forEach(([key, values]) => {
+          if (Array.isArray(values) && key !== "_id") {
+            values.forEach((item: any) => {
+              transformedMeasurements.push({
+                id: item._id,
+                category: "tyre",
+                type: key,
+                value: item.name
+              });
+            });
+          }
+        });
+        
+        // Process wheel measurements
+        Object.entries(masterFilter.wheels).forEach(([key, values]) => {
+          if (Array.isArray(values) && key !== "_id") {
+            values.forEach((item: any) => {
+              transformedMeasurements.push({
+                id: item._id,
+                category: "wheel",
+                type: key,
+                value: item.name
+              });
+            });
+          }
+        });
+        
+        setMeasurements(transformedMeasurements);
+        setFilteredMeasurements(transformedMeasurements);
+      } else {
+        setMeasurements([]);
+        setFilteredMeasurements([]);
+        setMasterFilterId("");
+      }
+    } catch (error: any) {
+      Toast({
+        message:
+          error?.response?.data?.message || "Failed to load measurements",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, itemsPerPage, debounceSearch]);
 
   useEffect(() => {
-    // Fetch measurements from API
-    const fetchMeasurements = async () => {
-      setLoading(true);
-      try {
-        const response = await getAllMeasurements();
-        setMeasurements(response.data.items);
-        setFilteredMeasurements(response.data.items);
-      } catch (error: any) {
-        Toast({
-          message:
-            error?.response?.data?.errorData || "Failed to load measurements",
-          type: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMeasurements();
-  }, []);
+    loadMeasurements();
+  }, [loadMeasurements]);
 
   useEffect(() => {
     // Filter measurements based on search and category
@@ -67,23 +136,71 @@ const ShowMeasurementsPage = () => {
     setFilteredMeasurements(result);
   }, [search, categoryFilter, measurements]);
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteMeasurement(id);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-      setMeasurements((prev) => prev.filter((m) => m.id !== id));
-      setFilteredMeasurements((prev) => prev.filter((m) => m.id !== id));
+  // Open delete confirmation dialog
+  const handleDeleteClick = (id: string) => {
+    setDeleteMeasurementId(id);
+    setShowDeleteDialog(true);
+  };
+
+  // Close delete confirmation dialog
+  const handleCloseDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setDeleteMeasurementId(null);
+  };
+
+  // Confirm and execute delete
+  const confirmDelete = async () => {
+    if (!deleteMeasurementId || !masterFilterId) {
+      Toast({
+        message: "Failed to delete measurement",
+        type: "error",
+      });
+      return;
+    }
+
+    // Find the measurement to determine category and type
+    const measurement = measurements.find(m => m.id === deleteMeasurementId);
+    if (!measurement) {
+      Toast({
+        message: "Failed to delete measurement",
+        type: "error",
+      });
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      // We need to determine which field this measurement belongs to
+      let field = measurement.type;
+      let category: "tyres" | "wheels" = measurement.category === "tyre" ? "tyres" : "wheels";
+      
+      await deleteMasterFilterOption(masterFilterId, category, field, deleteMeasurementId);
+
+      setMeasurements((prev) => prev.filter((m) => m.id !== deleteMeasurementId));
+      setFilteredMeasurements((prev) => prev.filter((m) => m.id !== deleteMeasurementId));
 
       Toast({
         message: "Measurement deleted successfully!",
         type: "success",
       });
+      
+      // Close the dialog
+      handleCloseDeleteDialog();
+      
+      // Reload measurements after deletion
+      await loadMeasurements();
     } catch (error: any) {
       Toast({
         message:
-          error?.response?.data?.errorData || "Failed to delete measurement",
+          error?.response?.data?.message || "Failed to delete measurement",
         type: "error",
       });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -94,7 +211,7 @@ const ShowMeasurementsPage = () => {
       .replace(/^./, (str) => str.toUpperCase());
   };
 
-  const columns: Column<Measurement>[] = [
+  const columns: Column<MeasurementItem>[] = [
     {
       title: "Sr.No",
       key: "index",
@@ -124,7 +241,7 @@ const ShowMeasurementsPage = () => {
       align: "center",
       render: (item) => (
         <div
-          onClick={() => handleDelete(item.id)}
+          onClick={() => handleDeleteClick(item.id)}
           className="flex justify-center"
         >
           <FiTrash2
@@ -160,7 +277,36 @@ const ShowMeasurementsPage = () => {
             placeholder="Select category"
           />
         </div>
+        <div className="w-full md:w-1/4">
+          <TextField
+            type="text"
+            placeholder="Search measurements..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <CommonDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        title="Confirm Delete"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={handleCloseDeleteDialog} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this measurement?
+        </p>
+      </CommonDialog>
 
       <div>
         {loading ? (
@@ -168,7 +314,16 @@ const ShowMeasurementsPage = () => {
         ) : filteredMeasurements.length === 0 ? (
           <EmptyState message="No measurements found." />
         ) : (
-          <Table columns={columns} data={filteredMeasurements} />
+          <>
+            <Table columns={columns} data={filteredMeasurements} />
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>
