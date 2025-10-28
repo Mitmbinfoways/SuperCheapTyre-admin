@@ -10,7 +10,10 @@ import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Link from "next/link";
 import { FiTrash2 } from "react-icons/fi";
-import { getAllMasterFilters, deleteMasterFilterOption } from "@/services/MasterFilterService";
+import {
+  getAllMasterFilters,
+  deleteMasterFilterOption,
+} from "@/services/MasterFilterService";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import useDebounce from "@/hooks/useDebounce";
@@ -25,8 +28,10 @@ interface MeasurementItem {
 const ShowMeasurementsPage = () => {
   const [measurements, setMeasurements] = useState<MeasurementItem[]>([]);
   const [filteredMeasurements, setFilteredMeasurements] = useState<MeasurementItem[]>([]);
+  const [paginatedMeasurements, setPaginatedMeasurements] = useState<MeasurementItem[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [masterFilterId, setMasterFilterId] = useState<string>("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -37,27 +42,20 @@ const ShowMeasurementsPage = () => {
   const itemsPerPage = 10;
 
   const debounceSearch = useDebounce<string>(search, 300);
+  const [typeOptions, setTypeOptions] = useState<{ label: string; value: string }[]>([]);
 
   const loadMeasurements = useCallback(async () => {
     setLoading(true);
     try {
-      const filter = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debounceSearch,
-      };
-      
-      const response = await getAllMasterFilters(filter);
-      const { items, pagination } = response.data;
-      
-      setTotalPages(pagination.totalPages);
-      
+      const response = await getAllMasterFilters({});
+      const { items } = response.data;
+
       if (items && items.length > 0) {
         const masterFilter = items[0];
         setMasterFilterId(masterFilter._id);
-        
+
         const transformedMeasurements: MeasurementItem[] = [];
-        
+
         Object.entries(masterFilter.tyres).forEach(([key, values]) => {
           if (Array.isArray(values) && key !== "_id") {
             values.forEach((item: any) => {
@@ -65,13 +63,12 @@ const ShowMeasurementsPage = () => {
                 id: item._id,
                 category: "tyre",
                 type: key,
-                value: item.name
+                value: item.name,
               });
             });
           }
         });
-        
-        // Process wheel measurements
+
         Object.entries(masterFilter.wheels).forEach(([key, values]) => {
           if (Array.isArray(values) && key !== "_id") {
             values.forEach((item: any) => {
@@ -79,14 +76,24 @@ const ShowMeasurementsPage = () => {
                 id: item._id,
                 category: "wheel",
                 type: key,
-                value: item.name
+                value: item.name,
               });
             });
           }
         });
-        
+
         setMeasurements(transformedMeasurements);
         setFilteredMeasurements(transformedMeasurements);
+
+        const uniqueTypes = [
+          ...new Set(transformedMeasurements.map((m) => m.type)),
+        ];
+        setTypeOptions(
+          uniqueTypes.map((t) => ({
+            label: formatMeasurementType(t),
+            value: t,
+          }))
+        );
       } else {
         setMeasurements([]);
         setFilteredMeasurements([]);
@@ -94,29 +101,39 @@ const ShowMeasurementsPage = () => {
       }
     } catch (error: any) {
       Toast({
-        message:
-          error?.response?.data?.message || "Failed to load measurements",
+        message: error?.response?.data?.message || "Failed to load measurements",
         type: "error",
       });
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, []);
 
   useEffect(() => {
     loadMeasurements();
   }, [loadMeasurements]);
 
   useEffect(() => {
-    // Filter measurements based on search and category
+    if (!categoryFilter) {
+      const allTypes = [...new Set(measurements.map((m) => m.type))];
+      setTypeOptions(allTypes.map((t) => ({ label: formatMeasurementType(t), value: t })));
+    } else {
+      const filtered = measurements.filter((m) => m.category === categoryFilter);
+      const types = [...new Set(filtered.map((m) => m.type))];
+      setTypeOptions(types.map((t) => ({ label: formatMeasurementType(t), value: t })));
+    }
+    setTypeFilter(""); // Reset type filter when category changes
+  }, [categoryFilter, measurements]);
+
+  useEffect(() => {
     let result = measurements;
 
-    if (search) {
-      const searchLower = search.toLowerCase();
+    if (debounceSearch) {
+      const searchLower = debounceSearch.toLowerCase();
       result = result.filter(
         (m) =>
           m.type.toLowerCase().includes(searchLower) ||
-          m.value.toLowerCase().includes(searchLower),
+          m.value.toLowerCase().includes(searchLower)
       );
     }
 
@@ -124,70 +141,61 @@ const ShowMeasurementsPage = () => {
       result = result.filter((m) => m.category === categoryFilter);
     }
 
+    if (typeFilter) {
+      result = result.filter((m) => m.type === typeFilter);
+    }
+
     setFilteredMeasurements(result);
-  }, [search, categoryFilter, measurements]);
+    setCurrentPage(1);
+  }, [debounceSearch, categoryFilter, typeFilter, measurements]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  useEffect(() => {
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    setPaginatedMeasurements(filteredMeasurements.slice(startIdx, endIdx));
+    setTotalPages(Math.ceil(filteredMeasurements.length / itemsPerPage));
+  }, [filteredMeasurements, currentPage]);
 
-  // Open delete confirmation dialog
+  const handlePageChange = (page: number) => setCurrentPage(page);
+
   const handleDeleteClick = (id: string) => {
     setDeleteMeasurementId(id);
     setShowDeleteDialog(true);
   };
 
-  // Close delete confirmation dialog
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteMeasurementId(null);
   };
 
-  // Confirm and execute delete
   const confirmDelete = async () => {
     if (!deleteMeasurementId || !masterFilterId) {
-      Toast({
-        message: "Failed to delete measurement",
-        type: "error",
-      });
+      Toast({ message: "Failed to delete measurement", type: "error" });
       return;
     }
 
-    // Find the measurement to determine category and type
-    const measurement = measurements.find(m => m.id === deleteMeasurementId);
+    const measurement = measurements.find((m) => m.id === deleteMeasurementId);
     if (!measurement) {
-      Toast({
-        message: "Failed to delete measurement",
-        type: "error",
-      });
+      Toast({ message: "Measurement not found", type: "error" });
       return;
     }
 
     setDeleting(true);
     try {
-      // We need to determine which field this measurement belongs to
-      let field = measurement.type;
-      let category: "tyres" | "wheels" = measurement.category === "tyre" ? "tyres" : "wheels";
-      
+      const field = measurement.type;
+      const category: "tyres" | "wheels" =
+        measurement.category === "tyre" ? "tyres" : "wheels";
+
       await deleteMasterFilterOption(masterFilterId, category, field, deleteMeasurementId);
 
-      setMeasurements((prev) => prev.filter((m) => m.id !== deleteMeasurementId));
-      setFilteredMeasurements((prev) => prev.filter((m) => m.id !== deleteMeasurementId));
+      const updated = measurements.filter((m) => m.id !== deleteMeasurementId);
+      setMeasurements(updated);
 
-      Toast({
-        message: "Measurement deleted successfully!",
-        type: "success",
-      });
-      
-      // Close the dialog
+      Toast({ message: "Measurement deleted successfully!", type: "success" });
       handleCloseDeleteDialog();
-      
-      // Reload measurements after deletion
-      await loadMeasurements();
     } catch (error: any) {
       Toast({
-        message:
-          error?.response?.data?.message || "Failed to delete measurement",
+        message: error?.response?.data?.message || "Failed to delete measurement",
         type: "error",
       });
     } finally {
@@ -195,20 +203,15 @@ const ShowMeasurementsPage = () => {
     }
   };
 
-  const formatMeasurementType = (type: string) => {
-    // Convert camelCase to Title Case
-    return type
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
-  };
+  const formatMeasurementType = (type: string) =>
+    type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
 
-  
   const columns: Column<MeasurementItem>[] = [
     {
       title: "Sr.No",
       key: "index",
       width: "60px",
-      render: (_, i) => ((currentPage - 1) * 10 + i + 1),
+      render: (_, i) => (currentPage - 1) * itemsPerPage + i + 1,
     },
     {
       title: "Category",
@@ -232,10 +235,7 @@ const ShowMeasurementsPage = () => {
       key: "actions",
       align: "center",
       render: (item) => (
-        <div
-          onClick={() => handleDeleteClick(item.id)}
-          className="flex justify-center"
-        >
+        <div onClick={() => handleDeleteClick(item.id)} className="flex justify-center">
           <FiTrash2
             size={16}
             className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
@@ -269,6 +269,16 @@ const ShowMeasurementsPage = () => {
             placeholder="Select category"
           />
         </div>
+
+        <div className="w-full md:w-1/4">
+          <Select
+            value={typeFilter}
+            onChange={(value) => setTypeFilter(value)}
+            options={[{ label: "All Types", value: "" }, ...typeOptions]}
+            placeholder="Select type"
+          />
+        </div>
+
         <div className="w-full md:w-1/4">
           <TextField
             type="text"
@@ -279,14 +289,17 @@ const ShowMeasurementsPage = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
         title="Confirm Delete"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="secondary" onClick={handleCloseDeleteDialog} disabled={deleting}>
+            <Button
+              variant="secondary"
+              onClick={handleCloseDeleteDialog}
+              disabled={deleting}
+            >
               Cancel
             </Button>
             <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
@@ -307,7 +320,7 @@ const ShowMeasurementsPage = () => {
           <EmptyState message="No measurements found." />
         ) : (
           <>
-            <Table columns={columns} data={filteredMeasurements} />
+            <Table columns={columns} data={paginatedMeasurements} />
             <div className="mt-4 flex justify-center">
               <Pagination
                 currentPage={currentPage}

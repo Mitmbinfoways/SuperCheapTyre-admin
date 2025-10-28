@@ -14,7 +14,6 @@ import {
   updateTimeSlot,
   deleteTimeSlot,
   TimeSlot,
-  TimeSlotPayload,
 } from "@/services/TimeSlotService";
 import { MdModeEdit } from "react-icons/md";
 import EmptyState from "@/components/EmptyState";
@@ -456,10 +455,10 @@ const AddTimeSlotPage: React.FC = () => {
                         setEditSlot(slot);
                         setShowEditDialog(true);
                       }}
-                      className="cursor-pointer rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="cursor-pointer rounded p-1 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
                       title="Edit time slot"
                     >
-                      <MdModeEdit size={16} />
+                      <MdModeEdit size={18} />
                     </div>
                   </div>
                 ),
