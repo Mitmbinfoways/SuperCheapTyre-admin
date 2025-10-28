@@ -22,6 +22,7 @@ import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 
+
 interface Technician {
   _id: string;
   firstName: string;
