@@ -36,11 +36,10 @@ export const NAV_DATA = [
         icon: Icons.OrdersIcon,
         items: [],
       },
-
       {
         title: "Brands",
         url: "/brands",
-        icon: Icons.PackageIcon,
+        icon: Icons.StoreIcon,
         items: [
           {
             title: "Brands",
@@ -68,6 +67,20 @@ export const NAV_DATA = [
         ],
       },
       {
+        title: "Banners",
+        icon: Icons.PhotoIcon,
+        items: [
+          {
+            title: "Banners",
+            url: "/banners/list",
+          },
+          {
+            title: "Create Banner",
+            url: "/banners",
+          },
+        ],
+      },
+      {
         title: "Add Holidays",
         url: "/add-holidays",
         icon: Icons.CalendarPlusIcon,
@@ -82,7 +95,7 @@ export const NAV_DATA = [
       {
         title: "Measurements",
         url: "/measurements",
-        icon: Icons.PackageIcon,
+        icon: Icons.RulerIcon,
         items: [
           {
             title: "Measurements",

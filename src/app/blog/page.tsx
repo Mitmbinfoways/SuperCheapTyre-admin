@@ -149,7 +149,7 @@ const BlogListPage: React.FC = () => {
       title: "Sr.No",
       key: "index",
       width: "60px",
-      render: (_, i) => i + 1,
+      render: (_, i) => ((currentPage - 1) * 10 + i + 1),
     },
     {
       title: "Image",

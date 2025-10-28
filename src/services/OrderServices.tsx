@@ -81,9 +81,8 @@ export const getAllOrders = async (
   if (filter.limit !== undefined) params.push(`limit=${filter.limit}`);
   if (filter.search) params.push(`search=${encodeURIComponent(filter.search)}`);
 
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order${
-    params.length ? `?${params.join("&")}` : ""
-  }`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order${params.length ? `?${params.join("&")}` : ""
+    }`;
 
   const response = await getMethod<ApiResponse<OrderRes>>(url);
   return response.data;

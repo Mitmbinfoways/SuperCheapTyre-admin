@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
 import Pagination from "@/components/ui/Pagination";
@@ -8,6 +7,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
+import { FiDownload } from "react-icons/fi";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -111,9 +111,8 @@ const OrdersPage = () => {
       <tr>
         <td colSpan={7} className="p-0">
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isExpanded ? "opacity-100" : "max-h-0 opacity-0"
-            }`}
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "opacity-100" : "max-h-0 opacity-0"
+              }`}
           >
             <div className="bg-gray-50 p-4 dark:bg-gray-800">
               <h3 className="mb-3 text-lg font-semibold">Product Details</h3>
@@ -148,6 +147,15 @@ const OrdersPage = () => {
         </td>
       </tr>
     );
+  };
+
+  const downloadInvoice = (orderId: string) => {
+    const link = document.createElement("a");
+    link.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/order/download/${orderId}`;
+    link.setAttribute("download", `invoice-${orderId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   const columns = [
@@ -198,8 +206,22 @@ const OrdersPage = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (order: Order) => `${order.total.toFixed(2)}`,
-    },
+      render: (order: Order) => (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            downloadInvoice(order._id);
+          }}
+          className="flex items-center justify-center space-x-2 cursor-pointer"
+        >
+          <FiDownload
+            size={18}
+            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            title="Download"
+          />
+        </div>
+      ),
+    }
   ];
 
   const handlePageChange = (page: number) => {
@@ -221,7 +243,7 @@ const OrdersPage = () => {
           <EmptyState message="No orders found." />
         ) : (
           <>
-            <div className="overflow-hidden rounded-lg bg-white shadow">
+            <div className="overflow-hidden rounded-tl-xl rounded-tr-xl bg-white shadow">
               <div className="overflow-hidden">
                 <table className="w-full table-auto">
                   <thead className="bg-lightblue dark:bg-gray-800">
@@ -241,11 +263,10 @@ const OrdersPage = () => {
                     {orders.map((order, index) => (
                       <React.Fragment key={order._id}>
                         <tr
-                          className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${
-                            expandedOrderId === order._id
-                              ? "bg-gray-50 dark:bg-gray-800"
-                              : ""
-                          }`}
+                          className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
+                            ? "bg-gray-50 dark:bg-gray-800"
+                            : ""
+                            }`}
                           onClick={() => toggleExpandedOrder(order._id)}
                         >
                           {columns.map((col) => (

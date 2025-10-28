@@ -6,6 +6,7 @@ export interface Brand {
   _id: string;
   name: string;
   image: string;
+  category: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -13,12 +14,14 @@ export interface Brand {
 
 export interface BrandPayload {
   name: string;
+  category: string;
   isActive: boolean;
   image?: File;
 }
 
 export interface UpdateBrandPayload {
   name?: string;
+  category?: string;
   isActive?: boolean;
   image?: File;
 }

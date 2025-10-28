@@ -14,21 +14,10 @@ import {
 } from "@/services/CreateProductService";
 import { getAllBrands } from "@/services/BrandService";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  diameter,
-  loadrating,
-  pattern,
-  profiles,
-  speedrating,
-  staggeredOptions,
-  wheelDiameters,
-  wheelFitments,
-  wheelSizes,
-  width,
-} from "./constant";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import ToggleSwitch from "@/components/ui/Toggle";
+import { getAllMasterFilters, MasterFilter } from "@/services/MasterFilterService";
 
 const Page = () => {
   const router = useRouter();
@@ -36,7 +25,7 @@ const Page = () => {
   const editId = searchParams.get("id");
   const [category, setCategory] = useState<string>("tyre");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [existingFilenames, setExistingFilenames] = useState<string[]>([]);
+  // const [existingFilenames, setExistingFilenames] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [brands, setBrands] = useState<{ label: string; value: string }[]>([]);
@@ -67,15 +56,17 @@ const Page = () => {
   });
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
+  const [filterOptions, setFilterOptions] = useState<any>(null);
+
 
   // Fetch brands when component mounts
   useEffect(() => {
     const fetchBrands = async () => {
       setLoadingBrands(true);
       try {
-        const res = await getAllBrands({ limit: 100 });
+        const res = await getAllBrands();
         const brandOptions = res.data.items
-          .filter((brand) => brand.isActive) // Only show active brands
+          .filter((brand) => brand.isActive)
           .map((brand) => ({
             label: brand.name,
             value: brand.name,
@@ -171,7 +162,7 @@ const Page = () => {
           wheelSpecifications:
             product.wheelSpecifications || prev.wheelSpecifications,
         }));
-        setExistingFilenames(product.images || []);
+        // setExistingFilenames(product.images || []);
       } catch (error: any) {
         console.log(error);
       }
@@ -325,7 +316,7 @@ const Page = () => {
     } catch (error: any) {
       setApiError(
         error?.response?.data?.errorData ||
-          "Something went wrong Please try again",
+        "Something went wrong Please try again",
       );
       console.error(error);
     } finally {
@@ -353,6 +344,83 @@ const Page = () => {
       setFormData((prev: any) => ({ ...prev, [field]: value }));
     }
   };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const res = await getAllMasterFilters();
+      if (res?.data?.items?.length > 0) {
+        setFilterOptions(res.data.items[0]);
+      }
+    } catch (error) {
+      console.error("Failed to load filters:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
+
+  const tyreOptions = {
+    pattern:
+      filterOptions?.tyres?.pattern?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    width:
+      filterOptions?.tyres?.width?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    profile:
+      filterOptions?.tyres?.profile?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    diameter:
+      filterOptions?.tyres?.diameter?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    loadRating:
+      filterOptions?.tyres?.loadRating?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    speedRating:
+      filterOptions?.tyres?.speedRating?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+  };
+
+  const wheelOptions = {
+    size:
+      filterOptions?.wheels?.size?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    color:
+      filterOptions?.wheels?.color?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    diameter:
+      filterOptions?.wheels?.diameter?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    fitments:
+      filterOptions?.wheels?.fitments?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+    staggeredOptions:
+      filterOptions?.wheels?.staggeredOptions?.map((i: any) => ({
+        label: i.name,
+        value: i.name,
+      })) || [],
+  };
+
 
   return (
     <div className="min-h-screen">
@@ -508,9 +576,10 @@ const Page = () => {
                   value={formData.tyreSpecifications.pattern}
                   onChange={(value) => handleSelect("tyre.pattern", value)}
                   error={errors["tyre.pattern"]}
-                  options={pattern}
+                  options={tyreOptions.pattern}
                   placeholder="Select pattern"
                 />
+
 
                 <Select
                   label="Width"
@@ -518,7 +587,7 @@ const Page = () => {
                   value={formData.tyreSpecifications.width}
                   onChange={(value) => handleSelect("tyre.width", value)}
                   error={errors["tyre.width"]}
-                  options={width}
+                  options={tyreOptions.width}
                   placeholder="Select width"
                 />
 
@@ -529,7 +598,7 @@ const Page = () => {
                   value={formData.tyreSpecifications.profile}
                   onChange={(value) => handleSelect("tyre.profile", value)}
                   error={errors["tyre.profile"]}
-                  options={profiles}
+                  options={tyreOptions.profile}
                   placeholder="Select profile"
                 />
 
@@ -539,7 +608,7 @@ const Page = () => {
                   value={formData.tyreSpecifications.diameter}
                   onChange={(value) => handleSelect("tyre.diameter", value)}
                   error={errors["tyre.diameter"]}
-                  options={diameter}
+                  options={tyreOptions.diameter}
                   placeholder="Select diameter"
                 />
 
@@ -549,7 +618,7 @@ const Page = () => {
                   value={formData.tyreSpecifications.loadRating}
                   onChange={(value) => handleSelect("tyre.loadRating", value)}
                   error={errors["tyre.loadRating"]}
-                  options={loadrating}
+                  options={tyreOptions.loadRating}
                   placeholder="Select load rating"
                 />
 
@@ -559,7 +628,7 @@ const Page = () => {
                   value={formData.tyreSpecifications.speedRating}
                   onChange={(value) => handleSelect("tyre.speedRating", value)}
                   error={errors["tyre.speedRating"]}
-                  options={speedrating}
+                  options={tyreOptions.speedRating}
                   placeholder="Select speed rating"
                 />
               </div>
@@ -574,35 +643,27 @@ const Page = () => {
                   value={formData.wheelSpecifications.size}
                   onChange={(value) => handleSelect("wheel.size", value)}
                   error={errors["wheel.size"]}
-                  options={wheelSizes}
+                  options={wheelOptions.size}
                   placeholder="Select size"
                 />
 
-                <div>
-                  <FormLabel label="Color" required />
-                  <TextField
-                    name="wheel.color"
-                    value={formData.wheelSpecifications.color}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setFormData((prev: any) => ({
-                        ...prev,
-                        wheelSpecifications: {
-                          ...prev.wheelSpecifications,
-                          color: e.target.value,
-                        },
-                      }))
-                    }
-                    error={errors["wheel.color"]}
-                    placeholder="Enter color"
-                  />
-                </div>
+                <Select
+                  label="Color"
+                  required
+                  name="wheel.color"
+                  value={formData.wheelSpecifications.color}
+                  onChange={(value) => handleSelect("wheel.color", value)}
+                  error={errors["wheel.color"]}
+                  options={wheelOptions.color}
+                  placeholder="Select color"
+                />
                 <Select
                   label="Diameter"
                   required
                   value={formData.wheelSpecifications.diameter}
                   onChange={(value) => handleSelect("wheel.diameter", value)}
                   error={errors["wheel.diameter"]}
-                  options={wheelDiameters}
+                  options={wheelOptions.diameter}
                   placeholder="Select diameter"
                 />
                 <Select
@@ -611,7 +672,7 @@ const Page = () => {
                   value={formData.wheelSpecifications.fitments}
                   onChange={(value) => handleSelect("wheel.fitments", value)}
                   error={errors["wheel.fitments"]}
-                  options={wheelFitments}
+                  options={wheelOptions.fitments}
                   placeholder="Select fitments"
                 />
 
@@ -623,7 +684,7 @@ const Page = () => {
                     handleSelect("wheel.staggeredOptions", value)
                   }
                   error={errors["wheel.staggeredOptions"]}
-                  options={staggeredOptions}
+                  options={wheelOptions.staggeredOptions}
                   placeholder="Select staggered option"
                 />
               </div>

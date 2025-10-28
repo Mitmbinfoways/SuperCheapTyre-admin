@@ -9,41 +9,48 @@ import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
 import {
-  getAllBrands,
-  deleteBrand,
-  updateBrand,
-  Brand,
-} from "@/services/BrandService";
+  deleteBanner,
+  getAllBanners,
+  updateBanner,
+} from "@/services/BannerService";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
-import Badge from "@/components/ui/Badge";
-import { getBrandImageUrl } from "@/lib/utils";
 import Skeleton from "@/components/ui/Skeleton";
+import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 
-type BrandWithId = Brand & { id: string };
-
-type LoadingStates = {
-  fetchingBrands: boolean;
-  deletingBrand: boolean;
+type Banner = {
+  _id: string;
+  laptopImage: string;
+  mobileImage: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
-const BrandListPage: React.FC = () => {
+type BannerWithId = Banner & { id: string };
+
+type LoadingStates = {
+  fetchingBanners: boolean;
+  deletingBanner: boolean;
+};
+
+const BannerListPage: React.FC = () => {
   const router = useRouter();
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteBrandId, setDeleteBrandId] = useState<string | null>(null);
+  const [deleteBannerId, setDeleteBannerId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
-    fetchingBrands: false,
-    deletingBrand: false,
+    fetchingBanners: false,
+    deletingBanner: false,
   });
 
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
@@ -52,89 +59,92 @@ const BrandListPage: React.FC = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
 
-  const loadBrands = useCallback(async () => {
-    updateLoadingState("fetchingBrands", true);
+  const loadBanners = useCallback(async () => {
+    updateLoadingState("fetchingBanners", true);
     try {
-      const filter = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debounceSearch,
-      };
-      const data = await getAllBrands(filter);
-      const { items, pagination } = data.data;
-      setBrands(items as Brand[]);
-      setTotalPages(pagination.totalPages);
+      // The backend returns a simple array of banners
+      const data = await getAllBanners({});
+      setBanners(data.data);
+      // Since we're not paginating, set totalPages to 1
+      setTotalPages(1);
     } catch (e: any) {
       Toast({
         type: "error",
-        message: e?.response?.data?.errorData || "Failed to load brands",
+        message: e?.response?.data?.message || "Failed to load banners",
       });
     } finally {
-      updateLoadingState("fetchingBrands", false);
+      updateLoadingState("fetchingBanners", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, []);
 
   useEffect(() => {
-    loadBrands();
-  }, [loadBrands]);
+    loadBanners();
+  }, [loadBanners]);
 
   // confirm delete
-  const confirmDeleteBrand = async () => {
-    if (!deleteBrandId) return;
-    updateLoadingState("deletingBrand", true);
+  const confirmDeleteBanner = async () => {
+    if (!deleteBannerId) return;
+    updateLoadingState("deletingBanner", true);
     try {
-      await deleteBrand(deleteBrandId);
-      Toast({ type: "success", message: "Brand deleted successfully!" });
+      await deleteBanner(deleteBannerId);
+      Toast({ type: "success", message: "Banner deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadBrands();
+      await loadBanners();
     } catch (e: any) {
       Toast({
         type: "error",
-        message: e?.response?.data?.errorData || "Failed to delete brand",
+        message: e?.response?.data?.message || "Failed to delete banner",
       });
     } finally {
-      updateLoadingState("deletingBrand", false);
+      updateLoadingState("deletingBanner", false);
     }
   };
 
-  const handleEditBrand = (brand: Brand) => {
-    router.push(`/create-brand?id=${brand._id}`);
+  const handleEditBanner = (banner: Banner) => {
+    // For now, we'll redirect to the create page with an ID parameter
+    // In a future enhancement, we could create a dedicated edit page
+    router.push(`/banners?id=${banner._id}`);
   };
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
-    setDeleteBrandId(null);
+    setDeleteBannerId(null);
   };
 
-  const tableData: BrandWithId[] = brands.map((p) => ({ ...p, id: p._id }));
+  const tableData: BannerWithId[] = (banners || []).map((p) => ({ ...p, id: p._id }));
 
-  const handleToggleActive = async (brand: Brand) => {
-    const updatedStatus = !brand.isActive;
+  const handleToggleActive = async (banner: Banner) => {
+    const updatedStatus = !banner.isActive;
 
     try {
-      await updateBrand(brand._id, { isActive: updatedStatus });
-      setBrands((prev) =>
+      await updateBanner(banner._id, { isActive: updatedStatus });
+      setBanners((prev) =>
         prev.map((p) =>
-          p._id === brand._id ? { ...p, isActive: updatedStatus } : p,
+          p._id === banner._id ? { ...p, isActive: updatedStatus } : p,
         ),
       );
 
       Toast({
         type: "success",
-        message: `Brand ${updatedStatus ? "activated" : "deactivated"} successfully!`,
+        message: `Banner ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
       Toast({
         type: "error",
         message:
-          e?.response?.data?.errorData || "Failed to update brand status",
+          e?.response?.data?.message || "Failed to update banner status",
       });
     }
   };
 
-  const columns: Column<BrandWithId>[] = [
+  const getFullImageUrl = (imagePath: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    return `${baseUrl}${imagePath}`;
+  };
+
+  const columns: Column<BannerWithId>[] = [
     {
       title: "Sr.No",
       key: "index",
@@ -142,44 +152,34 @@ const BrandListPage: React.FC = () => {
       render: (_, i) => ((currentPage - 1) * 10 + i + 1),
     },
     {
-      title: "Image",
-      key: "image",
-      width: "80px",
-      render: (item) => {
-        return (
-          <div className="h-12 w-12 sm:h-16 sm:w-16">
-            <Image
-              src={getBrandImageUrl(item.image)}
-              alt={item.name}
-              width={50}
-              height={50}
-              className="h-full w-full rounded object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/placeholder-image.png";
-              }}
-            />
-          </div>
-        );
-      },
-    },
-    {
-      title: "Name",
-      key: "name",
-      width: "150px",
+      title: "Laptop Image",
+      key: "laptopImage",
+      width: "120px",
       render: (item) => (
-        <div className="line-clamp-2" title={item.name}>
-          {item.name}
+        <div className="h-16 w-16">
+          <Image
+            src={getFullImageUrl(item.laptopImage)}
+            alt="Laptop Banner"
+            width={64}
+            height={64}
+            className="h-full w-full rounded object-cover"
+          />
         </div>
       ),
     },
     {
-      title: "Category",
-      key: "category",
-      width: "150px",
+      title: "Mobile Image",
+      key: "mobileImage",
+      width: "80px",
       render: (item) => (
-        <div className="line-clamp-2" title={item.category}>
-          {item.category?.toUpperCase() || ""}
+        <div className="h-16 w-16">
+          <Image
+            src={getFullImageUrl(item.mobileImage)}
+            alt="Mobile Banner"
+            width={64}
+            height={64}
+            className="h-full w-full rounded object-cover"
+          />
         </div>
       ),
     },
@@ -189,10 +189,15 @@ const BrandListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-        <Badge
-          label={item.isActive ? "Active" : "Inactive"}
-          color={item.isActive ? "green" : "red"}
-        />
+        <span
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            item.isActive
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {item.isActive ? "Active" : "Inactive"}
+        </span>
       ),
     },
     {
@@ -205,17 +210,17 @@ const BrandListPage: React.FC = () => {
           <MdModeEdit
             size={16}
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditBrand(item)}
-            title="Edit brand"
+            onClick={() => handleEditBanner(item)}
+            title="Edit banner"
           />
           <FiTrash2
             size={16}
             className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
             onClick={() => {
-              setDeleteBrandId(item._id);
+              setDeleteBannerId(item._id);
               setShowDeleteDialog(true);
             }}
-            title="Delete brand"
+            title="Delete banner"
           />
           <ToggleSwitch
             checked={item.isActive}
@@ -230,10 +235,10 @@ const BrandListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Brands
+          Manage Banners
         </h1>
-        <Button onClick={() => router.push("/create-brand")}>
-          Create New Brand
+        <Button onClick={() => router.push("/banners")}>
+          Create New Banner
         </Button>
       </div>
 
@@ -256,23 +261,22 @@ const BrandListPage: React.FC = () => {
             <Button variant="secondary" onClick={handleCloseDeleteDialog}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDeleteBrand}>
+            <Button variant="danger" onClick={confirmDeleteBanner}>
               Delete
             </Button>
           </div>
         }
       >
         <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to delete this brand?
+          Are you sure you want to delete this banner? This action cannot be undone.
         </p>
       </CommonDialog>
 
-      {/* Table */}
       <div>
-        {loadingStates.fetchingBrands || loadingStates.deletingBrand ? (
+        {loadingStates.fetchingBanners || loadingStates.deletingBanner ? (
           <Skeleton />
-        ) : tableData.length === 0 ? (
-          <EmptyState message="No brands found." />
+        ) : tableData.length === 0 && !loadingStates.fetchingBanners ? (
+          <EmptyState message="No banners found." />
         ) : (
           <>
             <Table columns={columns} data={tableData} />
@@ -290,4 +294,4 @@ const BrandListPage: React.FC = () => {
   );
 };
 
-export default BrandListPage;
+export default BannerListPage;

@@ -13,16 +13,19 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
+import Select from "@/components/ui/Select";
 
 const CreateBrandPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [formData, setFormData] = useState<any>({
     name: "",
+    category: "",
     isActive: true,
     images: [],
   });
@@ -30,11 +33,19 @@ const CreateBrandPage = () => {
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
 
+  const categoryOptions = [
+    { label: "Tyre", value: "tyre" },
+    { label: "Wheel", value: "wheel" },
+  ];
+
   const validateForm = () => {
     const newErrors: any = {};
 
     if (!formData.name?.trim()) {
       newErrors.name = "Brand name is required";
+    }
+    if (!formData.category) {
+      newErrors.category = "Category is required";
     }
 
     setErrors(newErrors);
@@ -50,21 +61,21 @@ const CreateBrandPage = () => {
         const brand = res?.data || res;
         if (!brand) throw new Error("Brand not found");
         const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
-        setFormData((prev: any) => ({
-          ...prev,
+        setFormData({
           name: brand.name || "",
+          category: brand.category || "",
           isActive: brand.isActive,
           images: brand.image
             ? [
-                {
-                  id: "brand-image",
-                  url: `${BASE_URL}/Brand/${brand.image}`,
-                },
-              ]
+              {
+                id: "brand-image",
+                url: `${BASE_URL}/Brand/${brand.image}`,
+              },
+            ]
             : [],
-        }));
+        });
       } catch (error: any) {
-        console.log(error);
+        console.error(error);
         Toast({
           message: "Failed to load brand",
           type: "error",
@@ -82,7 +93,7 @@ const CreateBrandPage = () => {
 
   const handleFilesSelected = (files: File[]) => {
     if (!files || files.length === 0) return;
-    setImageFile(files[0]); 
+    setImageFile(files[0]);
   };
 
   const handleRemoveImage = () => {
@@ -93,14 +104,14 @@ const CreateBrandPage = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-
     if (!validateForm()) return;
 
     try {
       setIsSubmitting(true);
 
       const payload = {
-        name: formData.name as string,
+        name: formData.name.trim(),
+        category: formData.category,
         isActive: formData.isActive,
         image: imageFile || undefined,
       };
@@ -118,8 +129,10 @@ const CreateBrandPage = () => {
           message: res.message || (isEdit ? "Brand updated" : "Brand created"),
           type: "success",
         });
+
         setFormData({
           name: "",
+          category: "",
           isActive: true,
           images: [],
         });
@@ -133,8 +146,8 @@ const CreateBrandPage = () => {
       }
     } catch (error: any) {
       setApiError(
-        error?.response?.data?.errorData ||
-          "Something went wrong. Please try again",
+        error?.response?.data?.message ||
+        "Something went wrong. Please try again."
       );
       console.error(error);
     } finally {
@@ -181,7 +194,6 @@ const CreateBrandPage = () => {
               />
             </div>
 
-            {/* Right Side - Basic Information Form */}
             <div className="flex-1">
               <div className="p-6">
                 <div className="mb-6 flex items-center gap-2">
@@ -200,6 +212,22 @@ const CreateBrandPage = () => {
                       onChange={handleChange}
                       placeholder="Enter brand name"
                       error={errors.name}
+                    />
+                  </div>
+                  <div>
+                    <FormLabel label="Category" required />
+                    <Select
+                      name="category"
+                      options={categoryOptions}
+                      value={formData.category}
+                      onChange={(value) =>
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          category: value,
+                        }))
+                      }
+                      placeholder="Select category"
+                      error={errors.category}
                     />
                   </div>
                 </div>

@@ -20,6 +20,60 @@ export function ChevronUp(props: PropsType) {
   );
 }
 
+export function StoreIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M4 4h16l-1 5H5L4 4zm1 7h14v9H5v-9z" />
+    </svg>
+  );
+}
+
+
+export function RulerIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M2.25 3A.75.75 0 013 2.25h18a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H3A.75.75 0 012.25 6V3zm0 6A.75.75 0 013 8.25h18a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H3A.75.75 0 012.25 12V9zm0 6A.75.75 0 013 14.25h18a.75.75 0 01.75.75v2.25a.75.75 0 01-.75.75H3A.75.75 0 012.25 18V15z"
+      />
+    </svg>
+  );
+}
+
+export function PhotoIcon(props: PropsType) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zm3 0a.75.75 0 01.75-.75h13.5a.75.75 0 01.75.75v9l-3.127-3.127a.75.75 0 00-1.06 0L9 15.127l-2.127-2.127a.75.75 0 00-1.06 0L4.5 15.127V6zM4.5 18h15v-1.5l-3.627-3.627-2.246 2.246a.75.75 0 01-1.06 0L9 12.873l-2.127 2.127H4.5z"
+      />
+    </svg>
+  );
+}
+
 export function CalendarPlusIcon(props: PropsType) {
   return (
     <svg
