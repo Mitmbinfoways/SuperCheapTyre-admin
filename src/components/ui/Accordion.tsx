@@ -22,7 +22,7 @@ export default function Accordion({ items, className = "" }: AccordionProps) {
   };
 
   return (
-    <div className={`overflow-hidden rounded-lg border ${className}`}>
+    <div className={`overflow-hidden rounded-lg border dark:border-0 ${className}`}>
       {items.map((item) => {
         const isOpen = openItem === item.id;
         return (

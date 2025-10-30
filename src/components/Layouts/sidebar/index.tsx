@@ -34,7 +34,6 @@ export function Sidebar() {
         return (item.items as NavSubItem[]).some((subItem) => {
           if (subItem?.url === pathname) {
             setExpandedItems((prev) => {
-              // Only add if not already in the list
               if (!prev.includes(item.title)) {
                 return [item.title];
               }

@@ -169,7 +169,7 @@ const BannerPage = () => {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div>
                 <FormLabel label="Laptop/Desktop Banner" required />
-                <p className="mb-3 text-sm text-gray-500">Recommended: 1200x400 px</p>
+                <p className="mb-3 text-sm text-gray-500">Recommended: 1200x600 px</p>
                 <ImageUploader
                   images={laptopImages}
                   onChange={setLaptopImages}
@@ -177,15 +177,18 @@ const BannerPage = () => {
                   onRemove={handleRemoveLaptopImage}
                   maxFiles={1}
                   multiple={false}
+                  isProduct={false}
                   replaceImages
                 />
               </div>
               <div>
                 <FormLabel label="Mobile Banner" required />
-                <p className="mb-3 text-sm text-gray-500">Recommended: 600x400 px</p>
+                <p className="mb-3 text-sm text-gray-500">Recommended: 420x500 px</p>
                 <ImageUploader
                   images={mobileImages}
                   onChange={setMobileImages}
+                  isMobile={true}
+                  isProduct={false}
                   onFilesSelected={handleMobileFilesSelected}
                   onRemove={handleRemoveMobileImage}
                   maxFiles={1}

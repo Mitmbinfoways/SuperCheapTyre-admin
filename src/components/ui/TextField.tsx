@@ -32,6 +32,15 @@ const TextField: React.FC<TextFieldProps> = ({
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      type === "number" &&
+      ["e", "E", "+", "-", "."].includes(e.key)
+    ) {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="relative">
@@ -45,9 +54,9 @@ const TextField: React.FC<TextFieldProps> = ({
           min={min}
           max={max}
           onWheel={(e) => type === "number" && e.currentTarget.blur()}
-          className={`border ${"border-gray-300"} w-full rounded-lg bg-white px-3 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 ${
-            type === "number" ? "no-spinner" : ""
-          } ${className}`}
+          onKeyDown={handleKeyDown}
+          className={`border border-gray-300 w-full rounded-lg bg-white px-3 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 ${type === "number" ? "no-spinner" : ""
+            } ${className}`}
         />
 
         {isPassword && (

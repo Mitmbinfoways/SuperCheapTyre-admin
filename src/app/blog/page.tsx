@@ -254,7 +254,6 @@ const BlogListPage: React.FC = () => {
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
-            disabled={loadingStates.togglingStatus}
           />
         </div>
       ),

@@ -21,6 +21,7 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import { EyeIcon } from "@/components/Layouts/sidebar/icons";
+import Badge from "@/components/ui/Badge";
 
 type Banner = {
   _id: string;
@@ -189,15 +190,10 @@ const BannerListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            item.isActive
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {item.isActive ? "Active" : "Inactive"}
-        </span>
+       <Badge
+          label={item.isActive ? "Active" : "Inactive"}
+          color={item.isActive ? "green" : "red"}
+        />
       ),
     },
     {

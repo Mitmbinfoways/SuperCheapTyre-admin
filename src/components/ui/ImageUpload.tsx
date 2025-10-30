@@ -22,6 +22,8 @@ interface ImageUploaderProps {
   onFilesSelected?: (files: File[]) => void;
   onRemove?: (index: number) => void;
   replaceImages?: boolean;
+  isMobile?: boolean;
+  isProduct?: boolean;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -34,6 +36,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   onFilesSelected,
   onRemove,
   replaceImages = false,
+  isMobile = false,
+  isProduct = true
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -61,7 +65,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const finalImages = replaceImages ? newImages : [...images, ...newImages];
     onChange(finalImages.slice(0, maxFiles));
 
-    // For onFilesSelected, we need to calculate remaining slots based on the approach
     const remainingSlots = Math.max(0, maxFiles - (replaceImages ? 0 : images.length));
     if (onFilesSelected && validFileObjects.length) {
       onFilesSelected(validFileObjects.slice(0, remainingSlots));
@@ -90,13 +93,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   return (
     <div className="space-y-4 p-6">
-      {/* Header */}
-      <div className="mb-5 flex items-center gap-2">
+      {isProduct && <div className="mb-5 flex items-center gap-2">
         <CiImageOn className="h-5 w-5 text-blue-600" />
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
           Product Images
-        </h2> 
-      </div>
+        </h2>
+      </div>}
 
       <div
         className="flex cursor-pointer flex-col justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-6 py-20 text-center transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -121,17 +123,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         />
       </div>
 
-      {/* Image Preview */}
       {images.length > 0 && (
         <div>
           <h3 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
             Uploaded Images ({images.length})
           </h3>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+
+          <div
+            className={
+              !isMobile
+                ? "flex overflow-x-auto gap-3 pb-2"
+                : "grid grid-cols-2 gap-4 md:grid-cols-4" // 👈 grid layout
+            }
+          >
             {images.map((img) => (
               <div
                 key={img.id}
-                className={`group relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height}`}
+                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${!isMobile ? "w-40" : "" // 👈 fixed width for scroll layout
+                  }`}
               >
                 <Image
                   src={img.url}

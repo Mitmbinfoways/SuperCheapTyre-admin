@@ -258,6 +258,14 @@ const ShowMeasurementsPage = () => {
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row">
         <div className="w-full md:w-1/4">
+          <TextField
+            type="text"
+            placeholder="Search measurements..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="w-full md:w-1/4">
           <Select
             value={categoryFilter}
             onChange={(value) => setCategoryFilter(value)}
@@ -279,14 +287,6 @@ const ShowMeasurementsPage = () => {
           />
         </div>
 
-        <div className="w-full md:w-1/4">
-          <TextField
-            type="text"
-            placeholder="Search measurements..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
       </div>
 
       <CommonDialog

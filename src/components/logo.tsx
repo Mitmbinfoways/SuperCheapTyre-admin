@@ -7,7 +7,7 @@ export function Logo() {
     <div className="relative h-20 flex items-center justify-center">
       <Image
         src={logo}
-        className="w-56 dark:hidden"
+        className="w-52 dark:hidden"
         alt="SuperCheapTyre Admin logo"
         role="presentation"
         quality={100}
