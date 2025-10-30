@@ -190,7 +190,7 @@ const BannerListPage: React.FC = () => {
       width: "100px",
       align: "center",
       render: (item) => (
-       <Badge
+        <Badge
           label={item.isActive ? "Active" : "Inactive"}
           color={item.isActive ? "green" : "red"}
         />
@@ -229,25 +229,26 @@ const BannerListPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Banners
         </h1>
-        <Button onClick={() => router.push("/banners")}>
+        <Button
+          onClick={() => router.push("/banners")}
+          className="w-full sm:w-auto"
+        >
           Create New Banner
         </Button>
       </div>
-
-      <div className="w-1/3">
+      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
         <TextField
           type="text"
-          className="mb-4"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-      {/* Delete Confirmation */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -267,8 +268,7 @@ const BannerListPage: React.FC = () => {
           Are you sure you want to delete this banner? This action cannot be undone.
         </p>
       </CommonDialog>
-
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetchingBanners || loadingStates.deletingBanner ? (
           <Skeleton />
         ) : tableData.length === 0 && !loadingStates.fetchingBanners ? (
@@ -276,7 +276,7 @@ const BannerListPage: React.FC = () => {
         ) : (
           <>
             <Table columns={columns} data={tableData} />
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

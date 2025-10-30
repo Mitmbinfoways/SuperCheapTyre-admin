@@ -122,7 +122,7 @@ const MeasurementsPage = () => {
             Add Measurement
           </h1>
         </div>
-        <p className="text-gray-600">
+        <p className="text-gray-400">
           Add new measurements for tyres or wheels
         </p>
       </div>

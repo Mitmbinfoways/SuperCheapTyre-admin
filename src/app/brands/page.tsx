@@ -228,25 +228,31 @@ const BrandListPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      {/* Header */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Brands
         </h1>
-        <Button onClick={() => router.push("/create-brand")}>
+        <Button
+          onClick={() => router.push("/create-brand")}
+          className="w-full sm:w-auto"
+        >
           Create New Brand
         </Button>
       </div>
 
-      <div className="w-1/3">
+      {/* Search */}
+      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
         <TextField
           type="text"
-          className="mb-4"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-      {/* Delete Confirmation */}
+
+      {/* Delete Confirmation Dialog */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -268,7 +274,7 @@ const BrandListPage: React.FC = () => {
       </CommonDialog>
 
       {/* Table */}
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetchingBrands || loadingStates.deletingBrand ? (
           <Skeleton />
         ) : tableData.length === 0 ? (
@@ -276,7 +282,7 @@ const BrandListPage: React.FC = () => {
         ) : (
           <>
             <Table columns={columns} data={tableData} />
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

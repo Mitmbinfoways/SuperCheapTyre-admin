@@ -281,25 +281,23 @@ const ProductListPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Products
         </h1>
-        <Button onClick={() => router.push("/create-product")}>
+        <Button className="w-full sm:w-auto" onClick={() => router.push("/create-product")}>
           Create New Product
         </Button>
       </div>
-
-      <div className="w-1/3">
+      <div className="w-full sm:w-1/2 lg:w-1/3 mb-4">
         <TextField
           type="text"
-          className="mb-4"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-      {/* Delete Confirmation */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -319,8 +317,7 @@ const ProductListPage: React.FC = () => {
           Are you sure you want to delete this product?
         </p>
       </CommonDialog>
-
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetchingProducts || loadingStates.deletingProduct ? (
           <Skeleton />
         ) : tableData.length === 0 && !loadingStates.fetchingProducts ? (

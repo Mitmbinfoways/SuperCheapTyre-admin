@@ -196,11 +196,10 @@ const AddHolidayPage: React.FC = () => {
         <div className="flex items-center justify-end space-x-3">
           <MdModeEdit
             size={16}
-            className={`cursor-pointer transition-colors ${
-              loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+            className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
                 ? "cursor-not-allowed text-gray-400"
                 : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            }`}
+              }`}
             title="Edit holiday"
             onClick={() => {
               if (
@@ -213,11 +212,10 @@ const AddHolidayPage: React.FC = () => {
           />
           <FiTrash2
             size={16}
-            className={`cursor-pointer transition-colors ${
-              loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+            className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
                 ? "cursor-not-allowed text-gray-400"
                 : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            }`}
+              }`}
             title="Delete holiday"
             onClick={() => {
               if (
@@ -236,7 +234,7 @@ const AddHolidayPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Holidays
         </h1>
@@ -249,17 +247,19 @@ const AddHolidayPage: React.FC = () => {
             setShowForm(true);
           }}
           disabled={loadingStates.fetchingHolidays}
+          className="w-full sm:w-auto"
         >
           Add Holiday
         </Button>
       </div>
 
-      <div className="mb-4 w-1/3">
+      <div className="mb-4 sm:w-1/3">
         <TextField
           type="text"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
 
@@ -281,7 +281,7 @@ const AddHolidayPage: React.FC = () => {
               onChange={(d: Date | null) => setDate(d)}
               minDate={new Date()}
               placeholder="Select a date"
-              className="w-100"
+              className="w-full"
               disabled={loadingStates.submittingForm}
               dateFormat="yyyy-MM-dd"
               isClearable={true}
@@ -303,21 +303,27 @@ const AddHolidayPage: React.FC = () => {
               }
               error={error.reason}
               placeholder="E.g. Special Day"
+              className="w-full"
             />
           </div>
-
-          <div className="flex items-center justify-end space-x-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:space-x-3">
             <Button
               type="button"
               variant="secondary"
               onClick={handleCloseForm}
               disabled={loadingStates.submittingForm}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={loadingStates.submittingForm}
+            >
               {loadingStates.submittingForm ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center space-x-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                   <span>Saving...</span>
                 </div>
@@ -336,11 +342,12 @@ const AddHolidayPage: React.FC = () => {
         onClose={handleCloseDeleteDialog}
         title="Confirm Delete"
         footer={
-          <div className="flex justify-end space-x-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-3">
             <Button
               variant="secondary"
               onClick={handleCloseDeleteDialog}
               disabled={loadingStates.deletingHoliday}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -348,6 +355,7 @@ const AddHolidayPage: React.FC = () => {
               variant="danger"
               onClick={confirmDeleteHoliday}
               disabled={loadingStates.deletingHoliday}
+              className="w-full sm:w-auto"
             >
               Delete
             </Button>
@@ -360,12 +368,10 @@ const AddHolidayPage: React.FC = () => {
           </div>
         )}
         <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to delete this holiday? This action cannot be
-          undone.
+          Are you sure you want to delete this holiday? This action cannot be undone.
         </p>
       </CommonDialog>
-
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetchingHolidays || loadingStates.deletingHoliday ? (
           <Skeleton />
         ) : tableData.length === 0 ? (
@@ -373,17 +379,11 @@ const AddHolidayPage: React.FC = () => {
         ) : (
           <div
             className={
-              loadingStates.deletingHoliday
-                ? "pointer-events-none opacity-50"
-                : ""
+              loadingStates.deletingHoliday ? "pointer-events-none opacity-50" : ""
             }
           >
-            <Table
-              columns={columns}
-              data={tableData}
-              className="dark:divide-gray-700"
-            />
-            <div className="mt-4 flex justify-center">
+            <Table columns={columns} data={tableData} className="dark:divide-gray-700" />
+            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

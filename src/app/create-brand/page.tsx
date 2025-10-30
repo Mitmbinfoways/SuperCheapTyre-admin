@@ -165,7 +165,7 @@ const CreateBrandPage = () => {
               {isEdit ? "Edit Brand" : "Create Brand"}
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             {isEdit
               ? "Edit an existing brand"
               : "Add a new brand to your inventory"}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
 import Pagination from "@/components/ui/Pagination";
 import Image from "next/image";
@@ -51,33 +51,19 @@ const OrdersPage = () => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Calculate total items in an order
-  const getTotalItems = (items: OrderItem[]) => {
-    return items.reduce((total, item) => total + item.quantity, 0);
-  };
+  const getTotalItems = (items: OrderItem[]) =>
+    items.reduce((total, item) => total + item.quantity, 0);
 
-  // Toggle expanded order
   const toggleExpandedOrder = (orderId: string) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
-  // Render product image
   const renderProductImage = (item: OrderItem) => {
     const imageUrl = item.productDetails.images?.[0]
       ? `${process.env.NEXT_PUBLIC_API_URL}/Product/${item.productDetails.images[0]}`
       : null;
 
-    if (!imageUrl) {
-      return (
-        <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            No Image
-          </span>
-        </div>
-      );
-    }
-
-    return (
+    return imageUrl ? (
       <div className="h-12 w-12 overflow-hidden rounded">
         <Image
           src={imageUrl}
@@ -100,10 +86,15 @@ const OrdersPage = () => {
           }}
         />
       </div>
+    ) : (
+      <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          No Image
+        </span>
+      </div>
     );
   };
 
-  // Render product details in table row with smooth transition
   const renderProductDetails = (items: OrderItem[], orderId: string) => {
     const isExpanded = expandedOrderId === orderId;
 
@@ -111,20 +102,22 @@ const OrdersPage = () => {
       <tr>
         <td colSpan={7} className="p-0">
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "opacity-100" : "max-h-0 opacity-0"
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
               }`}
           >
             <div className="bg-gray-50 p-4 dark:bg-gray-800">
-              <h3 className="mb-3 text-lg font-semibold">Product Details</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-200">
+                Product Details
+              </h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((item) => (
                   <div
                     key={item._id}
-                    className="flex items-center gap-4 rounded-lg border bg-white p-3 dark:bg-gray-700"
+                    className="flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-700"
                   >
                     {renderProductImage(item)}
                     <div className="flex-1">
-                      <h4 className="text-sm font-medium">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item.productDetails.name}
                       </h4>
                       <p className="text-xs text-gray-600 dark:text-gray-300">
@@ -134,7 +127,7 @@ const OrdersPage = () => {
                         <span>Qty: {item.quantity}</span>
                         <span>AU$ {item.productDetails.price.toFixed(2)}</span>
                       </div>
-                      <div className="mt-1 text-right font-medium">
+                      <div className="mt-1 text-right font-medium text-gray-800 dark:text-gray-100">
                         Total: AU${" "}
                         {(item.productDetails.price * item.quantity).toFixed(2)}
                       </div>
@@ -184,7 +177,11 @@ const OrdersPage = () => {
     {
       title: "Email",
       key: "customer.email",
-      render: (order: Order) => order.customer.email,
+      render: (order: Order) => (
+        <span className="block max-w-[180px] truncate sm:max-w-none">
+          {order.customer.email}
+        </span>
+      ),
     },
     {
       title: "Phone",
@@ -221,88 +218,79 @@ const OrdersPage = () => {
           />
         </div>
       ),
-    }
+    },
   ];
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
+    <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Orders
+          Orders
         </h1>
       </div>
 
-      <div>
-        {loadingStates.fetchingOrders ? (
-          <Skeleton />
-        ) : orders.length === 0 && !loadingStates.fetchingOrders ? (
-          <EmptyState message="No orders found." />
-        ) : (
-          <>
-            <div className="overflow-hidden rounded-tl-xl rounded-tr-xl bg-white shadow">
-              <div className="overflow-hidden">
-                <table className="w-full table-auto">
-                  <thead className="bg-lightblue dark:bg-gray-800">
-                    <tr>
+      {loadingStates.fetchingOrders ? (
+        <Skeleton />
+      ) : orders.length === 0 ? (
+        <EmptyState message="No orders found." />
+      ) : (
+        <>
+          {/* ✅ Responsive table wrapper */}
+          <div className="w-full overflow-x-auto rounded-tl-xl rounded-tr-xl">
+            <table className="min-w-full table-auto border-collapse">
+              <thead className="bg-lightblue dark:bg-gray-800">
+                <tr>
+                  {columns.map((col) => (
+                    <th
+                      key={col.key as string}
+                      className={`whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200`}
+                      style={col.width ? { width: col.width } : undefined}
+                    >
+                      {col.title}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="border-b border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                {orders.map((order, index) => (
+                  <React.Fragment key={order._id}>
+                    <tr
+                      className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
+                          ? "bg-gray-50 dark:bg-gray-800"
+                          : ""
+                        }`}
+                      onClick={() => toggleExpandedOrder(order._id)}
+                    >
                       {columns.map((col) => (
-                        <th
+                        <td
                           key={col.key as string}
-                          className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200`}
+                          className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-gray-200"
                           style={col.width ? { width: col.width } : undefined}
                         >
-                          {col.title}
-                        </th>
+                          {col.render
+                            ? col.render(order, index)
+                            : (order as any)[col.key]}
+                        </td>
                       ))}
                     </tr>
-                  </thead>
-                  <tbody className="border-b border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-                    {orders.map((order, index) => (
-                      <React.Fragment key={order._id}>
-                        <tr
-                          className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
-                            ? "bg-gray-50 dark:bg-gray-800"
-                            : ""
-                            }`}
-                          onClick={() => toggleExpandedOrder(order._id)}
-                        >
-                          {columns.map((col) => (
-                            <td
-                              key={col.key as string}
-                              className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-200`}
-                              style={
-                                col.width ? { width: col.width } : undefined
-                              }
-                            >
-                              {col.render
-                                ? col.render(order, index)
-                                : (order as any)[col.key]}
-                            </td>
-                          ))}
-                        </tr>
-                        {renderProductDetails(order.items, order._id)}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                    {renderProductDetails(order.items, order._id)}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {totalPages > 1 && (
-              <div className="mt-4 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            )}
-          </>
-        )}
-      </div>
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

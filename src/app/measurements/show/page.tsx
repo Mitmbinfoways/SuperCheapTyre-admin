@@ -246,18 +246,17 @@ const ShowMeasurementsPage = () => {
   ];
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Measurements
+    <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-md dark:bg-gray-900">
+      <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300">
+          Measurements List
         </h1>
-        <Link href="/measurements">
-          <Button>Add New Measurement</Button>
+        <Link href="/measurements" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">Add New Measurement</Button>
         </Link>
       </div>
-
-      <div className="mb-6 flex flex-col gap-4 md:flex-row">
-        <div className="w-full md:w-1/4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="w-full">
           <TextField
             type="text"
             placeholder="Search measurements..."
@@ -265,7 +264,7 @@ const ShowMeasurementsPage = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="w-full md:w-1/4">
+        <div className="w-full">
           <Select
             value={categoryFilter}
             onChange={(value) => setCategoryFilter(value)}
@@ -277,8 +276,7 @@ const ShowMeasurementsPage = () => {
             placeholder="Select category"
           />
         </div>
-
-        <div className="w-full md:w-1/4">
+        <div className="w-full">
           <Select
             value={typeFilter}
             onChange={(value) => setTypeFilter(value)}
@@ -286,9 +284,7 @@ const ShowMeasurementsPage = () => {
             placeholder="Select type"
           />
         </div>
-
       </div>
-
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -312,7 +308,6 @@ const ShowMeasurementsPage = () => {
           Are you sure you want to delete this measurement?
         </p>
       </CommonDialog>
-
       <div>
         {loading ? (
           <Skeleton />
@@ -320,7 +315,9 @@ const ShowMeasurementsPage = () => {
           <EmptyState message="No measurements found." />
         ) : (
           <>
-            <Table columns={columns} data={paginatedMeasurements} />
+            <div className="overflow-x-auto">
+              <Table columns={columns} data={paginatedMeasurements} />
+            </div>
             <div className="mt-4 flex justify-center">
               <Pagination
                 currentPage={currentPage}

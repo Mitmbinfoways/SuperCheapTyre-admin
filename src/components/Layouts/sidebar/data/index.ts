@@ -15,7 +15,7 @@ export const NAV_DATA = [
         icon: Icons.ShoppingCartIcon,
         items: [
           {
-            title: "Products",
+            title: "Manage Products",
             url: "/products",
           },
           {
@@ -25,7 +25,7 @@ export const NAV_DATA = [
         ],
       },
       {
-        title: "Appointment",
+        title: "Appointments",
         url: "/appointment",
         icon: Icons.CalendarDaysIcon,
         items: [],
@@ -42,7 +42,7 @@ export const NAV_DATA = [
         icon: Icons.StoreIcon,
         items: [
           {
-            title: "Brands",
+            title: "Manage Brands",
             url: "/brands",
           },
           {
@@ -57,7 +57,7 @@ export const NAV_DATA = [
         icon: Icons.Alphabet,
         items: [
           {
-            title: "Blog",
+            title: "Manage Blog",
             url: "/blog",
           },
           {
@@ -71,7 +71,7 @@ export const NAV_DATA = [
         icon: Icons.PhotoIcon,
         items: [
           {
-            title: "Banners",
+            title: "Manage Banners",
             url: "/banners/list",
           },
           {
@@ -81,7 +81,7 @@ export const NAV_DATA = [
         ],
       },
       {
-        title: "Add Holidays",
+        title: "Manage Holidays",
         url: "/add-holidays",
         icon: Icons.CalendarPlusIcon,
         items: [],
@@ -98,7 +98,7 @@ export const NAV_DATA = [
         icon: Icons.RulerIcon,
         items: [
           {
-            title: "Measurements",
+            title: "Measurements List",
             url: "/measurements/show",
           },
           {

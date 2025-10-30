@@ -12,6 +12,7 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
+import Tooltip from "@/components/ui/Tooltip";
 
 type Contact = ContactType;
 
@@ -25,6 +26,7 @@ const ContactList: React.FC = () => {
   const itemsPerPage = 10;
 
   const columns: Column<Contact>[] = [
+    { title: "SR.NO", key: "index", render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1 },
     { title: "Name", key: "name", render: (item) => item.name },
     { title: "Email", key: "email", render: (item) => item.email },
     {
@@ -32,7 +34,20 @@ const ContactList: React.FC = () => {
       key: "date",
       render: (item) => new Date(item.createdAt).toLocaleString(),
     },
-    { title: "Message", key: "message", render: (item) => item.message },
+    {
+      title: "Message",
+      key: "message",
+      render: (item) => (
+        <Tooltip content={item.message} position="top">
+          <div
+            className="truncate line-clamp-2 cursor-pointer"
+            title={item.message}
+          >
+            {item.message}
+          </div>
+        </Tooltip>
+      ),
+    },
   ];
 
   const debounceSearch = useDebounce<string>(search, 300);
@@ -64,38 +79,38 @@ const ContactList: React.FC = () => {
   }, [fetchContacts]);
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
+    <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-md dark:bg-gray-900">
+      <h1 className="mb-6 text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300 text-left">
         Contact Messages
       </h1>
-      <div className="w-1/3">
+      <div className="mb-6 w-full sm:w-2/3 md:w-1/3">
         <TextField
           type="text"
-          className="mb-4"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-
       <div>
         {loading ? (
-          <Skeleton/>
+          <Skeleton />
         ) : error ? (
           <div className="py-8 text-center text-red-600 dark:text-red-400">
             {error}
           </div>
         ) : contacts.length === 0 ? (
-          <EmptyState message="No contacts found."/>
+          <EmptyState message="No contacts found." />
         ) : (
           <>
-            <Table
-              columns={columns}
-              data={contacts}
-              className="dark:divide-gray-700"
-            />
-
-            <div className="mt-4 flex justify-center">
+            <div className="overflow-x-auto">
+              <Table
+                columns={columns}
+                data={contacts}
+                className="min-w-full dark:divide-gray-700"
+              />
+            </div>
+            <div className="mt-6 flex justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

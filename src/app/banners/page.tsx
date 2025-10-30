@@ -146,7 +146,7 @@ const BannerPage = () => {
           <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
             {isEdit ? "Edit Banner" : "Create Banner"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             {isEdit ? "Update banner images" : "Upload banner images for desktop and mobile views"}
           </p>
         </div>

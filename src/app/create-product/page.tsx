@@ -421,18 +421,16 @@ const Page = () => {
       })) || [],
   };
 
-
   return (
     <div className="min-h-screen">
       <div>
-        {/* Header */}
         <div className="mb-8">
           <div className="mb-2 gap-3">
             <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
               Create Product
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             Add a new product to your inventory with detailed specifications
           </p>
         </div>

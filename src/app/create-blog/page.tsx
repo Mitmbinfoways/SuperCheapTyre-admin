@@ -394,7 +394,7 @@ const CreateBlogPage = () => {
               {isEdit ? "Edit Blog" : "Create Blog"}
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             {isEdit
               ? "Edit an existing blog"
               : "Create a new blog post with different formats"}

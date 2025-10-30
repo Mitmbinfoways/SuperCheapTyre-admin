@@ -262,25 +262,26 @@ const BlogListPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Blogs
         </h1>
-        <Button onClick={() => router.push("/create-blog")}>
+        <Button
+          onClick={() => router.push("/create-blog")}
+          className="w-full sm:w-auto"
+        >
           Create New Blog
         </Button>
       </div>
-
-      <div className="w-1/3">
+      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
         <TextField
           type="text"
-          className="mb-4"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-      {/* Delete Confirmation */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -300,9 +301,7 @@ const BlogListPage: React.FC = () => {
           Are you sure you want to delete this blog?
         </p>
       </CommonDialog>
-
-      {/* Table */}
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetchingBlogs ? (
           <Skeleton />
         ) : tableData.length === 0 ? (
@@ -310,7 +309,7 @@ const BlogListPage: React.FC = () => {
         ) : (
           <>
             <Table columns={columns} data={tableData} />
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -321,6 +320,7 @@ const BlogListPage: React.FC = () => {
         )}
       </div>
     </div>
+
   );
 };
 

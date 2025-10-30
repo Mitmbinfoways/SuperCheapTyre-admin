@@ -265,7 +265,7 @@ const AddTechnicianPage: React.FC = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Employee
         </h1>
@@ -277,21 +277,20 @@ const AddTechnicianPage: React.FC = () => {
             setShowForm(true);
           }}
           disabled={loadingStates.fetching}
+          className="w-full sm:w-auto"
         >
           Add Employee
         </Button>
       </div>
-
-      <div className="mb-4 w-1/3">
+      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
         <TextField
           type="text"
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="w-full"
         />
       </div>
-
-      {/* Add/Edit Form */}
       <CommonDialog
         isOpen={showForm}
         size="lg"
@@ -315,6 +314,7 @@ const AddTechnicianPage: React.FC = () => {
                 }
                 placeholder="First Name"
                 error={error.firstName}
+                className="w-full"
               />
             </div>
             <div>
@@ -327,10 +327,10 @@ const AddTechnicianPage: React.FC = () => {
                 }
                 placeholder="Last Name"
                 error={error.lastName}
+                className="w-full"
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <FormLabel label="Email" required />
@@ -342,6 +342,7 @@ const AddTechnicianPage: React.FC = () => {
                 }
                 error={error.email}
                 placeholder="Email"
+                className="w-full"
               />
             </div>
             <div>
@@ -354,16 +355,17 @@ const AddTechnicianPage: React.FC = () => {
                 }
                 placeholder="Phone"
                 error={error.phone}
+                className="w-full"
               />
             </div>
           </div>
-
-          <div className="flex justify-end space-x-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-3">
             <Button
               type="button"
               variant="secondary"
               onClick={handleCloseForm}
               disabled={loadingStates.submitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -371,6 +373,7 @@ const AddTechnicianPage: React.FC = () => {
               type="submit"
               variant="primary"
               disabled={loadingStates.submitting}
+              className="w-full sm:w-auto"
             >
               {loadingStates.submitting
                 ? "Saving..."
@@ -381,18 +384,17 @@ const AddTechnicianPage: React.FC = () => {
           </div>
         </form>
       </CommonDialog>
-
-      {/* Delete Confirm */}
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
         title="Confirm Delete"
         footer={
-          <div className="flex justify-end space-x-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-3">
             <Button
               variant="secondary"
               onClick={handleCloseDeleteDialog}
               disabled={loadingStates.deleting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -400,17 +402,18 @@ const AddTechnicianPage: React.FC = () => {
               variant="danger"
               onClick={confirmDeleteTechnician}
               disabled={loadingStates.deleting}
+              className="w-full sm:w-auto"
             >
               Delete
             </Button>
           </div>
         }
       >
-        <p>Are you sure you want to delete this technician?</p>
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this technician?
+        </p>
       </CommonDialog>
-
-      {/* Table */}
-      <div>
+      <div className="overflow-x-auto">
         {loadingStates.fetching || loadingStates.deleting ? (
           <Skeleton />
         ) : tableData.length === 0 ? (
@@ -418,7 +421,7 @@ const AddTechnicianPage: React.FC = () => {
         ) : (
           <>
             <Table columns={columns} data={tableData} />
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
