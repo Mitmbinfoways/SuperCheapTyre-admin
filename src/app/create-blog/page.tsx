@@ -503,6 +503,7 @@ const CreateBlogPage = () => {
                           url: URL.createObjectURL(file),
                         })),
                       ]}
+                      ImageTitle="Image"
                       onChange={(images) => {
                         const currentImageIds = images.map((img) => img.id);
 
@@ -632,6 +633,7 @@ const CreateBlogPage = () => {
                                     ]
                                   : []
                             }
+                            ImageTitle="Image"
                             onChange={(images) => {
                               if (images.length === 0) {
                                 handleItemChange(index, "image", null);

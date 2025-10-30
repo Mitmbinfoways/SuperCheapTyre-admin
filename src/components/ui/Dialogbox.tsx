@@ -37,16 +37,20 @@ export default function CommonDialog({
       >
         <div className="mb-4 flex items-center justify-between">
           {title && (
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {title}
-            </h2>
+            <div className="w-full">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {title}
+              </h2>
+            </div>
           )}
-          <button
-            onClick={onClose}
-            className="rounded-xl p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <IoMdClose size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
+          <div className="w-full flex justify-end">
+            <button
+              onClick={onClose}
+              className="rounded-xl p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <IoMdClose size={20} className="text-gray-700 dark:text-gray-300" />
+            </button>
+          </div>
         </div>
 
         <div className="mb-4 text-gray-800 dark:text-gray-200">{children}</div>

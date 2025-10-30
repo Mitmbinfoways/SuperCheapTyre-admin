@@ -19,11 +19,11 @@ interface ImageUploaderProps {
   maxFiles?: number;
   multiple?: boolean;
   height?: string;
+  ImageTitle?: string;
   onFilesSelected?: (files: File[]) => void;
   onRemove?: (index: number) => void;
   replaceImages?: boolean;
   isMobile?: boolean;
-  isProduct?: boolean;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -35,9 +35,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   height = "h-32",
   onFilesSelected,
   onRemove,
+  ImageTitle = "Product Image",
   replaceImages = false,
   isMobile = false,
-  isProduct = true
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -93,10 +93,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   return (
     <div className="space-y-4 p-6">
-      {isProduct && <div className="mb-5 flex items-center gap-2">
+      {ImageTitle && <div className="mb-5 flex items-center gap-2">
         <CiImageOn className="h-5 w-5 text-blue-600" />
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
-          Product Images
+          {ImageTitle}
         </h2>
       </div>}
 

@@ -186,6 +186,7 @@ const CreateBrandPage = () => {
                 onChange={(images) =>
                   setFormData((prev: any) => ({ ...prev, images }))
                 }
+                ImageTitle="Brand Image"
                 onFilesSelected={handleFilesSelected}
                 onRemove={handleRemoveImage}
                 maxFiles={1}

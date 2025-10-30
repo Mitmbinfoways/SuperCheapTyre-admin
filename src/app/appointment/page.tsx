@@ -18,6 +18,7 @@ import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -166,7 +167,7 @@ const AppointmentsPage = () => {
     {
       title: "Notes",
       key: "notes",
-      render: (item) => <div className="line-clamp-2">{item.notes || "-"}</div>,
+      render: (item) => <Tooltip content={item.notes || "-"} position="top"><div className="max-w-[120px] line-clamp-2">{item.notes || "-"}</div></Tooltip>,
     },
     {
       title: "Assign Employee",

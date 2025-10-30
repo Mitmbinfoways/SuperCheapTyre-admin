@@ -17,6 +17,7 @@ import EmptyState from "@/components/EmptyState";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 
 interface Blog {
   _id: string;
@@ -47,6 +48,11 @@ const BlogListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+
+  // Image preview states
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewBlog, setPreviewBlog] = useState<Blog | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingBlogs: false,
@@ -116,6 +122,60 @@ const BlogListPage: React.FC = () => {
     setDeleteBlogId(null);
   };
 
+  // Image preview handlers
+  const handleOpenImagePreview = (blog: Blog) => {
+    setPreviewBlog(blog);
+    setCurrentImageIndex(0); // Start with the first image
+    setShowImagePreview(true);
+  };
+
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false);
+    setPreviewBlog(null);
+    setCurrentImageIndex(0);
+  };
+
+  const handleNextImage = () => {
+    if (previewBlog) {
+      const imageCount = getBlogImageCount(previewBlog);
+      if (currentImageIndex < imageCount - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      }
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  // Helper function to get image count for a blog
+  const getBlogImageCount = (blog: Blog): number => {
+    if (blog.formate === "carousel") {
+      return blog.images.length;
+    } else {
+      return blog.items.length;
+    }
+  };
+
+  // Helper function to get image URL for a blog at a specific index
+  const getBlogImageUrlAtIndex = (blog: Blog, index: number): string => {
+    if (blog.formate === "carousel") {
+      if (blog.images[index]) {
+        return `${process.env.NEXT_PUBLIC_API_URL}/${blog.images[index]}`;
+      }
+    } else {
+      if (blog.items[index] && blog.items[index].image) {
+        return (
+          blog.items[index].imageUrl ||
+          `${process.env.NEXT_PUBLIC_API_URL}/${blog.items[index].image}`
+        );
+      }
+    }
+    return "../../../public/default-image.png";
+  };
+
   const handleToggleActive = async (blog: Blog) => {
     updateLoadingState("togglingStatus", true);
     try {
@@ -155,12 +215,7 @@ const BlogListPage: React.FC = () => {
       title: "Image",
       key: "image",
       width: "80px",
-      render: (item: {
-        formate: string;
-        images: string[];
-        items: { image?: string; imageUrl?: string }[];
-        title: string;
-      }) => {
+      render: (item) => {
         let imageUrl: string = "../../../public/default-image.png";
         if (
           item.formate === "carousel" &&
@@ -178,7 +233,10 @@ const BlogListPage: React.FC = () => {
             `${process.env.NEXT_PUBLIC_API_URL}/${item.items[0].image}`;
         }
         return (
-          <div className="h-12 w-12 overflow-hidden rounded">
+          <div 
+            className="h-12 w-12 overflow-hidden rounded cursor-pointer"
+            onClick={() => handleOpenImagePreview(item)}
+          >
             <Image
               src={imageUrl}
               alt={item.title}
@@ -301,6 +359,80 @@ const BlogListPage: React.FC = () => {
           Are you sure you want to delete this blog?
         </p>
       </CommonDialog>
+      
+      {/* Image Preview Dialog with Carousel */}
+      <CommonDialog
+        isOpen={showImagePreview}
+        onClose={handleCloseImagePreview}
+        size="lg"
+      >
+        {previewBlog && (
+          <div className="flex flex-col items-center">
+            <div className="relative w-full flex justify-center items-center">
+              <button
+                onClick={handlePrevImage}
+                disabled={currentImageIndex === 0}
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
+                  currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                }`}
+              >
+               <FaAngleLeft size={18} />
+              </button>
+              
+              <div className="flex justify-center items-center w-full">
+                <Image
+                  src={getBlogImageUrlAtIndex(previewBlog, currentImageIndex)}
+                  alt={`${previewBlog.title} - Image ${currentImageIndex + 1}`}
+                  width={500}
+                  height={500}
+                  className="rounded-lg object-contain max-h-[60vh]"
+                />
+              </div>
+              
+              <button
+                onClick={handleNextImage}
+                disabled={currentImageIndex === getBlogImageCount(previewBlog) - 1}
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
+                  currentImageIndex === getBlogImageCount(previewBlog) - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                }`}
+              >
+                 <FaAngleRight size={18} />
+              </button>
+            </div>
+            
+            {/* Image Counter */}
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              {currentImageIndex + 1} of {getBlogImageCount(previewBlog)}
+            </div>
+            
+            {/* Thumbnail Grid */}
+            {getBlogImageCount(previewBlog) > 1 && (
+              <div className="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2 max-w-full overflow-x-auto py-2">
+                {Array.from({ length: getBlogImageCount(previewBlog) }).map((_, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${
+                      currentImageIndex === index
+                        ? "border-blue-500 ring-2 ring-blue-300"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <Image
+                      src={getBlogImageUrlAtIndex(previewBlog, index)}
+                      alt={`${previewBlog.title} - Thumbnail ${index + 1}`}
+                      width={64}
+                      height={64}
+                      className="h-full w-full rounded object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </CommonDialog>
+      
       <div className="overflow-x-auto">
         {loadingStates.fetchingBlogs ? (
           <Skeleton />

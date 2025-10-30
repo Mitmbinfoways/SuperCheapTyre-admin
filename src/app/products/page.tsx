@@ -22,6 +22,8 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+
 
 type Product = {
   _id: string;
@@ -54,6 +56,11 @@ const ProductListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+
+  // Image preview states
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingProducts: false,
@@ -122,6 +129,31 @@ const ProductListPage: React.FC = () => {
     setDeleteProductId(null);
   };
 
+  // Image preview handlers
+  const handleOpenImagePreview = (product: Product) => {
+    setPreviewProduct(product);
+    setCurrentImageIndex(0); // Start with the first image
+    setShowImagePreview(true);
+  };
+
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false);
+    setPreviewProduct(null);
+    setCurrentImageIndex(0);
+  };
+
+  const handleNextImage = () => {
+    if (previewProduct && currentImageIndex < previewProduct.images.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   const tableData: ProductWithId[] = products.map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (product: Product) => {
@@ -160,7 +192,10 @@ const ProductListPage: React.FC = () => {
       key: "images",
       width: "80px",
       render: (item) => (
-        <div className="h-12 w-12 sm:h-16 sm:w-16">
+        <div 
+          className="h-12 w-12 sm:h-16 sm:w-16 cursor-pointer"
+          onClick={() => handleOpenImagePreview(item)}
+        >
           <Image
             src={getProductImageUrl(item.images?.[0])}
             alt={item.name}
@@ -317,6 +352,80 @@ const ProductListPage: React.FC = () => {
           Are you sure you want to delete this product?
         </p>
       </CommonDialog>
+      
+      {/* Image Preview Dialog with Carousel */}
+      <CommonDialog
+        isOpen={showImagePreview}
+        onClose={handleCloseImagePreview}
+        size="lg"
+      >
+        {previewProduct && (
+          <div className="flex flex-col items-center">
+            <div className="relative w-full flex justify-center items-center">
+              <button
+                onClick={handlePrevImage}
+                disabled={currentImageIndex === 0}
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
+                  currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                }`}
+              >
+                <FaAngleLeft size={18} />
+              </button>
+              
+              <div className="flex justify-center items-center w-full">
+                <Image
+                  src={getProductImageUrl(previewProduct.images[currentImageIndex])}
+                  alt={`${previewProduct.name} - Image ${currentImageIndex + 1}`}
+                  width={450}
+                  height={450}
+                  className="rounded-lg object-contain max-h-[60vh] rounded-xl"
+                />
+              </div>
+              
+              <button
+                onClick={handleNextImage}
+                disabled={currentImageIndex === previewProduct.images.length - 1}
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
+                  currentImageIndex === previewProduct.images.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                }`}
+              >
+                <FaAngleRight size={18} />
+              </button>
+            </div>
+            
+            {/* Image Counter */}
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              {currentImageIndex + 1} of {previewProduct.images.length}
+            </div>
+            
+            {/* Thumbnail Grid */}
+            {previewProduct.images.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2 max-w-full overflow-x-auto py-2">
+                {previewProduct.images.map((image, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${
+                      currentImageIndex === index
+                        ? "border-blue-500 ring-2 ring-blue-300"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <Image
+                      src={getProductImageUrl(image)}
+                      alt={`${previewProduct.name} - Thumbnail ${index + 1}`}
+                      width={64}
+                      height={64}
+                      className="h-full w-full rounded object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </CommonDialog>
+      
       <div className="overflow-x-auto">
         {loadingStates.fetchingProducts || loadingStates.deletingProduct ? (
           <Skeleton />

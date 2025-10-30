@@ -41,6 +41,10 @@ const BrandListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
+  // Image preview states
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewBrand, setPreviewBrand] = useState<Brand | null>(null);
+
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingBrands: false,
     deletingBrand: false,
@@ -108,6 +112,17 @@ const BrandListPage: React.FC = () => {
     setDeleteBrandId(null);
   };
 
+  // Image preview handlers
+  const handleOpenImagePreview = (brand: Brand) => {
+    setPreviewBrand(brand);
+    setShowImagePreview(true);
+  };
+
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false);
+    setPreviewBrand(null);
+  };
+
   const tableData: BrandWithId[] = brands.map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (brand: Brand) => {
@@ -147,7 +162,10 @@ const BrandListPage: React.FC = () => {
       width: "80px",
       render: (item) => {
         return (
-          <div className="h-12 w-12 sm:h-16 sm:w-16">
+          <div 
+            className="h-12 w-12 sm:h-16 sm:w-16 cursor-pointer"
+            onClick={() => handleOpenImagePreview(item)}
+          >
             <Image
               src={getBrandImageUrl(item.image)}
               alt={item.name}
@@ -271,6 +289,25 @@ const BrandListPage: React.FC = () => {
         <p className="text-gray-700 dark:text-gray-300">
           Are you sure you want to delete this brand?
         </p>
+      </CommonDialog>
+
+      {/* Image Preview Dialog */}
+      <CommonDialog
+        isOpen={showImagePreview}
+        onClose={handleCloseImagePreview}
+        size="lg"
+      >
+        <div className="flex justify-center">
+          {previewBrand && (
+            <Image
+              src={getBrandImageUrl(previewBrand.image)}
+              alt={previewBrand.name}
+              width={500}
+              height={500}
+              className="rounded-lg object-contain max-h-[70vh]"
+            />
+          )}
+        </div>
       </CommonDialog>
 
       {/* Table */}
