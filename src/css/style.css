@@ -69,6 +69,15 @@
     -moz-appearance: textfield !important;
     appearance: textfield !important;
   }
+
+  /* Hide Microsoft Edge native password reveal button */
+  input[type='password']::-ms-reveal {
+    display: none;
+  }
+
+  input[type='password']::-webkit-credentials-auto-fill-button {
+    display: none !important;
+  }
 }
 
 /* third-party libraries CSS */

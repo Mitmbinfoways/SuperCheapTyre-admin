@@ -146,7 +146,7 @@ const CreateBrandPage = () => {
       }
     } catch (error: any) {
       setApiError(
-        error?.response?.data?.message ||
+        error?.response?.data?.errorData ||
         "Something went wrong. Please try again."
       );
       console.error(error);

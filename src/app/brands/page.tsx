@@ -163,7 +163,7 @@ const BrandListPage: React.FC = () => {
       render: (item) => {
         return (
           <div 
-            className="h-12 w-12 sm:h-16 sm:w-16 cursor-pointer"
+            className="h-12 w-12 sm:h-20 sm:w-28 cursor-pointer"
             onClick={() => handleOpenImagePreview(item)}
           >
             <Image
@@ -171,7 +171,7 @@ const BrandListPage: React.FC = () => {
               alt={item.name}
               width={50}
               height={50}
-              className="h-full w-full rounded object-cover"
+              className="h-full w-full rounded object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = "/placeholder-image.png";

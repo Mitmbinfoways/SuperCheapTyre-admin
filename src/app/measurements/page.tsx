@@ -106,7 +106,7 @@ const MeasurementsPage = () => {
     } catch (error: any) {
       Toast({
         message:
-          error?.response?.data?.message || "Failed to add measurement",
+          error?.response?.data?.errorData || "Failed to add measurement",
         type: "error",
       });
     } finally {

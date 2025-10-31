@@ -5,6 +5,7 @@ const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 export interface Contact {
   _id: string;
   name: string;
+  phone: string;
   email: string;
   message: string;
   createdAt: string;
@@ -45,9 +46,8 @@ export const GetContacts = async (
   if (itemsPerPage !== undefined) params.push(`limit=${itemsPerPage}`);
   if (search) params.push(`search=${encodeURIComponent(search)}`);
 
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/contact${
-    params.length ? `?${params.join("&")}` : ""
-  }`;
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/contact${params.length ? `?${params.join("&")}` : ""
+    }`;
 
   const response = await getMethod<ApiResponse<ContactResponse>>(url);
   return response.data;

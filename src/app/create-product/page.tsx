@@ -427,7 +427,7 @@ const Page = () => {
         <div className="mb-8">
           <div className="mb-2 gap-3">
             <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-              Create Product
+              {isEdit ? "Edit Product" : "Create Product"}
             </h1>
           </div>
           <p className="text-gray-400">

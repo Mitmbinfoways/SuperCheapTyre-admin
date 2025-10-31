@@ -132,7 +132,7 @@ const BannerPage = () => {
         Toast({ message: res?.message || `Failed to ${isEdit ? "update" : "create"} banner`, type: "error" });
       }
     } catch (error: any) {
-      setApiError(error?.response?.data?.message || "Something went wrong. Please try again");
+      setApiError(error?.response?.data?.errorData || "Something went wrong. Please try again");
       Toast({ message: `Failed to ${isEdit ? "update" : "create"} banner`, type: "error" });
     } finally {
       setIsSubmitting(false);

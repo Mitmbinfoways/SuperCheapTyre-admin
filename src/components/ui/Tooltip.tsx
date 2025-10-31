@@ -25,7 +25,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       {children}
       <div
         className={`
-          absolute z-50 hidden w-max max-w-xs rounded-md bg-gray-800 px-3 py-2 text-sm text-white
+          absolute z-[999] hidden w-max max-w-md rounded-md bg-gray-800 px-3 py-2 text-sm text-white
           opacity-0 transition-all duration-200 group-hover:block group-hover:opacity-100
           ${positionClasses[position]}
         `}

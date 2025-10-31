@@ -28,19 +28,20 @@ const ContactList: React.FC = () => {
   const columns: Column<Contact>[] = [
     { title: "SR.NO", key: "index", render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1 },
     { title: "Name", key: "name", render: (item) => item.name },
+    { title: "Phone", key: "phone", render: (item) => item.phone },
     { title: "Email", key: "email", render: (item) => item.email },
     {
       title: "Date",
       key: "date",
-      render: (item) => new Date(item.createdAt).toLocaleString(),
+      render: (item) => new Date(item.createdAt).toLocaleDateString(),
     },
     {
       title: "Message",
       key: "message",
       render: (item) => (
-        <Tooltip content={item.message} position="top">
+        <Tooltip content={item.message} position="left">
           <div
-            className="truncate line-clamp-2 cursor-pointer"
+            className="max-w-36 truncate line-clamp-2 cursor-pointer"
             title={item.message}
           >
             {item.message}

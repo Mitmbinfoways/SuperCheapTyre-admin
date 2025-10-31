@@ -101,7 +101,7 @@ const ShowMeasurementsPage = () => {
       }
     } catch (error: any) {
       Toast({
-        message: error?.response?.data?.message || "Failed to load measurements",
+        message: error?.response?.data?.errorData || "Failed to load measurements",
         type: "error",
       });
     } finally {
@@ -195,7 +195,7 @@ const ShowMeasurementsPage = () => {
       handleCloseDeleteDialog();
     } catch (error: any) {
       Toast({
-        message: error?.response?.data?.message || "Failed to delete measurement",
+        message: error?.response?.data?.errorData || "Failed to delete measurement",
         type: "error",
       });
     } finally {
