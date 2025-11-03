@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { FiTrash2 } from "react-icons/fi";
+import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 import Table, { Column } from "@/components/ui/table";
 import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
@@ -47,6 +48,7 @@ const BlogListPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [viewBlog, setViewBlog] = useState<Blog | null>(null); // Added state for view blog
   const itemsPerPage = 10;
 
   // Image preview states
@@ -120,6 +122,16 @@ const BlogListPage: React.FC = () => {
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteBlogId(null);
+  };
+
+  // Added function to handle view blog
+  const handleViewBlog = (blog: Blog) => {
+    setViewBlog(blog);
+  };
+
+  // Added function to close view modal
+  const handleCloseViewModal = () => {
+    setViewBlog(null);
   };
 
   // Image preview handlers
@@ -233,7 +245,7 @@ const BlogListPage: React.FC = () => {
             `${process.env.NEXT_PUBLIC_API_URL}/${item.items[0].image}`;
         }
         return (
-          <div 
+          <div
             className="h-12 w-12 overflow-hidden rounded cursor-pointer"
             onClick={() => handleOpenImagePreview(item)}
           >
@@ -263,9 +275,12 @@ const BlogListPage: React.FC = () => {
       key: "content",
       width: "180px",
       render: (item) => (
-        <div className="line-clamp-3">
-          {item.content ? item.content : item.items[0].content}
-        </div>
+        <div
+          className="line-clamp-3 prose max-w-none text-sm text-gray-800 dark:text-gray-200"
+          dangerouslySetInnerHTML={{
+            __html: item.content || item.items?.[0]?.content || "",
+          }}
+        />
       ),
     },
     {
@@ -294,6 +309,8 @@ const BlogListPage: React.FC = () => {
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
+          <EyeIcon onClick={() => handleViewBlog(item)}
+            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white h-5 w-5" />
           <MdModeEdit
             size={16}
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
@@ -359,7 +376,106 @@ const BlogListPage: React.FC = () => {
           Are you sure you want to delete this blog?
         </p>
       </CommonDialog>
-      
+
+      {/* Added View Blog Modal */}
+      <CommonDialog
+        isOpen={!!viewBlog}
+        onClose={handleCloseViewModal}
+        title="Blog Details"
+        size="lg"
+      >
+        {viewBlog && (
+          <div className="space-y-4">
+            {((viewBlog.formate === "carousel" && viewBlog.images.length > 0) ||
+              (viewBlog.formate !== "carousel" && viewBlog.items.length > 0)) && (
+                <div className="md:col-span-2 mt-4">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Image
+                  </h3>
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {viewBlog.formate === "carousel" ? (
+                      <div className="rounded overflow-hidden border dark:border-gray-700">
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/${viewBlog.images[0]}`}
+                          alt="Blog image"
+                          width={200}
+                          height={200}
+                          className="w-full h-32 object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded overflow-hidden border dark:border-gray-700">
+                        <Image
+                          src={
+                            viewBlog.items[0]?.imageUrl ||
+                            `${process.env.NEXT_PUBLIC_API_URL}/${viewBlog.items[0]?.image}`
+                          }
+                          alt="Blog item image"
+                          width={200}
+                          height={200}
+                          className="w-full h-32 object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Title</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewBlog.title || "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Format</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  <Badge label={viewBlog.formate || "-"} color="purple" />
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  <Badge
+                    label={viewBlog.isActive ? "Active" : "Inactive"}
+                    color={viewBlog.isActive ? "green" : "red"}
+                  />
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Created At</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewBlog.createdAt ? new Date(viewBlog.createdAt).toLocaleDateString() : "-"}
+                </p>
+              </div>
+              {viewBlog.tags && viewBlog.tags.length > 0 && (
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tags</h3>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {viewBlog.tags.map((tag, index) => (
+                      <Badge key={index} label={tag} color="blue" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Content</h3>
+                <div
+                  className="mt-1 text-sm text-gray-900 dark:text-gray-100 prose max-w-none max-h-56 overflow-y-auto"
+                  dangerouslySetInnerHTML={{
+                    __html: viewBlog.content || viewBlog.items?.[0]?.content || "-"
+                  }}
+                />
+              </div>
+
+            </div>
+
+            {/* Images Section */}
+
+          </div>
+        )}
+      </CommonDialog>
+
       {/* Image Preview Dialog with Carousel */}
       <CommonDialog
         isOpen={showImagePreview}
@@ -372,13 +488,12 @@ const BlogListPage: React.FC = () => {
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
-                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
-                  currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
-                }`}
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                  }`}
               >
-               <FaAngleLeft size={18} />
+                <FaAngleLeft size={18} />
               </button>
-              
+
               <div className="flex justify-center items-center w-full">
                 <Image
                   src={getBlogImageUrlAtIndex(previewBlog, currentImageIndex)}
@@ -388,23 +503,22 @@ const BlogListPage: React.FC = () => {
                   className="rounded-lg object-contain max-h-[60vh]"
                 />
               </div>
-              
+
               <button
                 onClick={handleNextImage}
                 disabled={currentImageIndex === getBlogImageCount(previewBlog) - 1}
-                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
-                  currentImageIndex === getBlogImageCount(previewBlog) - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
-                }`}
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${currentImageIndex === getBlogImageCount(previewBlog) - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                  }`}
               >
-                 <FaAngleRight size={18} />
+                <FaAngleRight size={18} />
               </button>
             </div>
-            
+
             {/* Image Counter */}
             <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {currentImageIndex + 1} of {getBlogImageCount(previewBlog)}
             </div>
-            
+
             {/* Thumbnail Grid */}
             {getBlogImageCount(previewBlog) > 1 && (
               <div className="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2 max-w-full overflow-x-auto py-2">
@@ -412,11 +526,10 @@ const BlogListPage: React.FC = () => {
                   <div
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${
-                      currentImageIndex === index
-                        ? "border-blue-500 ring-2 ring-blue-300"
-                        : "border-gray-200 dark:border-gray-700"
-                    }`}
+                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${currentImageIndex === index
+                      ? "border-blue-500 ring-2 ring-blue-300"
+                      : "border-gray-200 dark:border-gray-700"
+                      }`}
                   >
                     <Image
                       src={getBlogImageUrlAtIndex(previewBlog, index)}
@@ -432,7 +545,7 @@ const BlogListPage: React.FC = () => {
           </div>
         )}
       </CommonDialog>
-      
+
       <div className="overflow-x-auto">
         {loadingStates.fetchingBlogs ? (
           <Skeleton />

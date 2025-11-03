@@ -22,6 +22,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
+import TextEditor from "@/components/ui/TextEditor";
 
 interface BlogItem {
   image: File | null;
@@ -555,18 +556,14 @@ const CreateBlogPage = () => {
                 </div>
                 <div>
                   <FormLabel label="Content" />
-                  <textarea
-                    name="content"
+                  <TextEditor
                     value={formData.content}
-                    onChange={(e) =>
+                    onChange={(content) =>
                       setFormData((prev) => ({
                         ...prev,
-                        content: e.target.value,
+                        content,
                       }))
                     }
-                    placeholder="Enter blog content"
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                    rows={4}
                   />
                 </div>
               </div>
@@ -668,15 +665,11 @@ const CreateBlogPage = () => {
 
                       <div>
                         <FormLabel label="Content" required />
-                        <textarea
-                          name={`item-content-${index}`}
+                        <TextEditor
                           value={item.content}
-                          onChange={(e) =>
-                            handleItemChange(index, "content", e.target.value)
+                          onChange={(content) =>
+                            handleItemChange(index, "content", content)
                           }
-                          placeholder="Enter item content"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
-                          rows={4}
                         />
                         {errors.items && !item.content.trim() && (
                           <p className="mt-1 text-sm text-red-600 dark:text-red-400">

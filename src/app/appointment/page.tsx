@@ -13,12 +13,14 @@ import TextField from "@/components/ui/TextField";
 import { Toast } from "@/components/ui/Toast";
 import Table, { Column } from "@/components/ui/table";
 import { MdModeEdit } from "react-icons/md";
+import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 import Select from "@/components/ui/Select";
 import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import Tooltip from "@/components/ui/Tooltip";
+import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -44,6 +46,7 @@ const AppointmentsPage = () => {
   const [technicianOptions, setTechnicianOptions] = useState<
     { label: string; value: string }[]
   >([]);
+  const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null); // Added state for view appointment
   const itemsPerPage = 10;
 
   const debounceSearch = useDebounce<string>(search, 300);
@@ -124,7 +127,22 @@ const AppointmentsPage = () => {
     [appointments],
   );
 
+  // Added function to handle view appointment
+  const handleViewAppointment = (appointment: ExtendedAppointment) => {
+    setViewAppointment(appointment);
+  };
+
+  // Added function to close view modal
+  const handleCloseViewModal = () => {
+    setViewAppointment(null);
+  };
+
   const columns: Column<ExtendedAppointment>[] = [
+    {
+      title: "SR.NO",
+      key: "index",
+      render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1,
+    },
     {
       title: "Name",
       key: "name",
@@ -195,11 +213,19 @@ const AppointmentsPage = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end space-x-3">
+          {/* Added View Icon */}
+          <button
+            onClick={() => handleViewAppointment(item)}
+            className="cursor-pointer text-gray-600"
+            aria-label="View appointment"
+          >
+            <EyeIcon className="h-5 w-5" />
+          </button>
           {editingId === item._id ? (
             <>
               <button
                 onClick={() => setEditingId(null)}
-                className="cursor-pointer text-red-600 transition-colors hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                className="cursor-pointer text-red-600"
                 aria-label="Cancel edit"
               >
                 <RxCross2 size={22} />
@@ -208,7 +234,7 @@ const AppointmentsPage = () => {
           ) : (
             <button
               onClick={() => setEditingId(item._id)}
-              className="cursor-pointer text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              className="cursor-pointer text-gray-600"
               aria-label="Edit appointment"
             >
               <MdModeEdit size={16} />
@@ -272,6 +298,73 @@ const AppointmentsPage = () => {
           </>
         )}
       </div>
+
+      {/* Added View Appointment Modal */}
+      <CommonDialog
+        isOpen={!!viewAppointment}
+        onClose={handleCloseViewModal}
+        title="Appointment Details"
+        size="lg"
+      >
+        {viewAppointment && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {`${viewAppointment.firstname ?? ""} ${viewAppointment.lastname ?? ""}`.trim() || "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.email || "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.phone || "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Date</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.date ? new Date(viewAppointment.date).toLocaleDateString() : "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Time Slot</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.slotDetails ? 
+                    `${viewAppointment.slotDetails.startTime} - ${viewAppointment.slotDetails.endTime}` : 
+                    "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  <Badge label={viewAppointment.status || "-"} color="green" />
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Technician</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.technicianDetails ?
+                    `${viewAppointment.technicianDetails.firstName} ${viewAppointment.technicianDetails.lastName}` :
+                    "-"}
+                </p>
+              </div>
+              <div className="md:col-span-2 max-h-56 overflow-y-auto">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewAppointment.notes || "-"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </CommonDialog>
     </div>
   );
 };

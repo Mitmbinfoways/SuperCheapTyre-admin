@@ -13,6 +13,8 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Tooltip from "@/components/ui/Tooltip";
+import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
+import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 
 type Contact = ContactType;
 
@@ -23,7 +25,18 @@ const ContactList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
+  const [viewContact, setViewContact] = useState<Contact | null>(null); // Added state for view contact
   const itemsPerPage = 10;
+
+  // Added function to handle view contact
+  const handleViewContact = (contact: Contact) => {
+    setViewContact(contact);
+  };
+
+  // Added function to close view modal
+  const handleCloseViewModal = () => {
+    setViewContact(null);
+  };
 
   const columns: Column<Contact>[] = [
     { title: "SR.NO", key: "index", render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1 },
@@ -47,6 +60,22 @@ const ContactList: React.FC = () => {
             {item.message}
           </div>
         </Tooltip>
+      ),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (item) => (
+        <div className="flex justify-center">
+          {/* Added View Icon */}
+          <button
+            onClick={() => handleViewContact(item)}
+            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            aria-label="View contact"
+          >
+            <EyeIcon className="h-5 w-5" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -121,6 +150,51 @@ const ContactList: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Added View Contact Modal */}
+      <CommonDialog
+        isOpen={!!viewContact}
+        onClose={handleCloseViewModal}
+        title="Contact Details"
+        size="md"
+      >
+        {viewContact && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewContact.name || "-"}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewContact.phone || "-"}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewContact.email || "-"}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Date</h3>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                  {viewContact.createdAt ? new Date(viewContact.createdAt).toLocaleString() : "-"}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Message</h3>
+                <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 p-3 bg-gray-50 dark:bg-gray-800 rounded max-h-56 overflow-y-auto">
+                  {viewContact.message || "-"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </CommonDialog>
     </div>
   );
 };

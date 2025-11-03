@@ -458,7 +458,7 @@ const AddTimeSlotPage: React.FC = () => {
                       className="cursor-pointer rounded p-1 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
                       title="Edit time slot"
                     >
-                      <MdModeEdit size={18} />
+                      <MdModeEdit className="text-gray-600" size={18} />
                     </div>
                   </div>
                 ),
