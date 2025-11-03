@@ -313,7 +313,7 @@ const CreateBlogPage = () => {
       if (format === "carousel") {
         (payload as BlogPayload).content = formData.content;
         (payload as BlogPayload).images = carouselImages;
-        
+
         // For edit mode, send existing images that should be kept
         if (isEdit && existingCarouselImages.length > 0) {
           (payload as UpdateBlogPayload).existingImages = existingCarouselImages;
@@ -370,7 +370,7 @@ const CreateBlogPage = () => {
     } catch (error: any) {
       setApiError(
         error?.response?.data?.errorData ||
-          "Something went wrong. Please try again",
+        "Something went wrong. Please try again",
       );
       console.error(error);
     } finally {
@@ -423,19 +423,17 @@ const CreateBlogPage = () => {
                 <div
                   key={option.value}
                   onClick={() => setFormat(option.value as any)}
-                  className={`cursor-pointer rounded-lg border p-4 transition-all duration-200 ${
-                    format === option.value
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                  }`}
+                  className={`cursor-pointer rounded-lg border p-4 transition-all duration-200 ${format === option.value
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+                    }`}
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className={`flex h-4 w-4 items-center justify-center rounded-full border ${
-                        format === option.value
-                          ? "border-blue-500 bg-blue-500"
-                          : "border-gray-300 dark:border-gray-600"
-                      }`}
+                      className={`flex h-4 w-4 items-center justify-center rounded-full border ${format === option.value
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300 dark:border-gray-600"
+                        }`}
                     >
                       {format === option.value && (
                         <div className="h-2 w-2 rounded-full bg-white"></div>
@@ -548,11 +546,11 @@ const CreateBlogPage = () => {
                   )}
                   {(existingCarouselImages.length > 0 ||
                     carouselImages.length > 0) && (
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                      {existingCarouselImages.length + carouselImages.length}{" "}
-                      image(s) selected
-                    </div>
-                  )}
+                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        {existingCarouselImages.length + carouselImages.length}{" "}
+                        image(s) selected
+                      </div>
+                    )}
                 </div>
                 <div>
                   <FormLabel label="Content" />
@@ -614,20 +612,20 @@ const CreateBlogPage = () => {
                           <ImageUploader
                             images={
                               items[index].image &&
-                              items[index].image instanceof File
+                                items[index].image instanceof File
                                 ? [
-                                    {
-                                      id: `new-${index}`,
-                                      url: itemImageUrls[index],
-                                    },
-                                  ]
+                                  {
+                                    id: `new-${index}`,
+                                    url: itemImageUrls[index],
+                                  },
+                                ]
                                 : items[index].existingImageUrl
                                   ? [
-                                      {
-                                        id: `existing-${index}`,
-                                        url: items[index].existingImageUrl,
-                                      },
-                                    ]
+                                    {
+                                      id: `existing-${index}`,
+                                      url: items[index].existingImageUrl,
+                                    },
+                                  ]
                                   : []
                             }
                             ImageTitle="Image"
@@ -709,6 +707,7 @@ const CreateBlogPage = () => {
                     type="button"
                     variant="primary"
                     onClick={handleAddTag}
+                    disabled={formData.tagInput.trim().length === 0}
                   >
                     Add
                   </Button>

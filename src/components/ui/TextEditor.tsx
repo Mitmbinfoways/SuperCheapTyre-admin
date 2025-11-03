@@ -36,45 +36,44 @@ const TextEditor: React.FC<TextEditorProps> = ({
   const [selectedSize, setSelectedSize] = useState<string>('3');
   const editorRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const [isEmpty, setIsEmpty] = useState(true);
 
-  // Initialize editor content only once
   useEffect(() => {
     if (editorRef.current && isInitialMount.current) {
-      if (value) {
-        editorRef.current.innerHTML = value;
-      } else {
-        editorRef.current.innerHTML = `<p>${placeholder}</p>`;
-      }
+      editorRef.current.innerHTML = value || '';
+      setIsEmpty(!value);
       isInitialMount.current = false;
     }
   }, []);
 
-  // Update editor when value prop changes externally
   useEffect(() => {
     if (!isInitialMount.current && editorRef.current) {
       const currentContent = editorRef.current.innerHTML;
-      // Only update if the value is different from current content
-      if (value !== currentContent && value !== undefined) {
-        editorRef.current.innerHTML = value || `<p>${placeholder}</p>`;
+      if (value !== undefined && value !== currentContent) {
+        editorRef.current.innerHTML = value;
+        setIsEmpty(!value);
       }
     }
-  }, [value, placeholder]);
+  }, [value]);
 
   const execCommand = (command: string, commandValue: string | null = null): void => {
     document.execCommand(command, false, commandValue || undefined);
     editorRef.current?.focus();
-    
-    // Trigger onChange after command execution
+
     setTimeout(() => {
       if (editorRef.current && onChange) {
-        onChange(editorRef.current.innerHTML);
+        const html = editorRef.current.innerHTML;
+        setIsEmpty(!html || html === '<br>');
+        onChange(html);
       }
     }, 0);
   };
 
   const handleInput = (): void => {
     if (editorRef.current && onChange) {
-      onChange(editorRef.current.innerHTML);
+      const html = editorRef.current.innerHTML;
+      setIsEmpty(!html || html === '<br>');
+      onChange(html);
     }
   };
 
@@ -116,7 +115,6 @@ const TextEditor: React.FC<TextEditorProps> = ({
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Toolbar */}
         <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 p-2 flex flex-wrap gap-1 items-center">
-          {/* Font Size */}
           <div className="flex items-center gap-1 border-r border-gray-300 dark:border-gray-700 pr-2 mr-1">
             <FaFont className="w-3 h-3 text-gray-700 dark:text-gray-300" />
             <select
@@ -132,7 +130,6 @@ const TextEditor: React.FC<TextEditorProps> = ({
             </select>
           </div>
 
-          {/* Formatting Buttons */}
           {toolbarButtons.map((btn, idx) => {
             const Icon = btn.icon;
             return (
@@ -148,7 +145,6 @@ const TextEditor: React.FC<TextEditorProps> = ({
             );
           })}
 
-          {/* Color Picker */}
           <div className="flex items-center gap-1 border-l border-gray-300 dark:border-gray-700 pl-2 ml-1">
             <label className="text-xs text-gray-700 dark:text-gray-300">
               Color:
@@ -163,21 +159,26 @@ const TextEditor: React.FC<TextEditorProps> = ({
         </div>
 
         {/* Editor Area */}
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          className="min-h-[200px] p-4 focus:outline-none text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900"
-          style={{ 
-            wordBreak: 'break-word',
-            lineHeight: '1.6'
-          }}
-          suppressContentEditableWarning
-        />
-
-        {/* Footer */}
-        <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700 px-4 py-2 text-xs text-gray-600 dark:text-gray-400">
-          Character count: {editorRef.current?.innerText.length || 0}
+        <div className="relative">
+          {isEmpty && (
+            <div className="absolute top-4 left-4 text-gray-400 pointer-events-none select-none text-sm">
+              {placeholder}
+            </div>
+          )}
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleInput}
+            className="min-h-[200px] p-4 focus:outline-none text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900"
+            style={{
+              wordBreak: 'break-word',
+              lineHeight: '1.6'
+            }}
+            suppressContentEditableWarning
+          />
+          <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-300 dark:border-gray-700 px-4 py-2 text-xs text-gray-600 dark:text-gray-400">
+            Character count: {editorRef.current?.innerText.length || 0}
+          </div>
         </div>
       </div>
     </div>
