@@ -93,7 +93,7 @@ const MeasurementsPage = () => {
       }
 
       // Use the static ID for the update operation
-      await updateMasterFilter("68ff3a4c7103d681ad65162a", updatePayload);
+      await updateMasterFilter("69089a30dd478485bc647fc3", updatePayload);
 
       Toast({
         message: "Measurement added successfully!",
