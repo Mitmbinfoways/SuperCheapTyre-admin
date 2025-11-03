@@ -8,7 +8,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 // Import the updateMasterFilter function from MasterFilterService
-import { updateMasterFilter } from "@/services/MasterFilterService";
+import { createMasterFilter, updateMasterFilter } from "@/services/MasterFilterService";
 
 const MeasurementsPage = () => {
   const router = useRouter();
@@ -79,26 +79,28 @@ const MeasurementsPage = () => {
     try {
       setIsSubmitting(true);
 
-      // Prepare the update payload
-      const updatePayload: any = {};
-      
-      if (category === "tyre") {
-        updatePayload.tyres = {
-          [measurementType]: [{ name: measurementValue.trim() }]
-        };
-      } else {
-        updatePayload.wheels = {
-          [measurementType]: [{ name: measurementValue.trim() }]
-        };
+      // Prepare the payload for the backend API
+      const payload = {
+        category,
+        subCategory: measurementType,
+        values: measurementValue.trim()
+      };
+
+      // Try to update first using the static ID
+      try {
+        await updateMasterFilter("69089a30dd478485bc647fc3", payload);
+        Toast({
+          message: "Measurement updated successfully!",
+          type: "success",
+        });
+      } catch (updateError: any) {
+        // If update fails, try creating a new one
+        await createMasterFilter(payload);
+        Toast({
+          message: "Measurement created successfully!",
+          type: "success",
+        });
       }
-
-      // Use the static ID for the update operation
-      await updateMasterFilter("69089a30dd478485bc647fc3", updatePayload);
-
-      Toast({
-        message: "Measurement added successfully!",
-        type: "success",
-      });
 
       setCategory("");
       setMeasurementType("");
@@ -106,7 +108,7 @@ const MeasurementsPage = () => {
     } catch (error: any) {
       Toast({
         message:
-          error?.response?.data?.errorData || "Failed to add measurement",
+          error?.response?.data?.message || "Failed to add measurement",
         type: "error",
       });
     } finally {

@@ -56,8 +56,7 @@ const Page = () => {
   });
   const [errors, setErrors] = useState<any>({});
   const [apiError, setApiError] = useState<string>("");
-  const [filterOptions, setFilterOptions] = useState<any>(null);
-
+  const [filterOptions, setFilterOptions] = useState<MasterFilter[]>([]);
 
   // Fetch brands when component mounts
   useEffect(() => {
@@ -347,9 +346,9 @@ const Page = () => {
 
   const fetchFilterOptions = async () => {
     try {
-      const res = await getAllMasterFilters();
+      const res = await getAllMasterFilters({});
       if (res?.data?.items?.length > 0) {
-        setFilterOptions(res.data.items[0]);
+        setFilterOptions(res.data.items);
       }
     } catch (error) {
       console.error("Failed to load filters:", error);
@@ -360,65 +359,43 @@ const Page = () => {
     fetchFilterOptions();
   }, []);
 
-  const tyreOptions = {
-    pattern:
-      filterOptions?.tyres?.pattern?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    width:
-      filterOptions?.tyres?.width?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    profile:
-      filterOptions?.tyres?.profile?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    diameter:
-      filterOptions?.tyres?.diameter?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    loadRating:
-      filterOptions?.tyres?.loadRating?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    speedRating:
-      filterOptions?.tyres?.speedRating?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
+  // Transform filter options for tyres
+  const getTyreOptions = (subCategory: string) => {
+    return filterOptions
+      .filter(item => item.category === "tyre" && item.subCategory === subCategory)
+      .map(item => ({
+        label: item.values,
+        value: item.values
+      }));
   };
 
+  // Transform filter options for wheels
+  const getWheelOptions = (subCategory: string) => {
+    return filterOptions
+      .filter(item => item.category === "wheel" && item.subCategory === subCategory)
+      .map(item => ({
+        label: item.values,
+        value: item.values
+      }));
+  };
+
+  // Tyre options
+  const tyreOptions = {
+    pattern: getTyreOptions("pattern"),
+    width: getTyreOptions("width"),
+    profile: getTyreOptions("profile"),
+    diameter: getTyreOptions("diameter"),
+    loadRating: getTyreOptions("loadRating"),
+    speedRating: getTyreOptions("speedRating"),
+  };
+
+  // Wheel options
   const wheelOptions = {
-    size:
-      filterOptions?.wheels?.size?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    color:
-      filterOptions?.wheels?.color?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    diameter:
-      filterOptions?.wheels?.diameter?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    fitments:
-      filterOptions?.wheels?.fitments?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
-    staggeredOptions:
-      filterOptions?.wheels?.staggeredOptions?.map((i: any) => ({
-        label: i.name,
-        value: i.name,
-      })) || [],
+    size: getWheelOptions("size"),
+    color: getWheelOptions("color"),
+    diameter: getWheelOptions("diameter"),
+    fitments: getWheelOptions("fitments"),
+    staggeredOptions: getWheelOptions("staggeredOptions"),
   };
 
   return (

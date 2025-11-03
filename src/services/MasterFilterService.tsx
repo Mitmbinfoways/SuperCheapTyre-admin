@@ -1,34 +1,11 @@
 import { getMethod, postMethod, patchMethod, deleteMethod } from "./methods";
 
 // Define TypeScript interfaces for the MasterFilter data structure
-export interface MasterFilterOption {
-  _id: string;
-  name: string;
-}
-
-export interface TyreSpecifications {
-  pattern: MasterFilterOption[];
-  width: MasterFilterOption[];
-  profile: MasterFilterOption[];
-  diameter: MasterFilterOption[];
-  loadRating: MasterFilterOption[];
-  speedRating: MasterFilterOption[];
-  _id?: string;
-}
-
-export interface WheelSpecifications {
-  size: MasterFilterOption[];
-  color: MasterFilterOption[];
-  diameter: MasterFilterOption[];
-  fitments: MasterFilterOption[];
-  staggeredOptions: MasterFilterOption[];
-  _id?: string;
-}
-
 export interface MasterFilter {
   _id: string;
-  tyres: TyreSpecifications;
-  wheels: WheelSpecifications;
+  category: string;
+  subCategory: string;
+  values: string;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -68,61 +45,37 @@ export const getAllMasterFilters = async (
   return response.data;
 };
 
-// Create a new measurement (add to existing master filter)
-export const createMeasurement = async (
-  payload: { category: "tyre" | "wheel"; type: string; value: string }
-): Promise<MasterFilterApiResponse> => {
-  // First, get the existing master filter to get its ID
-  const masterFilters = await getAllMasterFilters();
-  const masterFilter = masterFilters.data.items[0];
-  
-  if (!masterFilter) {
-    throw new Error("No master filter found");
-  }
-  
-  // Prepare the update payload
-  const updatePayload: any = {};
-  
-  if (payload.category === "tyre") {
-    updatePayload.tyres = {
-      [payload.type]: [{ name: payload.value }]
-    };
-  } else {
-    updatePayload.wheels = {
-      [payload.type]: [{ name: payload.value }]
-    };
-  }
-  
-  // Update the master filter with the new measurement
-  const response = await patchMethod<MasterFilterApiResponse, typeof updatePayload>(
-    `/api/v1/masterFilter/${masterFilter._id}`,
-    updatePayload
-  );
-  
+// Get a single master filter by ID
+export const getMasterFilterById = async (id: string): Promise<MasterFilter> => {
+  const response = await getMethod<MasterFilter>(`/api/v1/masterFilter/${id}`);
   return response.data;
 };
 
-// Update master filter (add new options)
+// Create a new master filter
+export const createMasterFilter = async (
+  payload: { category: string; subCategory: string; values: string }
+): Promise<any> => {
+  const response = await postMethod<any, typeof payload>(
+    `/api/v1/masterFilter`,
+    payload
+  );
+  return response.data;
+};
+
+// Update master filter
 export const updateMasterFilter = async (
   id: string,
-  payload: Partial<{ tyres: Partial<TyreSpecifications>; wheels: Partial<WheelSpecifications> }>
-): Promise<MasterFilterApiResponse> => {
-  const response = await patchMethod<MasterFilterApiResponse, typeof payload>(
+  payload: { category: string; subCategory: string; values: string }
+): Promise<any> => {
+  const response = await patchMethod<any, typeof payload>(
     `/api/v1/masterFilter/${id}`,
     payload
   );
   return response.data;
 };
 
-// Delete a specific option from master filter
-export const deleteMasterFilterOption = async (
-  id: string,
-  category: "tyres" | "wheels",
-  field: string,
-  optionId: string
-): Promise<MasterFilterApiResponse> => {
-  const response = await deleteMethod<MasterFilterApiResponse>(`/api/v1/masterFilter/${id}`, {
-    data: { category, field, optionId }
-  });
+// Delete master filter
+export const deleteMasterFilter = async (id: string): Promise<any> => {
+  const response = await deleteMethod<any>(`/api/v1/masterFilter/${id}`);
   return response.data;
 };

@@ -12,7 +12,8 @@ import Link from "next/link";
 import { FiTrash2 } from "react-icons/fi";
 import {
   getAllMasterFilters,
-  deleteMasterFilterOption,
+  getMasterFilterById,
+  deleteMasterFilter,
 } from "@/services/MasterFilterService";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
@@ -33,7 +34,6 @@ const ShowMeasurementsPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
-  const [masterFilterId, setMasterFilterId] = useState<string>("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteMeasurementId, setDeleteMeasurementId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -50,58 +50,33 @@ const ShowMeasurementsPage = () => {
       const response = await getAllMasterFilters({});
       const { items } = response.data;
 
-      if (items && items.length > 0) {
-        const masterFilter = items[0];
-        setMasterFilterId(masterFilter._id);
 
-        const transformedMeasurements: MeasurementItem[] = [];
+      console.log(response)
 
-        Object.entries(masterFilter.tyres).forEach(([key, values]) => {
-          if (Array.isArray(values) && key !== "_id") {
-            values.forEach((item: any) => {
-              transformedMeasurements.push({
-                id: item._id,
-                category: "tyre",
-                type: key,
-                value: item.name,
-              });
-            });
-          }
-        });
 
-        Object.entries(masterFilter.wheels).forEach(([key, values]) => {
-          if (Array.isArray(values) && key !== "_id") {
-            values.forEach((item: any) => {
-              transformedMeasurements.push({
-                id: item._id,
-                category: "wheel",
-                type: key,
-                value: item.name,
-              });
-            });
-          }
-        });
+      // Transform the flat structure to the format expected by the UI
+      const transformedMeasurements: MeasurementItem[] = items.map((item: any) => ({
+        id: item._id,
+        category: item.category,
+        type: item.subCategory,
+        value: item.values,
+      }));
 
-        setMeasurements(transformedMeasurements);
-        setFilteredMeasurements(transformedMeasurements);
+      setMeasurements(transformedMeasurements);
+      setFilteredMeasurements(transformedMeasurements);
 
-        const uniqueTypes = [
-          ...new Set(transformedMeasurements.map((m) => m.type)),
-        ];
-        setTypeOptions(
-          uniqueTypes.map((t) => ({
-            label: formatMeasurementType(t),
-            value: t,
-          }))
-        );
-      } else {
-        setMeasurements([]);
-        setFilteredMeasurements([]);
-        setMasterFilterId("");
-      }
+      const uniqueTypes = [
+        ...new Set(transformedMeasurements.map((m) => m.type)),
+      ];
+      setTypeOptions(
+        uniqueTypes.map((t) => ({
+          label: formatMeasurementType(t),
+          value: t,
+        }))
+      );
     } catch (error: any) {
       Toast({
-        message: error?.response?.data?.errorData || "Failed to load measurements",
+        message: error?.response?.data?.message || "Failed to load measurements",
         type: "error",
       });
     } finally {
@@ -169,33 +144,25 @@ const ShowMeasurementsPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!deleteMeasurementId || !masterFilterId) {
+    if (!deleteMeasurementId) {
       Toast({ message: "Failed to delete measurement", type: "error" });
-      return;
-    }
-
-    const measurement = measurements.find((m) => m.id === deleteMeasurementId);
-    if (!measurement) {
-      Toast({ message: "Measurement not found", type: "error" });
       return;
     }
 
     setDeleting(true);
     try {
-      const field = measurement.type;
-      const category: "tyres" | "wheels" =
-        measurement.category === "tyre" ? "tyres" : "wheels";
-
-      await deleteMasterFilterOption(masterFilterId, category, field, deleteMeasurementId);
+      // Delete the master filter entry by its ID
+      await deleteMasterFilter(deleteMeasurementId);
 
       const updated = measurements.filter((m) => m.id !== deleteMeasurementId);
       setMeasurements(updated);
+      setFilteredMeasurements(updated);
 
       Toast({ message: "Measurement deleted successfully!", type: "success" });
       handleCloseDeleteDialog();
     } catch (error: any) {
       Toast({
-        message: error?.response?.data?.errorData || "Failed to delete measurement",
+        message: error?.response?.data?.message || "Failed to delete measurement",
         type: "error",
       });
     } finally {
