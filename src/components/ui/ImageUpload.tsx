@@ -129,13 +129,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             Uploaded Images ({images.length})
           </h3>
 
-          <div
-            className={
-              !isMobile
-                ? "flex overflow-x-auto gap-3 pb-2"
-                : "grid grid-cols-2 gap-4 md:grid-cols-4" // 👈 grid layout
-            }
-          >
+          <div className="grid grid-cols-3 gap-4">
             {images.map((img) => (
               <div
                 key={img.id}

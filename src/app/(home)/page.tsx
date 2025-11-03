@@ -10,6 +10,9 @@ import {
   FiShoppingCart,
   FiUmbrella,
   FiUsers,
+  FiBookmark,
+  FiImage,
+  FiBookOpen,
 } from "react-icons/fi";
 import { IoMdArrowForward } from "react-icons/io";
 
@@ -37,6 +40,9 @@ const Page = () => {
     orderCount: 0,
     holidayCount: 0,
     employeeCount: 0,
+    brandCount: 0,
+    bannerCount: 0,
+    blogCount: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -106,6 +112,30 @@ const Page = () => {
       bgColor: "bg-indigo-500",
       lightBg: "bg-indigo-100",
       link: "/add-employee",
+    },
+    {
+      title: "Brands",
+      count: count.brandCount,
+      icon: FiBookmark,
+      bgColor: "bg-yellow-500",
+      lightBg: "bg-yellow-100",
+      link: "/brands",
+    },
+    {
+      title: "Banners",
+      count: count.bannerCount,
+      icon: FiImage,
+      bgColor: "bg-teal-500",
+      lightBg: "bg-teal-100",
+      link: "/banners",
+    },
+    {
+      title: "Blogs",
+      count: count.blogCount,
+      icon: FiBookOpen,
+      bgColor: "bg-red-500",
+      lightBg: "bg-red-100",
+      link: "/blogs",
     },
   ];
 
