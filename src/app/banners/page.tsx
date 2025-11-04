@@ -175,6 +175,7 @@ const BannerPage = () => {
                   onChange={setLaptopImages}
                   onFilesSelected={handleLaptopFilesSelected}
                   onRemove={handleRemoveLaptopImage}
+                  ImageTitle="Banner Image"
                   maxFiles={1}
                   multiple={false}
                   replaceImages
@@ -189,6 +190,7 @@ const BannerPage = () => {
                   isMobile={true}
                   onFilesSelected={handleMobileFilesSelected}
                   onRemove={handleRemoveMobileImage}
+                  ImageTitle="Banner Image"
                   maxFiles={1}
                   multiple={false}
                   replaceImages
