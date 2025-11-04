@@ -78,8 +78,31 @@ const Page = () => {
   }, [fetchProfile, admin?._id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setFormErrors({ ...formErrors, [e.target.name]: "" });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setFormErrors({ ...formErrors, [name]: "" });
+
+    // Email validation
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (value && !emailRegex.test(value)) {
+        setFormErrors({ ...formErrors, [name]: "Please enter a valid email address" });
+      }
+    }
+
+    // Phone validation - only numeric values and max 15 digits
+    if (name === "phone") {
+      const phoneRegex = /^\d{0,15}$/;
+      if (!phoneRegex.test(value)) {
+        // If the value doesn't match, we'll remove any non-numeric characters
+        // and trim to 15 digits max
+        const numericValue = value.replace(/\D/g, '').slice(0, 15);
+        setFormData({ ...formData, [name]: numericValue });
+        if (value && numericValue !== value) {
+          setFormErrors({ ...formErrors, [name]: "Phone number must contain only digits and be maximum 15 digits" });
+        }
+      }
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,8 +118,27 @@ const Page = () => {
 
     const errors: any = {};
     if (!formData.name) errors.name = "Name is required";
-    if (!formData.email) errors.email = "Email is required";
-    if (!formData.phone) errors.phone = "Phone is required";
+
+    // Email validation
+    if (!formData.email) {
+      errors.email = "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = "Please enter a valid email address";
+      }
+    }
+
+    // Phone validation
+    if (!formData.phone) {
+      errors.phone = "Phone is required";
+    } else {
+      const phoneRegex = /^\d{1,15}$/;
+      if (!phoneRegex.test(formData.phone)) {
+        errors.phone = "Phone number must contain only digits and be maximum 15 digits";
+      }
+    }
+
     setFormErrors(errors);
 
     if (Object.keys(errors).length) return;
@@ -211,23 +253,19 @@ const Page = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    error={formErrors.email}
                   />
-                  {formErrors.email && (
-                    <p className="text-sm text-red-600">{formErrors.email}</p>
-                  )}
                 </div>
 
                 <div>
                   <FormLabel label="Phone" required />
                   <TextField
-                    type="text"
+                    type="number"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    error={formErrors.phone}
                   />
-                  {formErrors.phone && (
-                    <p className="text-sm text-red-600">{formErrors.phone}</p>
-                  )}
                 </div>
 
                 <div>

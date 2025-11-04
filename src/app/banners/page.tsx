@@ -144,7 +144,7 @@ const BannerPage = () => {
       <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-            {isEdit ? "Edit Banner" : "Create Banner"}
+            {isEdit ? "Edit Banner" : "Add New Banner"}
           </h1>
           <p className="text-gray-400">
             {isEdit ? "Update banner images" : "Upload banner images for desktop and mobile views"}
@@ -176,6 +176,7 @@ const BannerPage = () => {
                   onFilesSelected={handleLaptopFilesSelected}
                   onRemove={handleRemoveLaptopImage}
                   maxFiles={1}
+                  ImageTitle="Banner Image"
                   multiple={false}
                   replaceImages
                 />
@@ -190,6 +191,7 @@ const BannerPage = () => {
                   onFilesSelected={handleMobileFilesSelected}
                   onRemove={handleRemoveMobileImage}
                   maxFiles={1}
+                  ImageTitle="Banner Image"
                   multiple={false}
                   replaceImages
                 />

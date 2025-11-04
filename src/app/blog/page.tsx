@@ -423,7 +423,7 @@ const BlogListPage: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Title</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 max-h-20 overflow-auto">
                   {viewBlog.title || "-"}
                 </p>
               </div>

@@ -40,7 +40,15 @@ const ContactList: React.FC = () => {
 
   const columns: Column<Contact>[] = [
     { title: "SR.NO", key: "index", render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1 },
-    { title: "Name", key: "name", render: (item) => item.name },
+    { 
+      title: "Name", 
+      key: "name", 
+      render: (item) => (
+        <div className="line-clamp-1" title={item.name}>
+          {item.name}
+        </div>
+      )
+    },
     { title: "Phone", key: "phone", render: (item) => item.phone },
     { title: "Email", key: "email", render: (item) => item.email },
     {
@@ -160,10 +168,10 @@ const ContactList: React.FC = () => {
       >
         {viewContact && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
               <div>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100 max-h-20 overflow-auto">
                   {viewContact.name || "-"}
                 </p>
               </div>

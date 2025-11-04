@@ -49,6 +49,11 @@ const BannerListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
+  // Image preview states
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
+  const [imageType, setImageType] = useState<'laptop' | 'mobile'>('laptop');
+
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingBanners: false,
     deletingBanner: false,
@@ -85,6 +90,21 @@ const BannerListPage: React.FC = () => {
   // confirm delete
   const confirmDeleteBanner = async () => {
     if (!deleteBannerId) return;
+    
+    // Check if this is the last active banner
+    const bannerToDelete = banners.find(banner => banner._id === deleteBannerId);
+    if (bannerToDelete?.isActive) {
+      const activeBannersCount = banners.filter(banner => banner.isActive).length;
+      if (activeBannersCount <= 1) {
+        Toast({
+          type: "error",
+          message: "Cannot delete the last active banner. At least one banner must remain active.",
+        });
+        handleCloseDeleteDialog();
+        return;
+      }
+    }
+    
     updateLoadingState("deletingBanner", true);
     try {
       await deleteBanner(deleteBannerId);
@@ -114,9 +134,33 @@ const BannerListPage: React.FC = () => {
     setDeleteBannerId(null);
   };
 
+  // Image preview handlers
+  const handleOpenImagePreview = (banner: Banner, type: 'laptop' | 'mobile') => {
+    setPreviewBanner(banner);
+    setImageType(type);
+    setShowImagePreview(true);
+  };
+
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false);
+    setPreviewBanner(null);
+  };
+
   const tableData: BannerWithId[] = (banners || []).map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (banner: Banner) => {
+    // If trying to deactivate and this is the last active banner, show error
+    if (banner.isActive) {
+      const activeBannersCount = banners.filter(b => b.isActive).length;
+      if (activeBannersCount <= 1) {
+        Toast({
+          type: "error",
+          message: "Cannot deactivate the last active banner. At least one banner must remain active.",
+        });
+        return;
+      }
+    }
+
     const updatedStatus = !banner.isActive;
 
     try {
@@ -157,7 +201,10 @@ const BannerListPage: React.FC = () => {
       key: "laptopImage",
       width: "120px",
       render: (item) => (
-        <div className="h-16 w-16">
+        <div 
+          className="h-16 w-16 cursor-pointer"
+          onClick={() => handleOpenImagePreview(item, 'laptop')}
+        >
           <Image
             src={getFullImageUrl(item.laptopImage)}
             alt="Laptop Banner"
@@ -173,7 +220,10 @@ const BannerListPage: React.FC = () => {
       key: "mobileImage",
       width: "80px",
       render: (item) => (
-        <div className="h-16 w-16">
+        <div 
+          className="h-16 w-16 cursor-pointer"
+          onClick={() => handleOpenImagePreview(item, 'mobile')}
+        >
           <Image
             src={getFullImageUrl(item.mobileImage)}
             alt="Mobile Banner"
@@ -268,6 +318,36 @@ const BannerListPage: React.FC = () => {
           Are you sure you want to delete this banner? This action cannot be undone.
         </p>
       </CommonDialog>
+      
+      {/* Image Preview Dialog */}
+      <CommonDialog
+        isOpen={showImagePreview}
+        onClose={handleCloseImagePreview}
+        size="lg"
+      >
+        {previewBanner && (
+          <div className="flex flex-col items-center">
+            <div className="relative w-full flex justify-center items-center">
+              <div className="flex justify-center items-center w-full">
+                <Image
+                  src={imageType === 'laptop' ? 
+                    getFullImageUrl(previewBanner.laptopImage) : 
+                    getFullImageUrl(previewBanner.mobileImage)}
+                  alt={`${imageType === 'laptop' ? 'Laptop' : 'Mobile'} Banner`}
+                  width={450}
+                  height={450}
+                  className="rounded-lg object-contain max-h-[60vh] rounded-xl"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-4 text-lg font-semibold">
+              {imageType === 'laptop' ? 'Laptop Banner' : 'Mobile Banner'}
+            </div>
+          </div>
+        )}
+      </CommonDialog>
+      
       <div className="overflow-x-auto">
         {loadingStates.fetchingBanners || loadingStates.deletingBanner ? (
           <Skeleton />
