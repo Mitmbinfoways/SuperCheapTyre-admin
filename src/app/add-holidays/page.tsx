@@ -281,7 +281,6 @@ const AddHolidayPage: React.FC = () => {
               onChange={(d: Date | null) => setDate(d)}
               minDate={new Date()}
               placeholder="Select a date"
-              className="w-full"
               disabled={loadingStates.submittingForm}
               dateFormat="yyyy-MM-dd"
               isClearable={true}
