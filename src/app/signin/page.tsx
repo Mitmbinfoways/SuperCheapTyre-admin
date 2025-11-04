@@ -166,7 +166,6 @@ export default function LoginPage() {
             variant="primary"
             className="w-full"
             type="submit"
-            disabled={isLoading}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>

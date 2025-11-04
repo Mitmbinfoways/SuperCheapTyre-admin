@@ -127,7 +127,7 @@ const Page = () => {
       icon: FiImage,
       bgColor: "bg-teal-500",
       lightBg: "bg-teal-100",
-      link: "/banners",
+      link: "/banners/list",
     },
     {
       title: "Blogs",
