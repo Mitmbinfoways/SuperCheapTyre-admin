@@ -177,7 +177,6 @@ const BannerPage = () => {
                   onRemove={handleRemoveLaptopImage}
                   ImageTitle="Banner Image"
                   maxFiles={1}
-                  ImageTitle="Banner Image"
                   multiple={false}
                   replaceImages
                 />
@@ -193,7 +192,6 @@ const BannerPage = () => {
                   onRemove={handleRemoveMobileImage}
                   ImageTitle="Banner Image"
                   maxFiles={1}
-                  ImageTitle="Banner Image"
                   multiple={false}
                   replaceImages
                 />
