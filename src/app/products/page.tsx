@@ -62,6 +62,17 @@ const ProductListPage: React.FC = () => {
   const [tempIsPopularFilter, setTempIsPopularFilter] = useState<boolean | null>(null);
   const [tempLowStockFilter, setTempLowStockFilter] = useState<boolean | null>(null);
 
+  // Check if any filters are currently applied
+  const areFiltersApplied = () => {
+    return (
+      categoryFilter !== "" ||
+      brandFilter !== "" ||
+      statusFilter !== "all" ||
+      isPopularFilter !== null ||
+      lowStockFilter !== null
+    );
+  };
+
   // Image preview states
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewProduct, setPreviewProduct] = useState<ServiceProduct | null>(null);
@@ -207,6 +218,17 @@ const ProductListPage: React.FC = () => {
     setTempStatusFilter("all");
     setTempIsPopularFilter(null);
     setTempLowStockFilter(null);
+    
+    // Also reset the actual filter state
+    setSearch("");
+    setCategoryFilter("");
+    setBrandFilter("");
+    setStatusFilter("all");
+    setIsPopularFilter(null);
+    setLowStockFilter(null);
+    
+    // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   // Image preview handlers
@@ -427,10 +449,17 @@ const ProductListPage: React.FC = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="w-full sm:w-80"
         />
-        <Button variant="secondary" onClick={handleOpenFilterPopup}>
-          <FiFilter className="mr-1" size={16} />
-           Filters
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={handleOpenFilterPopup}>
+            <FiFilter className="mr-1" size={16} />
+            Filters
+          </Button>
+          {areFiltersApplied() && (
+            <Button variant="secondary" className="text-nowrap" onClick={handleResetFilters}>
+              Reset Filters
+            </Button>
+          )}
+        </div>
       </div>
 
 
