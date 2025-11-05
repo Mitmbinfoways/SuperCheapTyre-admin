@@ -28,11 +28,11 @@ export default function CommonDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       <div
-        className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative p-6`}
+        className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative max-h-[90vh] overflow-y-auto p-4 sm:p-6`}
         onClick={handleDialogClick}
       >
         <div className="mb-4 flex items-center justify-between">

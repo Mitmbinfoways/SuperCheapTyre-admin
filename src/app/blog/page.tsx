@@ -369,7 +369,7 @@ const BlogListPage: React.FC = () => {
       
       {/* Search and Filters */}
       <div className="mb-4 flex flex-col gap-4 sm:flex-row">
-        <div className="py-7 w-full sm:w-1/3">
+        <div className="sm:py-7 w-full sm:w-1/3">
           <TextField
             type="text"
             placeholder="Search"

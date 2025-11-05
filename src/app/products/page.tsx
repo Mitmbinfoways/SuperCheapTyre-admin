@@ -441,7 +441,7 @@ const ProductListPage: React.FC = () => {
       </div>
 
       {/* External Search Bar */}
-      <div className="mb-4 flex ">
+      <div className="mb-4 flex justify-between items-center gap-2">
         <TextField
           type="text"
           placeholder="Search products..."
@@ -555,15 +555,15 @@ const ProductListPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-between">
-          <Button variant="secondary" onClick={handleResetFilters}>
+        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-between">
+          <Button variant="secondary" onClick={handleResetFilters} className="w-full sm:w-auto">
             Reset Filters
           </Button>
-          <div className="space-x-2">
-            <Button variant="secondary" onClick={handleCloseFilterPopup}>
+          <div className="flex flex-col gap-2 sm:flex-row sm:space-x-2">
+            <Button variant="secondary" onClick={handleCloseFilterPopup} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={handleApplyFilters}>
+            <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
               Apply Filters
             </Button>
           </div>

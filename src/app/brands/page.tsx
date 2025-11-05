@@ -272,7 +272,7 @@ const BrandListPage: React.FC = () => {
 
       {/* Search and Filters */}
       <div className="mb-4 flex flex-col gap-4 sm:flex-row">
-        <div className="w-full sm:w-1/3 py-7">
+        <div className="w-full sm:w-1/3 sm:py-7">
           <TextField
             type="text"
             placeholder="Search"
