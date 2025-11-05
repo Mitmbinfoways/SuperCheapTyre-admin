@@ -19,7 +19,6 @@ import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
-import Tooltip from "@/components/ui/Tooltip";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 
 interface ExtendedAppointment extends Appointment {
@@ -177,15 +176,15 @@ const AppointmentsPage = () => {
           "-"
         ),
     },
-    {
-      title: "Status",
-      key: "status",
-      render: (item) => <Badge label={item.status || "-"} color="green" />,
-    },
+    // {
+    //   title: "Status",
+    //   key: "status",
+    //   render: (item) => <Badge label={item.status || "-"} color="green" />,
+    // },
     {
       title: "Notes",
       key: "notes",
-      render: (item) => <Tooltip content={item.notes || "-"} position="top"><div className="max-w-[120px] line-clamp-2">{item.notes || "-"}</div></Tooltip>,
+      render: (item) => <div className="max-w-[120px] line-clamp-2">{item.notes || "-"}</div>,
     },
     {
       title: "Assign Employee",
@@ -216,7 +215,7 @@ const AppointmentsPage = () => {
           {/* Added View Icon */}
           <button
             onClick={() => handleViewAppointment(item)}
-            className="cursor-pointer text-gray-600"
+            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             aria-label="View appointment"
           >
             <EyeIcon className="h-5 w-5" />
@@ -234,7 +233,7 @@ const AppointmentsPage = () => {
           ) : (
             <button
               onClick={() => setEditingId(item._id)}
-              className="cursor-pointer text-gray-600"
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               aria-label="Edit appointment"
             >
               <MdModeEdit size={16} />
@@ -336,8 +335,8 @@ const AppointmentsPage = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Time Slot</h3>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {viewAppointment.slotDetails ? 
-                    `${viewAppointment.slotDetails.startTime} - ${viewAppointment.slotDetails.endTime}` : 
+                  {viewAppointment.slotDetails ?
+                    `${viewAppointment.slotDetails.startTime} - ${viewAppointment.slotDetails.endTime}` :
                     "-"}
                 </p>
               </div>

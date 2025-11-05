@@ -32,6 +32,7 @@ interface TechnicianFilter {
   search?: string;
   from?: string;
   to?: string;
+  isActive?: boolean;
 }
 
 interface ApiResponse<T> {
@@ -60,12 +61,13 @@ export const AddTechnician = async (
 export const GetTechnicians = async (
   filter: TechnicianFilter = {},
 ): Promise<ApiResponse<TechnicianRes>> => {
-  const { currentPage, itemsPerPage, search, from, to } = filter;
+  const { currentPage, itemsPerPage, search, from, to, isActive } = filter;
   const params: string[] = [];
 
   if (currentPage !== undefined) params.push(`page=${currentPage}`);
   if (itemsPerPage !== undefined) params.push(`limit=${itemsPerPage}`);
   if (search) params.push(`search=${encodeURIComponent(search)}`);
+  if (isActive !== undefined) params.push(`isActive=${isActive}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/technician${
     params.length ? `?${params.join("&")}` : ""

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { MdModeEdit } from "react-icons/md";
-import { FiTrash2 } from "react-icons/fi";
+import { FiFilter, FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
 import Button from "@/components/ui/Button";
 import CommonDialog from "@/components/ui/Dialogbox";
@@ -12,6 +12,7 @@ import {
   deleteProduct,
   getAllProducts,
   updateProduct,
+  Product as ServiceProduct,
 } from "@/services/CreateProductService";
 import Image from "next/image";
 import { getProductImageUrl } from "@/lib/utils";
@@ -23,24 +24,10 @@ import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import Select from "@/components/ui/Select";
+import { getAllBrands } from "@/services/BrandService";
 
-
-type Product = {
-  _id: string;
-  name: string;
-  category: string;
-  brand: string;
-  description: string;
-  images: string[];
-  sku?: string;
-  price: number;
-  stock: number;
-  isActive: boolean;
-  isPopular: boolean;
-  createdAt: string;
-};
-
-type ProductWithId = Product & { id: string };
+type ProductWithId = ServiceProduct & { id: string };
 
 type LoadingStates = {
   fetchingProducts: boolean;
@@ -49,17 +36,35 @@ type LoadingStates = {
 
 const ProductListPage: React.FC = () => {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ServiceProduct[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [brandFilter, setBrandFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isPopularFilter, setIsPopularFilter] = useState<boolean | null>(null);
+  const [lowStockFilter, setLowStockFilter] = useState<boolean | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<{ label: string, value: string }[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
+  // Filter popup state
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+
+  // Filter state for the popup (temporary until applied)
+  const [tempSearch, setTempSearch] = useState("");
+  const [tempCategoryFilter, setTempCategoryFilter] = useState("");
+  const [tempBrandFilter, setTempBrandFilter] = useState("");
+  const [tempStatusFilter, setTempStatusFilter] = useState("all");
+  const [tempIsPopularFilter, setTempIsPopularFilter] = useState<boolean | null>(null);
+  const [tempLowStockFilter, setTempLowStockFilter] = useState<boolean | null>(null);
+
   // Image preview states
   const [showImagePreview, setShowImagePreview] = useState(false);
-  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+  const [previewProduct, setPreviewProduct] = useState<ServiceProduct | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
@@ -73,6 +78,32 @@ const ProductListPage: React.FC = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
 
+
+  const fetchBrands = async () => {
+    try {
+      const res = await getAllBrands();
+      const brandOptions = res.data.items
+        .filter((brand) => brand.isActive)
+        .map((brand) => ({
+          label: brand.name,
+          value: brand.name,
+        }));
+      setBrands(brandOptions);
+    } catch (error) {
+      console.error("Failed to fetch brands:", error);
+      Toast({
+        message: "Failed to load brands",
+        type: "error",
+      });
+    }
+  };
+
+
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+
   const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
     try {
@@ -80,11 +111,20 @@ const ProductListPage: React.FC = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: debounceSearch,
+        category: categoryFilter || undefined,
+        brand: brandFilter || undefined,
+        isActive: statusFilter === "all" ? undefined : statusFilter === "active",
+        isPopular: isPopularFilter !== null ? isPopularFilter : undefined,
+        stock: lowStockFilter === true ? "low-stock" : undefined,
       };
       const data = await getAllProducts(filter);
       const { items, pagination } = data.data;
-      setProducts(items as Product[]);
+      setProducts(items);
       setTotalPages(pagination.totalPages);
+
+      // Extract unique categories from the products
+      const uniqueCategories = Array.from(new Set(items.map((p) => p.category).filter(Boolean))) as string[];
+      setCategories(uniqueCategories);
     } catch (e: any) {
       Toast({
         type: "error",
@@ -93,11 +133,15 @@ const ProductListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, brandFilter, statusFilter, isPopularFilter, lowStockFilter]);
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
+
+  const handleEditProduct = (product: ServiceProduct) => {
+    router.push(`/create-product?id=${product._id}`);
+  };
 
   // confirm delete
   const confirmDeleteProduct = async () => {
@@ -118,10 +162,6 @@ const ProductListPage: React.FC = () => {
     }
   };
 
-  const handleEditProduct = (product: Product) => {
-    router.push(`/create-product?id=${product._id}`);
-  };
-
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   const handleCloseDeleteDialog = () => {
@@ -129,8 +169,48 @@ const ProductListPage: React.FC = () => {
     setDeleteProductId(null);
   };
 
+  // Filter popup handlers
+  const handleOpenFilterPopup = () => {
+    // Initialize temporary filter state with current values
+    setTempSearch(search);
+    setTempCategoryFilter(categoryFilter);
+    setTempBrandFilter(brandFilter);
+    setTempStatusFilter(statusFilter);
+    setTempIsPopularFilter(isPopularFilter);
+    setTempLowStockFilter(lowStockFilter);
+    setShowFilterPopup(true);
+  };
+
+  const handleCloseFilterPopup = () => {
+    setShowFilterPopup(false);
+  };
+
+  const handleApplyFilters = () => {
+    // Apply temporary filter values to actual filter state
+    setSearch(tempSearch);
+    setCategoryFilter(tempCategoryFilter);
+    setBrandFilter(tempBrandFilter);
+    setStatusFilter(tempStatusFilter);
+    setIsPopularFilter(tempIsPopularFilter);
+    setLowStockFilter(tempLowStockFilter);
+    setShowFilterPopup(false);
+
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    // Reset temporary filter state
+    setTempSearch("");
+    setTempCategoryFilter("");
+    setTempBrandFilter("");
+    setTempStatusFilter("all");
+    setTempIsPopularFilter(null);
+    setTempLowStockFilter(null);
+  };
+
   // Image preview handlers
-  const handleOpenImagePreview = (product: Product) => {
+  const handleOpenImagePreview = (product: ServiceProduct) => {
     setPreviewProduct(product);
     setCurrentImageIndex(0); // Start with the first image
     setShowImagePreview(true);
@@ -156,7 +236,7 @@ const ProductListPage: React.FC = () => {
 
   const tableData: ProductWithId[] = products.map((p) => ({ ...p, id: p._id }));
 
-  const handleToggleActive = async (product: Product) => {
+  const handleToggleActive = async (product: ServiceProduct) => {
     const updatedStatus = !product.isActive;
 
     try {
@@ -192,7 +272,7 @@ const ProductListPage: React.FC = () => {
       key: "images",
       width: "80px",
       render: (item) => (
-        <div 
+        <div
           className="h-12 w-12 sm:h-16 sm:w-16 cursor-pointer"
           onClick={() => handleOpenImagePreview(item)}
         >
@@ -279,7 +359,18 @@ const ProductListPage: React.FC = () => {
       render: (item) => (
         <Badge
           label={item.stock}
-          color={item.stock > 10 ? "green" : item.stock > 0 ? "yellow" : "red"}
+          color={item.stock > 5 ? "green" : item.stock > 0 ? "yellow" : "red"}
+        />
+      ),
+    },
+    {
+      title: "Status",
+      key: "isActive",
+      align: "center",
+      render: (item) => (
+        <Badge
+          label={item.isActive ? "Active" : "Inactive"}
+          color={item.isActive ? "green" : "red"}
         />
       ),
     },
@@ -293,7 +384,7 @@ const ProductListPage: React.FC = () => {
           <MdModeEdit
             size={16}
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditProduct(item)}
+            onClick={() => handleEditProduct({ ...item } as ServiceProduct)}
             title="Edit product"
           />
           <FiTrash2
@@ -307,7 +398,7 @@ const ProductListPage: React.FC = () => {
           />
           <ToggleSwitch
             checked={item.isActive}
-            onChange={() => handleToggleActive(item)}
+            onChange={() => handleToggleActive({ ...item } as ServiceProduct)}
           />
         </div>
       ),
@@ -320,39 +411,136 @@ const ProductListPage: React.FC = () => {
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Manage Products
         </h1>
-        <Button className="w-full sm:w-auto" onClick={() => router.push("/create-product")}>
-          Create New Product
-        </Button>
+        <div className="flex gap-2">
+          <Button className="w-full sm:w-auto" onClick={() => router.push("/create-product")}>
+            Create New Product
+          </Button>
+        </div>
       </div>
-      <div className="w-full sm:w-1/2 lg:w-1/3 mb-4">
+
+      {/* External Search Bar */}
+      <div className="mb-4 flex ">
         <TextField
           type="text"
-          placeholder="Search"
+          placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
+          className="w-full sm:w-80"
         />
+        <Button variant="secondary" onClick={handleOpenFilterPopup}>
+          <FiFilter className="mr-1" size={16} />
+           Filters
+        </Button>
       </div>
+
+
+      {/* Filter Popup Dialog */}
       <CommonDialog
-        isOpen={showDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        title="Confirm Delete"
-        footer={
-          <div className="flex justify-end space-x-3">
-            <Button variant="secondary" onClick={handleCloseDeleteDialog}>
+        isOpen={showFilterPopup}
+        onClose={handleCloseFilterPopup}
+        title="Filter Products"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Category
+            </label>
+            <Select
+              value={tempCategoryFilter}
+              onChange={setTempCategoryFilter}
+              options={[
+                { label: "All Categories", value: "" },
+                { label: "Tyre", value: "tyre" },
+                { label: "Wheel", value: "wheel" },
+                ...categories.filter(cat => cat !== "tyre" && cat !== "wheel").map(cat => ({
+                  label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  value: cat
+                }))
+              ]}
+              placeholder="Filter by Category"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Brand
+            </label>
+            <Select
+              value={tempBrandFilter}
+              onChange={setTempBrandFilter}
+              options={[
+                { label: "All Brands", value: "" },
+                ...brands,
+              ]}
+              placeholder="Filter by Brand"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Status
+            </label>
+            <Select
+              value={tempStatusFilter}
+              onChange={setTempStatusFilter}
+              options={[
+                { label: "All Status", value: "all" },
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+              ]}
+              placeholder="Filter by Status"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isPopular"
+              checked={tempIsPopularFilter === true}
+              onChange={(e) => setTempIsPopularFilter(e.target.checked ? true : null)}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label
+              htmlFor="isPopular"
+              className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+            >
+              Is Popular
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="lowStock"
+              checked={tempLowStockFilter === true}
+              onChange={(e) => setTempLowStockFilter(e.target.checked ? true : null)}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label
+              htmlFor="lowStock"
+              className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+            >
+              Low Stock (5 or less)
+            </label>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-between">
+          <Button variant="secondary" onClick={handleResetFilters}>
+            Reset Filters
+          </Button>
+          <div className="space-x-2">
+            <Button variant="secondary" onClick={handleCloseFilterPopup}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDeleteProduct}>
-              Delete
+            <Button onClick={handleApplyFilters}>
+              Apply Filters
             </Button>
           </div>
-        }
-      >
-        <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to delete this product?
-        </p>
+        </div>
       </CommonDialog>
-      
+
       {/* Image Preview Dialog with Carousel */}
       <CommonDialog
         isOpen={showImagePreview}
@@ -365,13 +553,12 @@ const ProductListPage: React.FC = () => {
               <button
                 onClick={handlePrevImage}
                 disabled={currentImageIndex === 0}
-                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
-                  currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
-                }`}
+                className={`absolute left-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${currentImageIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                  }`}
               >
                 <FaAngleLeft size={18} />
               </button>
-              
+
               <div className="flex justify-center items-center w-full">
                 <Image
                   src={getProductImageUrl(previewProduct.images[currentImageIndex])}
@@ -381,23 +568,22 @@ const ProductListPage: React.FC = () => {
                   className="rounded-lg object-contain max-h-[60vh] rounded-xl"
                 />
               </div>
-              
+
               <button
                 onClick={handleNextImage}
                 disabled={currentImageIndex === previewProduct.images.length - 1}
-                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${
-                  currentImageIndex === previewProduct.images.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
-                }`}
+                className={`absolute right-0 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-gray-700/80 shadow-lg ${currentImageIndex === previewProduct.images.length - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-600"
+                  }`}
               >
                 <FaAngleRight size={18} />
               </button>
             </div>
-            
+
             {/* Image Counter */}
             <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               {currentImageIndex + 1} of {previewProduct.images.length}
             </div>
-            
+
             {/* Thumbnail Grid */}
             {previewProduct.images.length > 1 && (
               <div className="mt-4 grid grid-cols-4 sm:grid-cols-6 gap-2 max-w-full overflow-x-auto py-2">
@@ -405,11 +591,10 @@ const ProductListPage: React.FC = () => {
                   <div
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${
-                      currentImageIndex === index
-                        ? "border-blue-500 ring-2 ring-blue-300"
-                        : "border-gray-200 dark:border-gray-700"
-                    }`}
+                    className={`h-16 w-16 cursor-pointer rounded border-2 flex-shrink-0 ${currentImageIndex === index
+                      ? "border-blue-500 ring-2 ring-blue-300"
+                      : "border-gray-200 dark:border-gray-700"
+                      }`}
                   >
                     <Image
                       src={getProductImageUrl(image)}
@@ -425,7 +610,7 @@ const ProductListPage: React.FC = () => {
           </div>
         )}
       </CommonDialog>
-      
+
       <div className="overflow-x-auto">
         {loadingStates.fetchingProducts || loadingStates.deletingProduct ? (
           <Skeleton />

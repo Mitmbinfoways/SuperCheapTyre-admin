@@ -21,6 +21,7 @@ import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
+import Select from "@/components/ui/Select";
 
 
 interface Technician {
@@ -66,6 +67,7 @@ const AddTechnicianPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetching: false,
     submitting: false,
@@ -84,7 +86,16 @@ const AddTechnicianPage: React.FC = () => {
     updateLoading("fetching", true);
     setError({});
     try {
-      const filter = { currentPage, itemsPerPage, search: debounceSearch };
+      const filter: any = { 
+        currentPage, 
+        itemsPerPage, 
+        search: debounceSearch 
+      };
+      
+      if (statusFilter !== "All") {
+        filter.isActive = statusFilter === "Active";
+      }
+      
       const data = await GetTechnicians(filter);
       const { items, pagination } = data.data;
       setTechnicians(items as Technician[]);
@@ -96,7 +107,7 @@ const AddTechnicianPage: React.FC = () => {
     } finally {
       updateLoading("fetching", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch, statusFilter]);
 
   useEffect(() => {
     loadTechnicians();
@@ -188,6 +199,11 @@ const AddTechnicianPage: React.FC = () => {
     setShowDeleteDialog(false);
     setDeleteTechnicianId(null);
     setError({});
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("All");
   };
 
   const handleToggleActive = async (t: Technician) => {
@@ -282,15 +298,37 @@ const AddTechnicianPage: React.FC = () => {
           Add Employee
         </Button>
       </div>
-      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
-        <TextField
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
-        />
+      
+      {/* Search and Filters */}
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row">
+        <div className="py-7 w-full sm:w-1/3">
+          <TextField
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "All Status", value: "All" },
+              { label: "Active", value: "Active" },
+              { label: "Inactive", value: "Inactive" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center">
+          <Button variant="secondary" onClick={handleResetFilters}>
+            Reset Filters
+          </Button>
+        </div>
       </div>
+      
       <CommonDialog
         isOpen={showForm}
         size="lg"

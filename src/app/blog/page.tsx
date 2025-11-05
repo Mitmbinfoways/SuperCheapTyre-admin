@@ -19,6 +19,7 @@ import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import Select from "@/components/ui/Select";
 
 interface Blog {
   _id: string;
@@ -46,6 +47,8 @@ const BlogListPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteBlogId, setDeleteBlogId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [formatFilter, setFormatFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [viewBlog, setViewBlog] = useState<Blog | null>(null); // Added state for view blog
@@ -71,11 +74,20 @@ const BlogListPage: React.FC = () => {
   const loadBlogs = useCallback(async () => {
     updateLoadingState("fetchingBlogs", true);
     try {
-      const filter = {
+      const filter: any = {
         page: currentPage,
         limit: itemsPerPage,
         search: debounceSearch,
       };
+      
+      if (formatFilter !== "All") {
+        filter.formate = formatFilter;
+      }
+      
+      if (statusFilter !== "All") {
+        filter.isActive = statusFilter === "Active";
+      }
+      
       const data = await getAllBlogs(filter);
       const { blogs, pagination } = data.data;
       setBlogs(blogs as Blog[]);
@@ -88,7 +100,7 @@ const BlogListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingBlogs", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch, formatFilter, statusFilter]);
 
   useEffect(() => {
     loadBlogs();
@@ -122,6 +134,12 @@ const BlogListPage: React.FC = () => {
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteBlogId(null);
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setFormatFilter("All");
+    setStatusFilter("All");
   };
 
   // Added function to handle view blog
@@ -348,15 +366,51 @@ const BlogListPage: React.FC = () => {
           Create New Blog
         </Button>
       </div>
-      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
-        <TextField
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
-        />
+      
+      {/* Search and Filters */}
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row">
+        <div className="py-7 w-full sm:w-1/3">
+          <TextField
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Format"
+            value={formatFilter}
+            onChange={setFormatFilter}
+            options={[
+              { label: "All Format", value: "All" },
+              { label: "Carousel", value: "carousel" },
+              { label: "Card", value: "card" },
+              { label: "Alternative", value: "alternative" },
+              { label: "Center", value: "center" },
+            ]}
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "All Status", value: "All" },
+              { label: "Active", value: "Active" },
+              { label: "Inactive", value: "Inactive" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center">
+          <Button variant="secondary" onClick={handleResetFilters}>
+            Reset Filters
+          </Button>
+        </div>
       </div>
+      
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}

@@ -35,7 +35,7 @@ const TextField: React.FC<TextFieldProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
       type === "number" &&
-      ["e", "E", "+", "-", "."].includes(e.key)
+      ["e", "E", "-", "."].includes(e.key)
     ) {
       e.preventDefault();
     }

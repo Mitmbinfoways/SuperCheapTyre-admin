@@ -23,6 +23,7 @@ import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import { getBrandImageUrl } from "@/lib/utils";
 import Skeleton from "@/components/ui/Skeleton";
+import Select from "@/components/ui/Select";
 
 type BrandWithId = Brand & { id: string };
 
@@ -37,6 +38,8 @@ const BrandListPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteBrandId, setDeleteBrandId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
@@ -63,6 +66,8 @@ const BrandListPage: React.FC = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: debounceSearch,
+        category: categoryFilter !== "All" ? categoryFilter : undefined,
+        isActive: statusFilter !== "All" ? statusFilter === "Active" : undefined,
       };
       const data = await getAllBrands(filter);
       const { items, pagination } = data.data;
@@ -76,7 +81,7 @@ const BrandListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingBrands", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch]);
+  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, statusFilter]);
 
   useEffect(() => {
     loadBrands();
@@ -121,6 +126,12 @@ const BrandListPage: React.FC = () => {
   const handleCloseImagePreview = () => {
     setShowImagePreview(false);
     setPreviewBrand(null);
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setCategoryFilter("All");
+    setStatusFilter("All");
   };
 
   const tableData: BrandWithId[] = brands.map((p) => ({ ...p, id: p._id }));
@@ -259,15 +270,46 @@ const BrandListPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
-        <TextField
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
-        />
+      {/* Search and Filters */}
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row">
+        <div className="w-full sm:w-1/3 py-7">
+          <TextField
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Category"
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={[
+              { label: "All Categories", value: "All" },
+              { label: "Tyre", value: "Tyre" },
+              { label: "Wheel", value: "Wheel" },
+            ]}
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "All Status", value: "All" },
+              { label: "Active", value: "Active" },
+              { label: "Inactive", value: "Inactive" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center">
+          <Button variant="secondary" onClick={handleResetFilters}>
+            Reset Filters
+          </Button>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

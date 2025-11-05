@@ -42,11 +42,12 @@ type BannerRes = {
 };
 
 export const getAllBanners = async (
-  filter: { page?: number; limit?: number; search?: string } = {},
+  filter: { page?: number; limit?: number; search?: string; isActive?: boolean } = {},
 ): Promise<ApiResponse<Banner[]>> => {
   // The backend currently returns a simple array of banners, not a paginated response
   const params: string[] = [];
   if (filter.search) params.push(`search=${encodeURIComponent(filter.search)}`);
+  if (filter.isActive !== undefined) params.push(`isActive=${filter.isActive}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/banner${params.length ? `?${params.join("&")}` : ""}`;
 

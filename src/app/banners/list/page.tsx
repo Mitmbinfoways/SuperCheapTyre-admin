@@ -22,6 +22,7 @@ import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 import Badge from "@/components/ui/Badge";
+import Select from "@/components/ui/Select";
 
 type Banner = {
   _id: string;
@@ -45,6 +46,7 @@ const BannerListPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteBannerId, setDeleteBannerId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
@@ -68,8 +70,12 @@ const BannerListPage: React.FC = () => {
   const loadBanners = useCallback(async () => {
     updateLoadingState("fetchingBanners", true);
     try {
-      // The backend returns a simple array of banners
-      const data = await getAllBanners({});
+      // Use backend filtering instead of client-side filtering
+      const filter: any = {};
+      if (statusFilter !== "All") {
+        filter.isActive = statusFilter === "Active";
+      }
+      const data = await getAllBanners(filter);
       setBanners(data.data);
       // Since we're not paginating, set totalPages to 1
       setTotalPages(1);
@@ -81,7 +87,7 @@ const BannerListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingBanners", false);
     }
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     loadBanners();
@@ -132,6 +138,11 @@ const BannerListPage: React.FC = () => {
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
     setDeleteBannerId(null);
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("All");
   };
 
   // Image preview handlers
@@ -290,15 +301,37 @@ const BannerListPage: React.FC = () => {
           Create New Banner
         </Button>
       </div>
-      <div className="mb-4 w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
-        <TextField
-          type="text"
-          placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full"
-        />
+      
+      {/* Search and Filters */}
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row">
+        <div className="w-full sm:w-1/3 py-7">
+          <TextField
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="w-full sm:w-1/4">
+          <Select
+            label="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { label: "All Status", value: "All" },
+              { label: "Active", value: "Active" },
+              { label: "Inactive", value: "Inactive" },
+            ]}
+          />
+        </div>
+        <div className="flex items-center">
+          <Button variant="secondary" onClick={handleResetFilters}>
+            Reset Filters
+          </Button>
+        </div>
       </div>
+      
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}

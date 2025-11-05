@@ -12,7 +12,6 @@ import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
-import Tooltip from "@/components/ui/Tooltip";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 
@@ -60,14 +59,12 @@ const ContactList: React.FC = () => {
       title: "Message",
       key: "message",
       render: (item) => (
-        <Tooltip content={item.message} position="left">
           <div
             className="max-w-36 truncate line-clamp-2 cursor-pointer"
             title={item.message}
           >
             {item.message}
           </div>
-        </Tooltip>
       ),
     },
     {

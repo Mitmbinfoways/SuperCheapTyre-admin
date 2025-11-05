@@ -75,12 +75,17 @@ type ProductRes = {
 };
 
 export const getAllProducts = async (
-  filter: { page?: number; limit?: number; search?: string } = {},
+  filter: { page?: number; limit?: number; search?: string; category?: string; brand?: string; isActive?: boolean; isPopular?: boolean; stock?: string } = {},
 ): Promise<ApiResponse<ProductRes>> => {
   const params: string[] = [];
   if (filter.page !== undefined) params.push(`page=${filter.page}`);
   if (filter.limit !== undefined) params.push(`limit=${filter.limit}`);
   if (filter.search) params.push(`search=${encodeURIComponent(filter.search)}`);
+  if (filter.category) params.push(`category=${encodeURIComponent(filter.category)}`);
+  if (filter.brand) params.push(`brand=${encodeURIComponent(filter.brand)}`);
+  if (filter.isActive !== undefined) params.push(`isActive=${filter.isActive}`);
+  if (filter.isPopular !== undefined) params.push(`isPopular=${filter.isPopular}`);
+  if (filter.stock) params.push(`stock=${encodeURIComponent(filter.stock)}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/product${params.length ? `?${params.join("&")}` : ""}`;
 

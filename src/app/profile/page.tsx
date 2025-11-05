@@ -90,17 +90,39 @@ const Page = () => {
       }
     }
 
-    // Phone validation - only numeric values and max 15 digits
+    // Phone validation - allow + sign and digits only
     if (name === "phone") {
-      const phoneRegex = /^\d{0,15}$/;
+      // Allow + sign only at the beginning and digits only
+      const phoneRegex = /^\+?[0-9]*$/;
       if (!phoneRegex.test(value)) {
-        // If the value doesn't match, we'll remove any non-numeric characters
-        // and trim to 15 digits max
-        const numericValue = value.replace(/\D/g, '').slice(0, 15);
-        setFormData({ ...formData, [name]: numericValue });
-        if (value && numericValue !== value) {
-          setFormErrors({ ...formErrors, [name]: "Phone number must contain only digits and be maximum 15 digits" });
+        // Remove any invalid characters
+        let cleanValue = value.replace(/[^0-9+]/g, '');
+        
+        // Ensure + is only at the beginning
+        if (cleanValue.includes('+')) {
+          const plusCount = (cleanValue.match(/\+/g) || []).length;
+          if (plusCount > 1 || cleanValue[0] !== '+') {
+            // Keep only the first + at the beginning
+            cleanValue = cleanValue.replace(/\+/g, '');
+            cleanValue = '+' + cleanValue;
+          }
         }
+        
+        // Limit to 16 characters (15 digits + 1 plus sign)
+        if (cleanValue.length > 16) {
+          cleanValue = cleanValue.substring(0, 16);
+        }
+        
+        setFormData({ ...formData, [name]: cleanValue });
+        
+        // Show error only if value is not empty and doesn't match pattern
+        if (value && !/^\+?[0-9]*$/.test(cleanValue)) {
+          setFormErrors({ ...formErrors, [name]: "Phone number must contain only digits, optionally start with +" });
+        }
+      } else if (value.length > 16) {
+        // Handle case where user pastes a long valid number
+        const trimmedValue = value.substring(0, 16);
+        setFormData({ ...formData, [name]: trimmedValue });
       }
     }
   };
@@ -133,9 +155,10 @@ const Page = () => {
     if (!formData.phone) {
       errors.phone = "Phone is required";
     } else {
-      const phoneRegex = /^\d{1,15}$/;
+      // Allow + sign and digits only, with max length of 16 (15 digits + 1 plus sign)
+      const phoneRegex = /^\+?[0-9]{1,15}$/;
       if (!phoneRegex.test(formData.phone)) {
-        errors.phone = "Phone number must contain only digits and be maximum 15 digits";
+        errors.phone = "Phone number must contain only digits, optionally start with +, and be maximum 15 digits";
       }
     }
 
@@ -260,7 +283,7 @@ const Page = () => {
                 <div>
                   <FormLabel label="Phone" required />
                   <TextField
-                    type="number"
+                    type="text"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
