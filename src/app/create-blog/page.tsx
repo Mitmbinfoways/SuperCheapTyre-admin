@@ -85,8 +85,9 @@ const CreateBlogPage = () => {
 
   // Clean up object URLs when component unmounts
   useEffect(() => {
+    const urlsToRevoke = Object.values(objectUrlsRef.current);
     return () => {
-      Object.values(objectUrlsRef.current).forEach((url) => {
+      urlsToRevoke.forEach((url) => {
         URL.revokeObjectURL(url);
       });
     };
@@ -490,6 +491,7 @@ const CreateBlogPage = () => {
                     Select multiple images for your carousel. You can add images
                     one at a time or select multiple at once.
                   </div>
+                  <div className="mb-3 text-sm text-gray-500">Recommended: 1200×600px (landscape)</div>
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
                     <ImageUploader
                       images={[
@@ -608,6 +610,7 @@ const CreateBlogPage = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <FormLabel label="Image" required />
+                        <div className="mb-3 text-sm text-gray-500">Recommended: 800×600px (landscape)</div>
                         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                           <ImageUploader
                             images={

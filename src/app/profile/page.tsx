@@ -438,16 +438,16 @@ const Page = () => {
       <CommonDialog
         isOpen={showImagePreview}
         onClose={() => setShowImagePreview(false)}
-        size="md"
+        size="lg"
         title="Profile Picture"
       >
         <div className="flex justify-center">
           <Image
             src={preview || (profile?.avatar ? getAdminProfile(profile.avatar) : '')}
             alt="avatar preview"
-            width={300}
-            height={300}
-            className="rounded-lg object-contain max-h-[70vh]"
+            width={500}
+            height={500}
+            className="rounded-lg object-contain max-h-[80vh]"
           />
         </div>
       </CommonDialog>

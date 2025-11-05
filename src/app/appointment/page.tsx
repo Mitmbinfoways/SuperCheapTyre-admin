@@ -123,7 +123,7 @@ const AppointmentsPage = () => {
         });
       }
     },
-    [appointments],
+    [appointments, fetchAppointments],
   );
 
   // Added function to handle view appointment
