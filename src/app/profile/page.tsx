@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import { Toast } from "@/components/ui/Toast";
+import CommonDialog from "@/components/ui/Dialogbox";
 import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
 import { getAdminProfile } from "@/lib/utils";
 import { RootState } from "@/Store/Store";
@@ -240,6 +241,8 @@ const Page = () => {
     }
   };
 
+  const [showImagePreview, setShowImagePreview] = useState(false);
+
   return (
     <div className="flex px-4 py-8">
       {isLoading ? (
@@ -300,13 +303,15 @@ const Page = () => {
                     className="block w-full text-sm text-gray-700"
                   />
                   {(preview || formData.avatar) && (
-                    <Image
-                      src={preview || getAdminProfile(formData.avatar)}
-                      alt="avatar"
-                      width={96}
-                      height={96}
-                      className="mt-3 h-24 w-24 rounded-full object-cover"
-                    />
+                    <div className="mt-3 cursor-pointer" onClick={() => setShowImagePreview(true)}>
+                      <Image
+                        src={preview || getAdminProfile(formData.avatar)}
+                        alt="avatar"
+                        width={96}
+                        height={96}
+                        className="h-24 w-24 rounded-full object-cover"
+                      />
+                    </div>
                   )}
                 </div>
 
@@ -389,13 +394,15 @@ const Page = () => {
             profile && (
               <div className="flex flex-col gap-6 rounded-xl p-6">
                 {profile.avatar && (
-                  <Image
-                    src={getAdminProfile(profile.avatar)}
-                    alt="avatar"
-                    width={96}
-                    height={96}
-                    className="h-24 w-24 rounded-full object-cover"
-                  />
+                  <div className="cursor-pointer" onClick={() => setShowImagePreview(true)}>
+                    <Image
+                      src={getAdminProfile(profile.avatar)}
+                      alt="avatar"
+                      width={96}
+                      height={96}
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                  </div>
                 )}
                 <div className="w-full space-y-3">
                   <h1 className="break-words text-3xl font-bold text-gray-800 dark:text-gray-100">
@@ -428,6 +435,22 @@ const Page = () => {
           )}
         </div>
       )}
+      <CommonDialog
+        isOpen={showImagePreview}
+        onClose={() => setShowImagePreview(false)}
+        size="md"
+        title="Profile Picture"
+      >
+        <div className="flex justify-center">
+          <Image
+            src={preview || (profile?.avatar ? getAdminProfile(profile.avatar) : '')}
+            alt="avatar preview"
+            width={300}
+            height={300}
+            className="rounded-lg object-contain max-h-[70vh]"
+          />
+        </div>
+      </CommonDialog>
     </div>
   );
 };
