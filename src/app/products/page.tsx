@@ -450,12 +450,20 @@ const ProductListPage: React.FC = () => {
           className="w-full sm:w-80"
         />
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={handleOpenFilterPopup}>
+          <Button 
+            variant="secondary" 
+            onClick={handleOpenFilterPopup}
+            className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+          >
             <FiFilter className="mr-1" size={16} />
             Filters
           </Button>
           {areFiltersApplied() && (
-            <Button variant="secondary" className="text-nowrap" onClick={handleResetFilters}>
+            <Button 
+              variant="secondary" 
+              className="text-nowrap dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700" 
+              onClick={handleResetFilters}
+            >
               Reset Filters
             </Button>
           )}
@@ -470,7 +478,7 @@ const ProductListPage: React.FC = () => {
         title="Filter Products"
         size="md"
       >
-        <div className="space-y-4">
+        <div className="space-y-4 dark:text-gray-200 dark:bg-gray-900">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Category
@@ -528,7 +536,7 @@ const ProductListPage: React.FC = () => {
               id="isPopular"
               checked={tempIsPopularFilter === true}
               onChange={(e) => setTempIsPopularFilter(e.target.checked ? true : null)}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-indigo-600"
             />
             <label
               htmlFor="isPopular"
@@ -544,7 +552,7 @@ const ProductListPage: React.FC = () => {
               id="lowStock"
               checked={tempLowStockFilter === true}
               onChange={(e) => setTempLowStockFilter(e.target.checked ? true : null)}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-indigo-600"
             />
             <label
               htmlFor="lowStock"
@@ -556,14 +564,25 @@ const ProductListPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-between">
-          <Button variant="secondary" onClick={handleResetFilters} className="w-full sm:w-auto">
+          <Button 
+            variant="secondary" 
+            onClick={handleResetFilters} 
+            className="w-full sm:w-auto dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+          >
             Reset Filters
           </Button>
           <div className="flex flex-col gap-2 sm:flex-row sm:space-x-2">
-            <Button variant="secondary" onClick={handleCloseFilterPopup} className="w-full sm:w-auto">
+            <Button 
+              variant="secondary" 
+              onClick={handleCloseFilterPopup} 
+              className="w-full sm:w-auto dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+            >
               Cancel
             </Button>
-            <Button onClick={handleApplyFilters} className="w-full sm:w-auto">
+            <Button 
+              onClick={handleApplyFilters} 
+              className="w-full sm:w-auto dark:bg-primary dark:hover:bg-indigo-700"
+            >
               Apply Filters
             </Button>
           </div>

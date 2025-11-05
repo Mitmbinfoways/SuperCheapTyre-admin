@@ -8,6 +8,24 @@ import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
 import { FiDownload } from "react-icons/fi";
+import TextField from "@/components/ui/TextField";
+
+// Debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -19,6 +37,8 @@ const OrdersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -34,6 +54,7 @@ const OrdersPage = () => {
       const response = await getAllOrders({
         page: currentPage,
         limit: pageSize,
+        search: debouncedSearchTerm,
       });
       setOrders(response.data.orders);
       setTotalPages(response.data.pagination.totalPages);
@@ -45,11 +66,16 @@ const OrdersPage = () => {
     } finally {
       updateLoadingState("fetchingOrders", false);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, debouncedSearchTerm]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
 
   const getTotalItems = (items: OrderItem[]) =>
     items.reduce((total, item) => total + item.quantity, 0);
@@ -227,6 +253,16 @@ const OrdersPage = () => {
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Orders
         </h1>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6 w-full sm:w-1/3">
+        <TextField
+          type="text"
+          placeholder="Search by customer name or phone..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       {loadingStates.fetchingOrders ? (
