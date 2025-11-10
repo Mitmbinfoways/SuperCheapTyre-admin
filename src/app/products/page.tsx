@@ -589,6 +589,27 @@ const ProductListPage: React.FC = () => {
         </div>
       </CommonDialog>
 
+      {/* Delete Confirmation Dialog */}
+      <CommonDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        title="Confirm Delete"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={handleCloseDeleteDialog} disabled={loadingStates.deletingProduct}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDeleteProduct} disabled={loadingStates.deletingProduct}>
+              {loadingStates.deletingProduct ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this product? This action cannot be undone.
+        </p>
+      </CommonDialog>
+
       {/* Image Preview Dialog with Carousel */}
       <CommonDialog
         isOpen={showImagePreview}
@@ -613,7 +634,7 @@ const ProductListPage: React.FC = () => {
                   alt={`${previewProduct.name} - Image ${currentImageIndex + 1}`}
                   width={450}
                   height={450}
-                  className="rounded-lg object-contain max-h-[60vh] rounded-xl"
+                  className="rounded-lg object-contain max-h-[60vh]"
                 />
               </div>
 
