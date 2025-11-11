@@ -151,7 +151,7 @@ const AppointmentsPage = () => {
     {
       title: "Email",
       key: "email",
-      render: (item) => item.email || "-",
+      render: (item) => <div className="max-w-36 whitespace-nowrap overflow-hidden text-ellipsis">{item.email || "-"}</div>,
     },
     {
       title: "Phone",
@@ -159,7 +159,7 @@ const AppointmentsPage = () => {
       render: (item) => item.phone || "-",
     },
     {
-      title: "Date",
+      title: "Appointment Date",
       key: "date",
       render: (item) =>
         item.date ? new Date(item.date).toLocaleDateString() : "-",

@@ -50,6 +50,7 @@ export interface Order {
   subtotal: number;
   total: number;
   appointment: Appointment;
+  createdAt: string;
   customer: Customer;
   payment: Payment;
 }

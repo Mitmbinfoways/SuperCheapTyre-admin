@@ -96,7 +96,7 @@ const BannerListPage: React.FC = () => {
   // confirm delete
   const confirmDeleteBanner = async () => {
     if (!deleteBannerId) return;
-    
+
     // Check if this is the last active banner
     const bannerToDelete = banners.find(banner => banner._id === deleteBannerId);
     if (bannerToDelete?.isActive) {
@@ -110,7 +110,7 @@ const BannerListPage: React.FC = () => {
         return;
       }
     }
-    
+
     updateLoadingState("deletingBanner", true);
     try {
       await deleteBanner(deleteBannerId);
@@ -212,7 +212,7 @@ const BannerListPage: React.FC = () => {
       key: "laptopImage",
       width: "120px",
       render: (item) => (
-        <div 
+        <div
           className="h-16 w-16 cursor-pointer"
           onClick={() => handleOpenImagePreview(item, 'laptop')}
         >
@@ -231,7 +231,7 @@ const BannerListPage: React.FC = () => {
       key: "mobileImage",
       width: "80px",
       render: (item) => (
-        <div 
+        <div
           className="h-16 w-16 cursor-pointer"
           onClick={() => handleOpenImagePreview(item, 'mobile')}
         >
@@ -301,10 +301,10 @@ const BannerListPage: React.FC = () => {
           Create New Banner
         </Button>
       </div>
-      
+
       {/* Search and Filters */}
       <div className="mb-4 flex flex-col gap-4 sm:flex-row">
-        <div className="w-full sm:w-1/3 sm:py-7">
+        {/* <div className="w-full sm:w-1/3 sm:py-7">
           <TextField
             type="text"
             placeholder="Search"
@@ -312,26 +312,26 @@ const BannerListPage: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full"
           />
-        </div>
-        <div className="w-full sm:w-1/4">
-          <Select
-            label="Status"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            options={[
-              { label: "All Status", value: "All" },
-              { label: "Active", value: "Active" },
-              { label: "Inactive", value: "Inactive" },
-            ]}
-          />
-        </div>
-        <div className="flex items-center">
+        </div> */}
+        <div className="w-full flex items-end gap-3">
+          <div className="w-full sm:w-1/4">
+            <Select
+              label="Status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[
+                { label: "All Status", value: "All" },
+                { label: "Active", value: "Active" },
+                { label: "Inactive", value: "Inactive" },
+              ]}
+            />
+          </div>
           <Button variant="secondary" onClick={handleResetFilters}>
             Reset Filters
           </Button>
         </div>
       </div>
-      
+
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -351,7 +351,7 @@ const BannerListPage: React.FC = () => {
           Are you sure you want to delete this banner? This action cannot be undone.
         </p>
       </CommonDialog>
-      
+
       {/* Image Preview Dialog */}
       <CommonDialog
         isOpen={showImagePreview}
@@ -363,8 +363,8 @@ const BannerListPage: React.FC = () => {
             <div className="relative w-full flex justify-center items-center">
               <div className="flex justify-center items-center w-full">
                 <Image
-                  src={imageType === 'laptop' ? 
-                    getFullImageUrl(previewBanner.laptopImage) : 
+                  src={imageType === 'laptop' ?
+                    getFullImageUrl(previewBanner.laptopImage) :
                     getFullImageUrl(previewBanner.mobileImage)}
                   alt={`${imageType === 'laptop' ? 'Laptop' : 'Mobile'} Banner`}
                   width={450}
@@ -373,14 +373,14 @@ const BannerListPage: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div className="mt-4 text-lg font-semibold">
               {imageType === 'laptop' ? 'Laptop Banner' : 'Mobile Banner'}
             </div>
           </div>
         )}
       </CommonDialog>
-      
+
       <div className="overflow-x-auto">
         {loadingStates.fetchingBanners || loadingStates.deletingBanner ? (
           <Skeleton />

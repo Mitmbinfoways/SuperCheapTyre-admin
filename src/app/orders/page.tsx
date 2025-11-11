@@ -38,7 +38,7 @@ const OrdersPage = () => {
   const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = useDebounce(searchTerm, 300); // 300ms debounce
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -215,6 +215,12 @@ const OrdersPage = () => {
       render: (order: Order) => order.customer.phone,
     },
     {
+      title: "Order Date",
+      key: "date",
+      render: (order: Order) =>
+        order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-",
+    },
+    {
       title: "Product Count",
       key: "itemsCount",
       render: (order: Order) => (
@@ -292,8 +298,8 @@ const OrdersPage = () => {
                   <React.Fragment key={order._id}>
                     <tr
                       className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
-                          ? "bg-gray-50 dark:bg-gray-800"
-                          : ""
+                        ? "bg-gray-50 dark:bg-gray-800"
+                        : ""
                         }`}
                       onClick={() => toggleExpandedOrder(order._id)}
                     >
