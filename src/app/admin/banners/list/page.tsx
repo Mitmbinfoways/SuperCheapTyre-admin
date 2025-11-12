@@ -130,7 +130,7 @@ const BannerListPage: React.FC = () => {
   const handleEditBanner = (banner: Banner) => {
     // For now, we'll redirect to the create page with an ID parameter
     // In a future enhancement, we could create a dedicated edit page
-    router.push(`/banners?id=${banner._id}`);
+    router.push(`/admin/banners?id=${banner._id}`);
   };
 
   const handlePageChange = (page: number) => setCurrentPage(page);

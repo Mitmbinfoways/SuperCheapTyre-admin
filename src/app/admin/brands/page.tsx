@@ -107,7 +107,7 @@ const BrandListPage: React.FC = () => {
   };
 
   const handleEditBrand = (brand: Brand) => {
-    router.push(`/create-brand?id=${brand._id}`);
+    router.push(`/admin/create-brand?id=${brand._id}`);
   };
 
   const handlePageChange = (page: number) => setCurrentPage(page);

@@ -151,7 +151,7 @@ const ProductListPage: React.FC = () => {
   }, [loadProducts]);
 
   const handleEditProduct = (product: ServiceProduct) => {
-    router.push(`/create-product?id=${product._id}`);
+    router.push(`/admin/create-product?id=${product._id}`);
   };
 
   // confirm delete

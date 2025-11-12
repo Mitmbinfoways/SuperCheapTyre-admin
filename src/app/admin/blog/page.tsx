@@ -126,7 +126,7 @@ const BlogListPage: React.FC = () => {
   };
 
   const handleEditBlog = (blog: Blog) => {
-    router.push(`/create-blog?id=${blog._id}`);
+    router.push(`/admin/create-blog?id=${blog._id}`);
   };
 
   const handlePageChange = (page: number) => setCurrentPage(page);
