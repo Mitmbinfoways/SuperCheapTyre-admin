@@ -110,7 +110,7 @@ const OrdersPage = () => {
 
     return (
       <tr>
-        <td colSpan={7} className="p-0">
+        <td colSpan={8} className="p-0">
           <div
             className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
               }`}
