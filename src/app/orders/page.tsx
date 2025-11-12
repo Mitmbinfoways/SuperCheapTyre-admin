@@ -9,23 +9,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
 import { FiDownload } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
-
-// Debounce hook
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import useDebounce from "@/hooks/useDebounce";
 
 type LoadingStates = {
   fetchingOrders: boolean;
