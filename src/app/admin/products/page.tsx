@@ -434,7 +434,7 @@ const ProductListPage: React.FC = () => {
           Manage Products
         </h1>
         <div className="flex gap-2">
-          <Button className="w-full sm:w-auto" onClick={() => router.push("/create-product")}>
+          <Button className="w-full sm:w-auto" onClick={() => router.push("/admin/create-product")}>
             Create New Product
           </Button>
         </div>

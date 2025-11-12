@@ -295,7 +295,7 @@ const BannerListPage: React.FC = () => {
           Manage Banners
         </h1>
         <Button
-          onClick={() => router.push("/banners")}
+          onClick={() => router.push("/admin/banners")}
           className="w-full sm:w-auto"
         >
           Create New Banner

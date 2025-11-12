@@ -361,7 +361,7 @@ const CreateBlogPage = () => {
           type: "success",
         });
 
-        router.push("/blog");
+        router.push("/admin/blog");
       } else {
         Toast({
           message: res?.message || "Failed to create blog",
@@ -747,7 +747,7 @@ const CreateBlogPage = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/blog")}
+                onClick={() => router.push("/admin/blog")}
               >
                 Cancel
               </Button>

@@ -218,7 +218,7 @@ const ShowMeasurementsPage = () => {
         <h1 className="text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300">
           Measurements List
         </h1>
-        <Link href="/measurements" className="w-full sm:w-auto">
+        <Link href="/admin/measurements" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto">Add New Measurement</Button>
         </Link>
       </div>

@@ -127,7 +127,7 @@ const BannerPage = () => {
       }
 
       if (res && (res.statusCode === 200 || res.statusCode === 201)) {
-        router.push("/banners/list");
+        router.push("/admin/banners/list");
       } else {
         Toast({ message: res?.message || `Failed to ${isEdit ? "update" : "create"} banner`, type: "error" });
       }
@@ -200,7 +200,7 @@ const BannerPage = () => {
           </div>
 
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" type="button" onClick={() => router.push("/banners/list")}>
+            <Button variant="secondary" type="button" onClick={() => router.push("/admin/banners/list")}>
               Cancel
             </Button>
             <Button variant="primary" disabled={isSubmitting}>

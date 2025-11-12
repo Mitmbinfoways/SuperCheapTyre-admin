@@ -305,7 +305,7 @@ const Page = () => {
           },
         }));
         setImageFiles([]);
-        router.push("/products");
+        router.push("/admin/products");
       } else {
         Toast({
           message: res?.message || "Failed to create product",
@@ -671,7 +671,7 @@ const Page = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/products")}
+                onClick={() => router.push("/admin/products")}
               >
                 Cancel
               </Button>

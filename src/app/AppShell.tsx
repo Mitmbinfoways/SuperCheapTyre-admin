@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 export default function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
-  const authOnlyRoutes = ["/signin", "/forgot-password" , "/reset-password"];
+  const authOnlyRoutes = ["/admin/signin", "/admin/forgot-password", "/admin/reset-password"];
   const isAuthOnlyPage = authOnlyRoutes.includes(pathname);
 
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
@@ -26,13 +26,13 @@ export default function AppShell({ children }: PropsWithChildren) {
       setHasCheckedAuth(true);
 
       if (!authorized && !isAuthOnlyPage) {
-        router.replace("/signin");
+        router.replace("/admin/signin");
       }
     } catch {
       setIsAuthorized(false);
       setHasCheckedAuth(true);
       if (!isAuthOnlyPage) {
-        router.replace("/signin");
+        router.replace("/admin/signin");
       }
     }
   }, [pathname, isAuthOnlyPage, router]);

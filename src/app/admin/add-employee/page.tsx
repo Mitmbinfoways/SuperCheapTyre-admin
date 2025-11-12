@@ -14,7 +14,7 @@ import {
   GetTechnicians,
   UpdateTechnician,
 } from "@/services/TechnicianService";
-import ToggleSwitch from "../../components/ui/Toggle";
+import ToggleSwitch from "../../../components/ui/Toggle";
 import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";

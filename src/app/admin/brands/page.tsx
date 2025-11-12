@@ -263,7 +263,7 @@ const BrandListPage: React.FC = () => {
           Manage Brands
         </h1>
         <Button
-          onClick={() => router.push("/create-brand")}
+          onClick={() => router.push("/admin/create-brand")}
           className="w-full sm:w-auto"
         >
           Create New Brand

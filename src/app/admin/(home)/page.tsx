@@ -71,7 +71,7 @@ const Page = () => {
       icon: FiPackage,
       bgColor: "bg-blue-500",
       lightBg: "bg-blue-100",
-      link: "/products",
+      link: "/admin/products",
     },
     {
       title: "Appointments",
@@ -79,7 +79,7 @@ const Page = () => {
       icon: FiCalendar,
       bgColor: "bg-purple-500",
       lightBg: "bg-purple-100",
-      link: "/appointment",
+      link: "/admin/appointment",
     },
     {
       title: "Queries",
@@ -87,7 +87,7 @@ const Page = () => {
       icon: FiMessageSquare,
       bgColor: "bg-green-500",
       lightBg: "bg-green-100",
-      link: "/query",
+      link: "/admin/query",
     },
     {
       title: "Orders",
@@ -95,7 +95,7 @@ const Page = () => {
       icon: FiShoppingCart,
       bgColor: "bg-orange-500",
       lightBg: "bg-orange-100",
-      link: "/orders",
+      link: "/admin/orders",
     },
     {
       title: "Holidays",
@@ -103,7 +103,7 @@ const Page = () => {
       icon: FiUmbrella,
       bgColor: "bg-pink-500",
       lightBg: "bg-pink-100",
-      link: "/add-holidays",
+      link: "/admin/add-holidays",
     },
     {
       title: "Employees",
@@ -111,7 +111,7 @@ const Page = () => {
       icon: FiUsers,
       bgColor: "bg-indigo-500",
       lightBg: "bg-indigo-100",
-      link: "/add-employee",
+      link: "/admin/add-employee",
     },
     {
       title: "Brands",
@@ -119,7 +119,7 @@ const Page = () => {
       icon: FiBookmark,
       bgColor: "bg-yellow-500",
       lightBg: "bg-yellow-100",
-      link: "/brands",
+      link: "/admin/brands",
     },
     {
       title: "Banners",
@@ -127,7 +127,7 @@ const Page = () => {
       icon: FiImage,
       bgColor: "bg-teal-500",
       lightBg: "bg-teal-100",
-      link: "/banners/list",
+      link: "/admin/banners/list",
     },
     {
       title: "Blogs",
@@ -135,7 +135,7 @@ const Page = () => {
       icon: FiBookOpen,
       bgColor: "bg-red-500",
       lightBg: "bg-red-100",
-      link: "/blogs",
+      link: "/admin/blog",
     },
   ];
 

@@ -360,7 +360,7 @@ const BlogListPage: React.FC = () => {
           Manage Blogs
         </h1>
         <Button
-          onClick={() => router.push("/create-blog")}
+          onClick={() => router.push("/admin/create-blog")}
           className="w-full sm:w-auto"
         >
           Create New Blog

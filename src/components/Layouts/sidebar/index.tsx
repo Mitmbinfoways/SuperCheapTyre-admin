@@ -54,7 +54,7 @@ export function Sidebar() {
       >
         <div className="flex h-full flex-col py-10 pl-5 pr-2">
           <div className="relative pr-3">
-            <Link href={"/"}>
+            <Link href={"/admin"}>
               <Logo />
             </Link>
           </div>
@@ -93,7 +93,7 @@ export function Sidebar() {
         <div className="flex h-full flex-col pb-10 pl-6 pr-2 pt-4">
           <div className="relative pr-8">
             <Link
-              href={"/"}
+              href={"/admin"}
               onClick={() => isMobile && toggleSidebar()}
               className="px-0 py-2.5 min-[850px]:py-0"
             >
@@ -172,7 +172,7 @@ export function Sidebar() {
                           (() => {
                             const href =
                               (item as { url?: string; title: string }).url ??
-                              "/" +
+                              "/admin" +
                                 (item as { title: string }).title
                                   .toLowerCase()
                                   .split(" ")

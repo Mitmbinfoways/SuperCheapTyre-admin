@@ -6,7 +6,7 @@ export const NAV_DATA = [
     items: [
       {
         title: "Dashboard",
-        url: "/",
+        url: "/admin",
         icon: Icons.FourCircle,
         items: [],
       },
@@ -16,53 +16,53 @@ export const NAV_DATA = [
         items: [
           {
             title: "Manage Products",
-            url: "/products",
+            url: "/admin/products",
           },
           {
             title: "Create Product",
-            url: "/create-product",
+            url: "/admin/create-product",
           },
         ],
       },
       {
         title: "Appointments",
-        url: "/appointment",
+        url: "/admin/appointment",
         icon: Icons.CalendarDaysIcon,
         items: [],
       },
       {
         title: "Orders",
-        url: "/orders",
+        url: "/admin/orders",
         icon: Icons.OrdersIcon,
         items: [],
       },
       {
         title: "Brands",
-        url: "/brands",
+        url: "/admin/brands",
         icon: Icons.StoreIcon,
         items: [
           {
             title: "Manage Brands",
-            url: "/brands",
+            url: "/admin/brands",
           },
           {
             title: "Create Brand",
-            url: "/create-brand",
+            url: "/admin/create-brand",
           },
         ],
       },
       {
         title: "Blog",
-        url: "/blog",
+        url: "/admin/blog",
         icon: Icons.Alphabet,
         items: [
           {
             title: "Manage Blog",
-            url: "/blog",
+            url: "/admin/blog",
           },
           {
             title: "Create Blog",
-            url: "/create-blog",
+            url: "/admin/create-blog",
           },
         ],
       },
@@ -72,50 +72,50 @@ export const NAV_DATA = [
         items: [
           {
             title: "Manage Banners",
-            url: "/banners/list",
+            url: "/admin/banners/list",
           },
           {
             title: "Create Banner",
-            url: "/banners",
+            url: "/admin/banners",
           },
         ],
       },
       {
         title: "Manage Holidays",
-        url: "/add-holidays",
+        url: "/admin/add-holidays",
         icon: Icons.CalendarPlusIcon,
         items: [],
       },
       {
         title: "Manage Employee",
-        url: "/add-employee",
+        url: "/admin/add-employee",
         icon: Icons.UserPlusIcon,
         items: [],
       },
       {
         title: "Measurements",
-        url: "/measurements",
+        url: "/admin/measurements",
         icon: Icons.RulerIcon,
         items: [
           {
             title: "Measurements List",
-            url: "/measurements/show",
+            url: "/admin/measurements/show",
           },
           {
             title: "Add Measurement",
-            url: "/measurements",
+            url: "/admin/measurements",
           },
         ],
       },
       {
         title: "Manage TimeSlot",
-        url: "/add-timeslot",
+        url: "/admin/add-timeslot",
         icon: Icons.ClockIcon,
         items: [],
       },
       {
         title: "Manage Query",
-        url: "/query",
+        url: "/admin/query",
         icon: Icons.ChatBubbleLeftRightIcon,
         items: [],
       },

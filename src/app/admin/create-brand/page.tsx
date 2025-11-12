@@ -137,7 +137,7 @@ const CreateBrandPage = () => {
           images: [],
         });
         setImageFile(null);
-        router.push("/brands");
+        router.push("/admin/brands");
       } else {
         Toast({
           message: res?.message || "Failed to create brand",
@@ -241,7 +241,7 @@ const CreateBrandPage = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/brands")}
+                onClick={() => router.push("/admin/brands")}
               >
                 Cancel
               </Button>

@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
         </form>
         <div className="mt-6 text-center">
           <span
-            onClick={() => router.push("/signin")}
+            onClick={() => router.push("/admin/signin")}
             className="cursor-pointer text-sm font-medium text-primary hover:underline"
           >
             ← Back to Sign in
