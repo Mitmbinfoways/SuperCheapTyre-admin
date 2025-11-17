@@ -36,6 +36,7 @@ const CreateBrandPage = () => {
   const categoryOptions = [
     { label: "Tyre", value: "tyre" },
     { label: "Wheel", value: "wheel" },
+    { label: "Tyre & Wheel", value: "both" },
   ];
 
   const validateForm = () => {

@@ -208,7 +208,7 @@ const BrandListPage: React.FC = () => {
       width: "150px",
       render: (item) => (
         <div className="line-clamp-2" title={item.category}>
-          {item.category?.toUpperCase() || ""}
+          {item.category === "both" ? "TYRE & WHEEL" : item.category?.toUpperCase() || ""}
         </div>
       ),
     },
@@ -290,6 +290,7 @@ const BrandListPage: React.FC = () => {
               { label: "All Categories", value: "All" },
               { label: "Tyre", value: "Tyre" },
               { label: "Wheel", value: "Wheel" },
+              { label: "Tyre & Wheel", value: "Both" },
             ]}
           />
         </div>
