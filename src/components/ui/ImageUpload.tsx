@@ -5,6 +5,7 @@ import { FiUpload } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { CiImageOn } from "react-icons/ci";
 import Image from "next/image";
+import { v4 as uuidv4 } from "uuid";
 
 interface ImageItem {
   id: string;
@@ -54,7 +55,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         return;
       }
       const imageItem: ImageItem = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         url: URL.createObjectURL(file),
         file,
       };

@@ -18,6 +18,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import ToggleSwitch from "@/components/ui/Toggle";
 import { getAllMasterFilters, MasterFilter } from "@/services/MasterFilterService";
+import { v4 as uuidv4 } from "uuid";
 
 const Page = () => {
   const router = useRouter();
@@ -150,7 +151,7 @@ const Page = () => {
           images: (product.images || []).map((img: string) => {
             const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
             return {
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               url: `${BASE_URL}/Product/${img}`,
             };
           }),

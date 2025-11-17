@@ -8,6 +8,8 @@ import { createBanner, updateBanner, getBannerById } from "@/services/BannerServ
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
+import { v4 as uuidv4 } from "uuid";
+
 
 const BannerPage = () => {
   const router = useRouter();
@@ -25,7 +27,7 @@ const BannerPage = () => {
     if (!files?.length) return;
     const file = files[0];
     const imageItem = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       url: URL.createObjectURL(file),
       file,
     };
@@ -36,7 +38,7 @@ const BannerPage = () => {
     if (!files?.length) return;
     const file = files[0];
     const imageItem = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       url: URL.createObjectURL(file),
       file,
     };
@@ -58,10 +60,10 @@ const BannerPage = () => {
           setIsActive(banner.isActive);
           const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
           setLaptopImages([
-            { id: crypto.randomUUID(), url: `${baseUrl}${banner.laptopImage}` },
+            { id: uuidv4(), url: `${baseUrl}${banner.laptopImage}` },
           ]);
           setMobileImages([
-            { id: crypto.randomUUID(), url: `${baseUrl}${banner.mobileImage}` },
+            { id: uuidv4(), url: `${baseUrl}${banner.mobileImage}` },
           ]);
         }
       } catch (error: any) {
