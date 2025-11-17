@@ -23,7 +23,7 @@ const MeasurementsPage = () => {
   const [apiError, setApiError] = useState<string>("");
 
   const handleCancel = () => {
-    router.push("/measurements/show");
+    router.push("/admin/measurements/show");
   };
 
   const tyreMeasurements = [
