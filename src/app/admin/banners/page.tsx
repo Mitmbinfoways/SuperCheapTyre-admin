@@ -4,12 +4,15 @@ import React, { useState, FormEvent, useEffect } from "react";
 import { FiImage } from "react-icons/fi";
 import ImageUploader from "@/components/ui/ImageUpload";
 import { Toast } from "@/components/ui/Toast";
-import { createBanner, updateBanner, getBannerById } from "@/services/BannerService";
+import {
+  createBanner,
+  updateBanner,
+  getBannerById,
+} from "@/services/BannerService";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import { v4 as uuidv4 } from "uuid";
-
 
 const BannerPage = () => {
   const router = useRouter();
@@ -78,11 +81,17 @@ const BannerPage = () => {
   const validateForm = () => {
     if (!isEdit) {
       if (laptopImages.length === 0) {
-        Toast({ message: "Please upload a laptop banner image", type: "error" });
+        Toast({
+          message: "Please upload a laptop banner image",
+          type: "error",
+        });
         return false;
       }
       if (mobileImages.length === 0) {
-        Toast({ message: "Please upload a mobile banner image", type: "error" });
+        Toast({
+          message: "Please upload a mobile banner image",
+          type: "error",
+        });
         return false;
       }
     }
@@ -116,12 +125,18 @@ const BannerPage = () => {
       if (isEdit && editId) {
         res = await updateBanner(editId, payload);
         if (res?.statusCode === 200) {
-          Toast({ message: res.message || "Banner updated successfully", type: "success" });
+          Toast({
+            message: res.message || "Banner updated successfully",
+            type: "success",
+          });
         }
       } else {
         res = await createBanner(payload);
         if (res?.statusCode === 201) {
-          Toast({ message: res.message || "Banner created successfully", type: "success" });
+          Toast({
+            message: res.message || "Banner created successfully",
+            type: "success",
+          });
           setLaptopImages([]);
           setMobileImages([]);
           setIsActive(true);
@@ -131,11 +146,21 @@ const BannerPage = () => {
       if (res && (res.statusCode === 200 || res.statusCode === 201)) {
         router.push("/admin/banners/list");
       } else {
-        Toast({ message: res?.message || `Failed to ${isEdit ? "update" : "create"} banner`, type: "error" });
+        Toast({
+          message:
+            res?.message || `Failed to ${isEdit ? "update" : "create"} banner`,
+          type: "error",
+        });
       }
     } catch (error: any) {
-      setApiError(error?.response?.data?.errorData || "Something went wrong. Please try again");
-      Toast({ message: `Failed to ${isEdit ? "update" : "create"} banner`, type: "error" });
+      setApiError(
+        error?.response?.data?.errorData ||
+          "Something went wrong. Please try again",
+      );
+      Toast({
+        message: `Failed to ${isEdit ? "update" : "create"} banner`,
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -149,7 +174,9 @@ const BannerPage = () => {
             {isEdit ? "Edit Banner" : "Add New Banner"}
           </h1>
           <p className="text-gray-400">
-            {isEdit ? "Update banner images" : "Upload banner images for desktop and mobile views"}
+            {isEdit
+              ? "Update banner images"
+              : "Upload banner images for desktop and mobile views"}
           </p>
         </div>
 
@@ -171,7 +198,9 @@ const BannerPage = () => {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div>
                 <FormLabel label="Laptop/Desktop Banner" required />
-                <p className="mb-3 text-sm text-gray-500">Recommended: 1200x600 px</p>
+                <p className="mb-3 text-sm text-gray-500">
+                  For Desktop & Tablet: Use 16:9 aspect ratio
+                </p>
                 <ImageUploader
                   images={laptopImages}
                   onChange={setLaptopImages}
@@ -185,7 +214,9 @@ const BannerPage = () => {
               </div>
               <div>
                 <FormLabel label="Mobile Banner" required />
-                <p className="mb-3 text-sm text-gray-500">Recommended: 420x500 px</p>
+                <p className="mb-3 text-sm text-gray-500">
+                  For Mobile: Use 4:5 aspect ratio
+                </p>
                 <ImageUploader
                   images={mobileImages}
                   onChange={setMobileImages}
@@ -202,11 +233,21 @@ const BannerPage = () => {
           </div>
 
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="secondary" type="button" onClick={() => router.push("/admin/banners/list")}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => router.push("/admin/banners/list")}
+            >
               Cancel
             </Button>
             <Button variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? (isEdit ? "Updating..." : "Creating...") : isEdit ? "Update Banner" : "Create Banner"}
+              {isSubmitting
+                ? isEdit
+                  ? "Updating..."
+                  : "Creating..."
+                : isEdit
+                  ? "Update Banner"
+                  : "Create Banner"}
             </Button>
           </div>
         </form>
