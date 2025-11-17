@@ -8,7 +8,10 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 // Import the updateMasterFilter function from MasterFilterService
-import { createMasterFilter, updateMasterFilter } from "@/services/MasterFilterService";
+import {
+  createMasterFilter,
+  updateMasterFilter,
+} from "@/services/MasterFilterService";
 
 const MeasurementsPage = () => {
   const router = useRouter();
@@ -17,6 +20,7 @@ const MeasurementsPage = () => {
   const [measurementType, setMeasurementType] = useState<string>("");
   const [measurementValue, setMeasurementValue] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string>("");
 
   const handleCancel = () => {
     router.push("/measurements/show");
@@ -83,7 +87,7 @@ const MeasurementsPage = () => {
       const payload = {
         category,
         subCategory: measurementType,
-        values: measurementValue.trim()
+        values: measurementValue.trim(),
       };
 
       // Try to update first using the static ID
@@ -106,9 +110,10 @@ const MeasurementsPage = () => {
       setMeasurementType("");
       setMeasurementValue("");
     } catch (error: any) {
+      setApiError(error?.response?.data?.errorData);
       Toast({
         message:
-          error?.response?.data?.message || "Failed to add measurement",
+          error?.response?.data?.errorData || "Failed to add measurement",
         type: "error",
       });
     } finally {
@@ -129,6 +134,12 @@ const MeasurementsPage = () => {
         </p>
       </div>
 
+      {apiError && (
+        <div className="mb-4 rounded border border-red-400 bg-red-50 p-4 text-red-700">
+          {apiError}
+        </div>
+      )}
+
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -140,6 +151,7 @@ const MeasurementsPage = () => {
                 setCategory(value);
                 setMeasurementType("");
                 setMeasurementValue("");
+                setApiError("");
               }}
               options={[
                 { label: "Tyre", value: "tyre" },
@@ -154,7 +166,8 @@ const MeasurementsPage = () => {
               value={measurementType}
               onChange={(value) => {
                 setMeasurementType(value);
-                setMeasurementValue(""); 
+                setMeasurementValue("");
+                setApiError("");
               }}
               options={getMeasurementOptions()}
               placeholder="Select measurement type"
@@ -171,22 +184,20 @@ const MeasurementsPage = () => {
               <TextField
                 name="measurementValue"
                 value={measurementValue}
-                onChange={(e) => setMeasurementValue(e.target.value)}
+                onChange={(e) => {
+                  setMeasurementValue(e.target.value);
+                  setApiError("");
+                }}
                 placeholder={getValuePlaceholder()}
               />
             </div>
           )}
 
           <div className="flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" type="button" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button variant="primary" disabled={isSubmitting} type="submit">
+            <Button variant="primary" type="submit">
               {isSubmitting ? "Adding..." : "Add Measurement"}
             </Button>
           </div>

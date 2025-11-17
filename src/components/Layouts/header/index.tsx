@@ -6,6 +6,8 @@ import { useSidebarContext } from "../sidebar/sidebar-context";
 import { MenuIcon } from "./icons";
 import { ThemeToggleSwitch } from "./theme-toggle";
 import { UserInfo } from "./user-info";
+import logo from "../../../../public/logo_dark.svg"
+import DarkLogo from "../../../../public/logo_light.svg"
 
 export function Header() {
   const { toggleSidebar, isMobile } = useSidebarContext();
@@ -23,7 +25,7 @@ export function Header() {
       {isMobile && (
         <Link href="/admin" className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
-            src="/logo_dark.svg"
+            src={DarkLogo}
             alt="logo"
             width={120}
             height={0}
@@ -31,7 +33,7 @@ export function Header() {
             priority
           />
           <Image
-            src="/logo_light.svg"
+            src={logo}
             alt="logo"
             width={120}
             height={0}

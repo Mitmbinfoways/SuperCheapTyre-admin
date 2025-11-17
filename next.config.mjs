@@ -1,15 +1,11 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  basePath: "/admin",
+
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
-      },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
     ],
   },
 
