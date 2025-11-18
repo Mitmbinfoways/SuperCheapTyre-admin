@@ -16,6 +16,9 @@ export const metadata: Metadata = {
     template: "SuperCheapTyre Admin",
     default: "SuperCheapTyre Admin",
   },
+  icons: {
+    icon: "/admin/favicon.png"
+  }
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
