@@ -375,7 +375,6 @@ const Page = () => {
                     color="primary"
                     onClick={handlePasswordSubmit}
                     className="w-full sm:w-auto"
-                    disabled={isLoading}
                   >
                     {isLoading ? "Changing..." : "Change Password"}
                   </Button>
@@ -383,7 +382,6 @@ const Page = () => {
                     color="gray"
                     onClick={() => setIsChangingPassword(false)}
                     className="w-full sm:w-auto"
-                    disabled={isLoading}
                   >
                     Cancel
                   </Button>

@@ -10,6 +10,10 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
+    "@tiptap/extension-placeholder": "^3.10.7",
+    "@tiptap/extension-text-align": "^3.10.7",
+    "@tiptap/react": "^3.10.7",
+    "@tiptap/starter-kit": "^3.10.7",
     "apexcharts": "^4.5.0",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",

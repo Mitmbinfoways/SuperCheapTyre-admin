@@ -596,10 +596,10 @@ const ProductListPage: React.FC = () => {
         title="Confirm Delete"
         footer={
           <div className="flex justify-end space-x-3">
-            <Button variant="secondary" onClick={handleCloseDeleteDialog} disabled={loadingStates.deletingProduct}>
+            <Button variant="secondary" onClick={handleCloseDeleteDialog}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDeleteProduct} disabled={loadingStates.deletingProduct}>
+            <Button variant="danger" onClick={confirmDeleteProduct}>
               {loadingStates.deletingProduct ? "Deleting..." : "Delete"}
             </Button>
           </div>

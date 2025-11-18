@@ -240,7 +240,7 @@ const BannerPage = () => {
             >
               Cancel
             </Button>
-            <Button variant="primary" disabled={isSubmitting}>
+            <Button variant="primary">
               {isSubmitting
                 ? isEdit
                   ? "Updating..."

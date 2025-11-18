@@ -193,6 +193,7 @@ const CreateBrandPage = () => {
                 maxFiles={1}
                 multiple={false}
                 replaceImages={true}
+                ImageRatio="Recommended: Use 16:9 aspect ratio"
               />
             </div>
 

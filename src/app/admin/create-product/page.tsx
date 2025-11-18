@@ -7,6 +7,7 @@ import TextField from "@/components/ui/TextField";
 import Select from "@/components/ui/Select";
 import ImageUploader from "@/components/ui/ImageUpload";
 import { Toast } from "@/components/ui/Toast";
+import TextEditor from "@/components/ui/TextEditor";
 import {
   createProduct,
   getProductById,
@@ -60,31 +61,31 @@ const Page = () => {
   const [filterOptions, setFilterOptions] = useState<MasterFilter[]>([]);
 
   // Fetch brands when component mounts
-  useEffect(() => {
-    const fetchBrands = async () => {
-      setLoadingBrands(true);
-      try {
-        const res = await getAllBrands();
-        const brandOptions = res.data.items
-          .filter((brand) => brand.isActive)
-          .map((brand) => ({
-            label: brand.name,
-            value: brand.name,
-          }));
-        setBrands(brandOptions);
-      } catch (error) {
-        console.error("Failed to fetch brands:", error);
-        Toast({
-          message: "Failed to load brands",
-          type: "error",
-        });
-      } finally {
-        setLoadingBrands(false);
-      }
-    };
+  const fetchBrands = async (selectedCategory: string) => {
+    setLoadingBrands(true);
+    try {
+      const res = await getAllBrands();
+      const brandOptions = res.data.items
+        .filter((brand) => brand.isActive && brand.category === selectedCategory)
+        .map((brand) => ({
+          label: brand.name,
+          value: brand.name,
+        }));
+      setBrands(brandOptions);
+    } catch (error) {
+      console.error("Failed to fetch brands:", error);
+      Toast({
+        message: "Failed to load brands",
+        type: "error",
+      });
+    } finally {
+      setLoadingBrands(false);
+    }
+  };
 
-    fetchBrands();
-  }, []);
+  useEffect(() => {
+    fetchBrands(category);
+  }, [category]);
 
   const validateForm = () => {
     const newErrors: any = {};
@@ -191,6 +192,12 @@ const Page = () => {
     } else {
       setFormData((prev: any) => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Handle description change specifically for TextEditor
+  const handleDescriptionChange = (value: string) => {
+    setFormData((prev: any) => ({ ...prev, description: value }));
+    setErrors((prev: any) => ({ ...prev, description: undefined }));
   };
 
   // Handle brand selection
@@ -427,6 +434,7 @@ const Page = () => {
                 onChange={(images) =>
                   setFormData((prev: any) => ({ ...prev, images }))
                 }
+                maxFiles={5}
                 onFilesSelected={handleFilesSelected}
                 onRemove={handleRemoveImage}
               />
@@ -510,12 +518,12 @@ const Page = () => {
                   </div>
                   <div>
                     <FormLabel label="Description" />
-                    <TextField
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      placeholder="Enter description"
-                    />
+                    <div className="mt-1">
+                      <TextEditor
+                        value={formData.description}
+                        onChange={handleDescriptionChange}
+                      />
+                    </div>
                   </div>
                   <div>
                     <FormLabel label="Mark as Popular" />

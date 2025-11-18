@@ -246,7 +246,6 @@ const AddHolidayPage: React.FC = () => {
             setError({});
             setShowForm(true);
           }}
-          disabled={loadingStates.fetchingHolidays}
           className="w-full sm:w-auto"
         >
           Add Holiday
@@ -281,7 +280,6 @@ const AddHolidayPage: React.FC = () => {
               onChange={(d: Date | null) => setDate(d)}
               minDate={new Date()}
               placeholder="Select a date"
-              disabled={loadingStates.submittingForm}
               dateFormat="yyyy-MM-dd"
               isClearable={true}
             />
@@ -310,7 +308,6 @@ const AddHolidayPage: React.FC = () => {
               type="button"
               variant="secondary"
               onClick={handleCloseForm}
-              disabled={loadingStates.submittingForm}
               className="w-full sm:w-auto"
             >
               Cancel
@@ -319,7 +316,6 @@ const AddHolidayPage: React.FC = () => {
               variant="primary"
               type="submit"
               className="w-full sm:w-auto"
-              disabled={loadingStates.submittingForm}
             >
               {loadingStates.submittingForm ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -345,7 +341,6 @@ const AddHolidayPage: React.FC = () => {
             <Button
               variant="secondary"
               onClick={handleCloseDeleteDialog}
-              disabled={loadingStates.deletingHoliday}
               className="w-full sm:w-auto"
             >
               Cancel
@@ -353,7 +348,6 @@ const AddHolidayPage: React.FC = () => {
             <Button
               variant="danger"
               onClick={confirmDeleteHoliday}
-              disabled={loadingStates.deletingHoliday}
               className="w-full sm:w-auto"
             >
               Delete

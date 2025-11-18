@@ -292,7 +292,6 @@ const AddTechnicianPage: React.FC = () => {
             setError({});
             setShowForm(true);
           }}
-          disabled={loadingStates.fetching}
           className="w-full sm:w-auto"
         >
           Add Employee
@@ -402,7 +401,6 @@ const AddTechnicianPage: React.FC = () => {
               type="button"
               variant="secondary"
               onClick={handleCloseForm}
-              disabled={loadingStates.submitting}
               className="w-full sm:w-auto"
             >
               Cancel
@@ -410,7 +408,6 @@ const AddTechnicianPage: React.FC = () => {
             <Button
               type="submit"
               variant="primary"
-              disabled={loadingStates.submitting}
               className="w-full sm:w-auto"
             >
               {loadingStates.submitting
@@ -431,7 +428,6 @@ const AddTechnicianPage: React.FC = () => {
             <Button
               variant="secondary"
               onClick={handleCloseDeleteDialog}
-              disabled={loadingStates.deleting}
               className="w-full sm:w-auto"
             >
               Cancel
@@ -439,7 +435,6 @@ const AddTechnicianPage: React.FC = () => {
             <Button
               variant="danger"
               onClick={confirmDeleteTechnician}
-              disabled={loadingStates.deleting}
               className="w-full sm:w-auto"
             >
               Delete

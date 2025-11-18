@@ -20,6 +20,7 @@ interface ImageUploaderProps {
   maxFiles?: number;
   multiple?: boolean;
   height?: string;
+  ImageRatio?: string;
   ImageTitle?: string;
   onFilesSelected?: (files: File[]) => void;
   onRemove?: (index: number) => void;
@@ -36,6 +37,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   height = "h-32",
   onFilesSelected,
   onRemove,
+  ImageRatio = "",
   ImageTitle = "Product Image",
   replaceImages = false,
   isMobile = false,
@@ -100,6 +102,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           {ImageTitle}
         </h2>
       </div>}
+        {ImageRatio && (
+          <p className="mb-3 text-sm text-gray-500">
+            {ImageRatio}
+          </p>
+        )
+        }
 
       <div
         className="flex cursor-pointer flex-col justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-6 py-20 text-center transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"

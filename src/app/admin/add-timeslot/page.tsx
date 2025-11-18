@@ -149,11 +149,10 @@ const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
             type="button"
             variant="secondary"
             onClick={onClose}
-            disabled={loading}
           >
             Cancel
           </Button>
-          <Button type="submit" variant="primary" disabled={loading}>
+          <Button type="submit" variant="primary">
             {loading ? "Saving..." : "Create Time Slot"}
           </Button>
         </div>
@@ -327,11 +326,10 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
             type="button"
             variant="secondary"
             onClick={onClose}
-            disabled={loading}
           >
             Cancel
           </Button>
-          <Button type="submit" variant="primary" disabled={loading}>
+          <Button type="submit" variant="primary">
             {loading ? "Saving..." : "Update Time Slot"}
           </Button>
         </div>
@@ -369,7 +367,6 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           type="button"
           variant="secondary"
           onClick={onClose}
-          disabled={loading}
         >
           {cancelText}
         </Button>
@@ -377,7 +374,6 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           type="button"
           variant="danger"
           onClick={() => onConfirm()}
-          disabled={loading}
         >
           {loading ? "Deleting..." : confirmText}
         </Button>

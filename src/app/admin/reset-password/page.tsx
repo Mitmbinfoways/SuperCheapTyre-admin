@@ -106,7 +106,6 @@ export default function ResetPasswordPage() {
             variant="primary"
             type="submit"
             className="w-full"
-            disabled={isLoading}
           >
             {isLoading ? "Resetting..." : "Reset Password"}
           </Button>
