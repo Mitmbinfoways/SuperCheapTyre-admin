@@ -75,6 +75,13 @@ const OrdersPage = () => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
+  const formatDateForAPI = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getDateRange = useCallback(() => {
     const now = new Date();
     switch (dateFilter) {
@@ -114,8 +121,8 @@ const OrdersPage = () => {
         search: debouncedSearchTerm || undefined,
         status: formatFilter === "All" ? undefined : formatFilter,
         ...(range && {
-          startDate: range.startDate.toISOString(),
-          endDate: range.endDate.toISOString(),
+          startDate: formatDateForAPI(range.startDate),
+          endDate: formatDateForAPI(range.endDate),
         }),
       });
 
