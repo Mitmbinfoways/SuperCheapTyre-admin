@@ -161,7 +161,6 @@ const BannerListPage: React.FC = () => {
   const tableData: BannerWithId[] = (banners || []).map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (banner: Banner) => {
-    // If trying to deactivate and this is the last active banner, show error
     if (banner.isActive) {
       const activeBannersCount = banners.filter(b => b.isActive).length;
       if (activeBannersCount <= 1) {
@@ -214,16 +213,27 @@ const BannerListPage: React.FC = () => {
       width: "120px",
       render: (item) => (
         <div
-          className="h-16 w-16 cursor-pointer"
+          className="h-16 w-16 cursor-pointer overflow-hidden rounded bg-gray-100"
           onClick={() => handleOpenImagePreview(item, 'laptop')}
         >
-          <Image
-            src={getFullImageUrl(item.laptopImage)}
-            alt="Laptop Banner"
-            width={64}
-            height={64}
-            className="h-full w-full rounded object-cover"
-          />
+          {item.laptopImage && item.laptopImage.includes('.mp4') ||
+            item.laptopImage?.match(/\.(mp4|webm|ogg)$/i) ? (
+            <video
+              src={getFullImageUrl(item.laptopImage)}
+              className="h-full w-full object-cover"
+              muted
+              loop
+              playsInline
+            />
+          ) : (
+            <Image
+              src={getFullImageUrl(item.laptopImage)}
+              alt="Laptop Banner"
+              width={64}
+              height={64}
+              className="h-full w-full rounded object-cover"
+            />
+          )}
         </div>
       ),
     },
@@ -233,16 +243,32 @@ const BannerListPage: React.FC = () => {
       width: "80px",
       render: (item) => (
         <div
-          className="h-16 w-16 cursor-pointer"
+          className="h-16 w-16 cursor-pointer overflow-hidden rounded bg-gray-100"
           onClick={() => handleOpenImagePreview(item, 'mobile')}
         >
-          <Image
-            src={getFullImageUrl(item.mobileImage)}
-            alt="Mobile Banner"
-            width={64}
-            height={64}
-            className="h-full w-full rounded object-cover"
-          />
+          {item.mobileImage && (
+            item.mobileImage.includes('.mp4') ||
+            item.mobileImage.includes('.mov') ||
+            item.mobileImage.match(/\.(mp4|webm|ogg|mov)$/i)
+          ) ? (
+            <video
+              src={getFullImageUrl(item.mobileImage)}
+              className="h-full w-full object-cover"
+              muted
+              loop
+              playsInline
+              onMouseEnter={(e) => e.currentTarget.play()}
+              onMouseLeave={(e) => e.currentTarget.pause()}
+            />
+          ) : (
+            <Image
+              src={getFullImageUrl(item.mobileImage)}
+              alt="Mobile Banner"
+              width={64}
+              height={64}
+              className="h-full w-full rounded object-cover"
+            />
+          )}
         </div>
       ),
     },
@@ -365,22 +391,48 @@ const BannerListPage: React.FC = () => {
       >
         {previewBanner && (
           <div className="flex flex-col items-center">
-            <div className="relative w-full flex justify-center items-center">
-              <div className="flex justify-center items-center w-full">
-                <Image
-                  src={imageType === 'laptop' ?
-                    getFullImageUrl(previewBanner.laptopImage) :
-                    getFullImageUrl(previewBanner.mobileImage)}
-                  alt={`${imageType === 'laptop' ? 'Laptop' : 'Mobile'} Banner`}
-                  width={450}
-                  height={450}
-                  className="rounded-lg object-contain max-h-[60vh] rounded-xl"
-                />
-              </div>
+            <div className="relative w-full max-w-4xl">
+              {imageType === 'laptop' ? (
+                previewBanner.laptopImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                  <video
+                    src={getFullImageUrl(previewBanner.laptopImage)}
+                    controls
+                    autoPlay
+                    loop
+                    className="max-h-[70vh] w-full rounded-lg object-contain"
+                  />
+                ) : (
+                  <Image
+                    src={getFullImageUrl(previewBanner.laptopImage)}
+                    alt="Laptop Banner"
+                    width={800}
+                    height={600}
+                    className="max-h-[70vh] w-full rounded-lg object-contain"
+                  />
+                )
+              ) : (
+                previewBanner.mobileImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                  <video
+                    src={getFullImageUrl(previewBanner.mobileImage)}
+                    controls
+                    autoPlay
+                    loop
+                    className="max-h-[70vh] w-full rounded-lg object-contain"
+                  />
+                ) : (
+                  <Image
+                    src={getFullImageUrl(previewBanner.mobileImage)}
+                    alt="Mobile Banner"
+                    width={400}
+                    height={600}
+                    className="max-h-[70vh] w-full rounded-lg object-contain"
+                  />
+                )
+              )}
             </div>
 
-            <div className="mt-4 text-lg font-semibold">
-              {imageType === 'laptop' ? 'Laptop Banner' : 'Mobile Banner'}
+            <div className="mt-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
+              {imageType === 'laptop' ? 'Laptop' : 'Mobile'} {previewBanner.laptopImage.match(/\.(mp4|webm|ogg|mov)$/i) || previewBanner.mobileImage.match(/\.(mp4|webm|ogg|mov)$/i) ? 'Video' : 'Image'}
             </div>
           </div>
         )}

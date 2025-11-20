@@ -89,11 +89,9 @@ export function UserInfo() {
           />
 
           <figcaption className="text-base font-medium overflow-hidden">
-            <Tooltip content="Admin Profile">
               <div className="leading-none text-dark dark:text-gray-300">
                 {admin.name}
               </div>
-            </Tooltip >
             <div className="leading-none line-clamp-1 text-gray-6 py-2">{admin.email}</div>
           </figcaption>
         </figure>

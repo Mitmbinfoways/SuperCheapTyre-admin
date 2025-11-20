@@ -11,6 +11,21 @@ import { FiDownload } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
+import Badge from "@/components/ui/Badge";
+import Select from "@/components/ui/Select";
+import Button from "@/components/ui/Button";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import {
+  format,
+  startOfDay,
+  endOfDay,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -22,8 +37,13 @@ const OrdersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [formatFilter, setFormatFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [dateFilter, setDateFilter] = useState<string>("All Time");
+  const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
+  const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -33,14 +53,50 @@ const OrdersPage = () => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
 
+  const getDateRange = useCallback(() => {
+    const now = new Date();
+    switch (dateFilter) {
+      case "Today":
+        return { startDate: startOfDay(now), endDate: endOfDay(now) };
+      case "Yesterday":
+        const yesterday = subDays(now, 1);
+        return { startDate: startOfDay(yesterday), endDate: endOfDay(yesterday) };
+      case "This Week":
+        return {
+          startDate: startOfWeek(now, { weekStartsOn: 1 }),
+          endDate: endOfWeek(now, { weekStartsOn: 1 }),
+        };
+      case "This Month":
+        return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
+      case "Custom Range":
+        if (customStartDate && customEndDate) {
+          return {
+            startDate: startOfDay(customStartDate),
+            endDate: endOfDay(customEndDate),
+          };
+        }
+        return null;
+      default:
+        return null;
+    }
+  }, [dateFilter, customStartDate, customEndDate]);
+
   const fetchOrders = useCallback(async () => {
     updateLoadingState("fetchingOrders", true);
     try {
+      const range = getDateRange();
+
       const response = await getAllOrders({
         page: currentPage,
         limit: pageSize,
-        search: debouncedSearchTerm,
+        search: debouncedSearchTerm || undefined,
+        status: formatFilter === "All" ? undefined : formatFilter,
+        ...(range && {
+          startDate: range.startDate.toISOString(),
+          endDate: range.endDate.toISOString(),
+        }),
       });
+
       setOrders(response.data.orders);
       setTotalPages(response.data.pagination.totalPages);
     } catch (e: any) {
@@ -51,16 +107,21 @@ const OrdersPage = () => {
     } finally {
       updateLoadingState("fetchingOrders", false);
     }
-  }, [currentPage, pageSize, debouncedSearchTerm]);
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearchTerm,
+    formatFilter,
+    getDateRange,
+  ]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Reset to first page when search term changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, formatFilter, dateFilter, customStartDate, customEndDate]);
 
   const getTotalItems = (items: OrderItem[]) =>
     items.reduce((total, item) => total + item.quantity, 0);
@@ -213,6 +274,18 @@ const OrdersPage = () => {
       ),
     },
     {
+      title: "Payment Status",
+      key: "total",
+      render: (order: Order) => (
+        <Badge
+          color={
+            order?.payment?.status.toUpperCase() === "PARTIAL" ? "yellow" : "green"
+          }
+          label={order?.payment?.status.toUpperCase() || "-"}
+        />
+      ),
+    },
+    {
       title: "Total (AU$)",
       key: "total",
       render: (order: Order) => `AU$${order.total.toFixed(2)}`,
@@ -242,20 +315,100 @@ const OrdersPage = () => {
 
   return (
     <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
           Orders ({orders.length})
         </h1>
+        <h2 className="text-xl font-semibold text-primary dark:text-gray-300">
+          Total Amount:{" "}
+          <span>
+            AU$
+            {orders
+              .reduce((sum, order) => sum + order.total, 0)
+              .toFixed(2)}
+          </span>
+        </h2>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-6 w-full sm:w-1/3">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
         <TextField
           type="text"
-          placeholder="Search by customer name or phone..."
+          placeholder="Search by name or phone..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full col-span-1 sm:col-span-2 lg:col-span-1"
         />
+        <Select
+          value={formatFilter}
+          onChange={(value) => setFormatFilter(value as string)}
+          options={[
+            { label: "All", value: "All" },
+            { label: "Partial", value: "partial" },
+            { label: "Full", value: "full" },
+          ]}
+          placeholder="Format"
+          className="w-full"
+        />
+        <Select
+          value={dateFilter}
+          onChange={(value) => {
+            const val = value as string;
+            setDateFilter(val);
+            if (val !== "Custom Range") {
+              setCustomStartDate(null);
+              setCustomEndDate(null);
+            }
+          }}
+          options={[
+            { label: "All Time", value: "All Time" },
+            { label: "Today", value: "Today" },
+            { label: "Yesterday", value: "Yesterday" },
+            { label: "This Week", value: "This Week" },
+            { label: "This Month", value: "This Month" },
+            { label: "Custom Range", value: "Custom Range" },
+          ]}
+          placeholder="Date Range"
+          className="w-full"
+        />
+        {dateFilter === "Custom Range" && (
+          <div className="flex flex-col sm:flex-row gap-3 col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
+            <DatePicker
+              selected={customStartDate}
+              onChange={(date) => setCustomStartDate(date)}
+              selectsStart
+              startDate={customStartDate}
+              endDate={customEndDate}
+              maxDate={new Date()}
+              placeholderText="Start Date"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+            />
+            <DatePicker
+              selected={customEndDate}
+              onChange={(date) => setCustomEndDate(date)}
+              selectsEnd
+              startDate={customStartDate}
+              endDate={customEndDate}
+              minDate={customStartDate || undefined}
+              maxDate={new Date()}
+              placeholderText="End Date"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+            />
+          </div>
+        )}
+        <Button
+          variant="secondary"
+          className="w-full h-full min-h-10"
+          onClick={() => {
+            setSearchTerm("");
+            setFormatFilter("All");
+            setDateFilter("All Time");
+            setCustomStartDate(null);
+            setCustomEndDate(null);
+            setCurrentPage(1);
+          }}
+        >
+          Reset Filters
+        </Button>
       </div>
 
       {loadingStates.fetchingOrders ? (
@@ -264,7 +417,6 @@ const OrdersPage = () => {
         <EmptyState message="No orders found." />
       ) : (
         <>
-          {/* ✅ Responsive table wrapper */}
           <div className="w-full overflow-x-auto rounded-tl-xl rounded-tr-xl">
             <table className="min-w-full table-auto border-collapse">
               <thead className="bg-lightblue dark:bg-gray-800">
@@ -310,7 +462,7 @@ const OrdersPage = () => {
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-6 flex justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

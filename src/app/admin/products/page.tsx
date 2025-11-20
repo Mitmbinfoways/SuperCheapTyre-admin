@@ -565,7 +565,7 @@ const ProductListPage: React.FC = () => {
               htmlFor="lowStock"
               className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
             >
-              Low Stock (5 or less)
+              Low Stock (2 or less)
             </label>
           </div>
         </div>

@@ -26,6 +26,8 @@ interface ImageUploaderProps {
   onRemove?: (index: number) => void;
   replaceImages?: boolean;
   isMobile?: boolean;
+  /** NEW PROP – allow video upload when true */
+  video?: boolean;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -41,6 +43,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   ImageTitle = "Product Image",
   replaceImages = false,
   isMobile = false,
+  video = false,               // ← new prop, default false
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -51,11 +54,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const validFileObjects: File[] = [];
 
     Array.from(files).forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+
+      // Accept images always, videos only when video={true}
+      if (!isImage && !(video && isVideo)) return;
+
       if (file.size / 1024 / 1024 > maxSizeMB) {
         alert(`File ${file.name} exceeds ${maxSizeMB}MB`);
         return;
       }
+
       const imageItem: ImageItem = {
         id: uuidv4(),
         url: URL.createObjectURL(file),
@@ -92,22 +101,29 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const removedIndex = images.findIndex((img) => img.id === id);
     if (removedIndex === -1) return;
     if (onRemove) onRemove(removedIndex);
+    // Also remove from state (parent still owns the array, but we help by calling onChange)
+    onChange(images.filter((img) => img.id !== id));
   };
+
+  // Dynamic accept attribute and helper text
+  const acceptAttr = video ? "image/*,video/*" : "image/*";
+  const fileTypesText = video
+    ? "PNG, JPG, JPEG, MP4, MOV (MAX. "
+    : "PNG, JPG or JPEG (MAX. ";
 
   return (
     <div className="space-y-4 p-6">
-      {ImageTitle && <div className="mb-5 flex items-center gap-2">
-        <CiImageOn className="h-5 w-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
-          {ImageTitle}
-        </h2>
-      </div>}
-        {ImageRatio && (
-          <p className="mb-3 text-sm text-gray-500">
-            {ImageRatio}
-          </p>
-        )
-        }
+      {ImageTitle && (
+        <div className="mb-5 flex items-center gap-2">
+          <CiImageOn className="h-5 w-5 text-blue-600" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
+            {ImageTitle}
+          </h2>
+        </div>
+      )}
+      {ImageRatio && (
+        <p className="mb-3 text-sm text-gray-500">{ImageRatio}</p>
+      )}
 
       <div
         className="flex cursor-pointer flex-col justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-6 py-20 text-center transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -117,15 +133,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       >
         <FiUpload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-300" />
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-300">
-          Click to upload {multiple ? "images" : "image"} or drag and drop
+          Click to upload {multiple ? (video ? "images or videos" : "images") : "file"}{" "}
+          or drag and drop
         </p>
         <p className="mt-1 text-xs text-gray-400 dark:text-gray-400">
-          PNG, JPG or JPEG (MAX. {maxSizeMB}MB each)
+          {fileTypesText}
+          {maxSizeMB}MB each)
         </p>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={acceptAttr}
           multiple={multiple}
           onChange={handleChange}
           className="hidden"
@@ -135,22 +153,33 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       {images.length > 0 && (
         <div>
           <h3 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Uploaded Images ({images.length})
+            Uploaded Files ({images.length})
           </h3>
 
           <div className="grid grid-cols-3 gap-4">
             {images.map((img) => (
               <div
                 key={img.id}
-                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${!isMobile ? "w-40" : "" // 👈 fixed width for scroll layout
-                  }`}
+                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${
+                  !isMobile ? "w-40" : ""
+                }`}
               >
-                <Image
-                  src={img.url}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                />
+                {img.file?.type.startsWith("video/") ? (
+                  // Simple video preview thumbnail
+                  <video
+                    src={img.url}
+                    className="object-cover w-full h-full"
+                    muted
+                  />
+                ) : (
+                  <Image
+                    src={img.url}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                )}
+
                 <button
                   type="button"
                   onClick={(e) => {

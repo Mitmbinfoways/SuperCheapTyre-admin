@@ -209,6 +209,7 @@ const BannerPage = () => {
                   ImageTitle="Banner Image"
                   maxFiles={1}
                   multiple={false}
+                  video={true}
                   replaceImages
                 />
               </div>
@@ -226,6 +227,7 @@ const BannerPage = () => {
                   ImageTitle="Banner Image"
                   maxFiles={1}
                   multiple={false}
+                  video={true}
                   replaceImages
                 />
               </div>
