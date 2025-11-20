@@ -58,7 +58,7 @@ function Table<T extends { id?: string | number; _id?: string }>({
 
   return (
     <div className={`w-full overflow-x-auto rounded-t-lg ${className}`}>
-      <table className="w-full table-auto overflow-hidden rounded-t-lg">
+      <table className="w-full table-auto rounded-t-lg">
         <thead className="bg-lightblue dark:bg-gray-800">
           <tr>
             {columns.map((col) => (
@@ -78,7 +78,7 @@ function Table<T extends { id?: string | number; _id?: string }>({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-700">
+        <tbody className="bg-white overflow-auto dark:bg-gray-900 border-t border-b border-gray-200 dark:border-gray-700">
           {data.map((item, index) => (
             <tr
               key={(item as any).id || (item as any)._id || index}
