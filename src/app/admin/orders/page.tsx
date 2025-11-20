@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
+import { getAllProducts, Product } from "@/services/CreateProductService";
 import Pagination from "@/components/ui/Pagination";
 import Image from "next/image";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
@@ -26,14 +28,16 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import CommonDialog from "@/components/ui/Dialogbox";
 
 type LoadingStates = {
   fetchingOrders: boolean;
+  fetchingProducts: boolean;
 };
 
 const OrdersPage = () => {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
@@ -49,31 +53,31 @@ const OrdersPage = () => {
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
+    fetchingProducts: false,
   });
-
-  const [showForm, setShowForm] = useState<boolean>(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [activeTab, setActiveTab] = useState<'create' | 'edit'>('create');
-  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
-  const [invoiceNotes, setInvoiceNotes] = useState<string>('');
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setSelectedOrder(null);
-    setActiveTab('create');
-    setInvoiceNumber('');
-    setInvoiceNotes('');
-  };
-
-  const handleOpenForm = (tab: 'create' | 'edit' = 'create', order: Order | null = null) => {
-    setShowForm(true);
-    setActiveTab(tab);
-    setSelectedOrder(order);
-  };
 
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
+
+  const fetchProducts = useCallback(async () => {
+    updateLoadingState("fetchingProducts", true);
+    try {
+      const response = await getAllProducts({
+        page: 1,
+        limit: 100, // Fetch a reasonable number of products
+        isActive: true,
+      });
+      setProducts(response.data.items);
+    } catch (e: any) {
+      Toast({
+        type: "error",
+        message: e?.response?.data?.errorData || "Failed to fetch products",
+      });
+    } finally {
+      updateLoadingState("fetchingProducts", false);
+    }
+  }, []);
 
   const formatDateForAPI = (date: Date) => {
     const year = date.getFullYear();
@@ -147,7 +151,8 @@ const OrdersPage = () => {
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+    fetchProducts();
+  }, [fetchOrders, fetchProducts]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -306,14 +311,30 @@ const OrdersPage = () => {
     {
       title: "Payment Status",
       key: "total",
-      render: (order: Order) => (
-        <Badge
-          color={
-            order?.payment?.status.toUpperCase() === "PARTIAL" ? "yellow" : "green"
+      render: (order: Order) => {
+        // Helper to resolve status safely
+        const getPaymentStatus = (): string => {
+          const payment = order?.payment;
+          if (!payment) return "-";
+          if (Array.isArray(payment)) {
+            if (payment.length === 0) return "-";
+            const hasFullPayment = payment.some(
+              (p) => p?.status?.toUpperCase() === "FULL"
+            );
+            return hasFullPayment ? "FULL" : "PARTIAL";
           }
-          label={order?.payment?.status.toUpperCase() || "-"}
-        />
-      ),
+          if (payment && typeof payment === "object") {
+            return payment.status?.toUpperCase() || "-";
+          }
+
+          return "-";
+        };
+
+        const status = getPaymentStatus();
+        const color = status === "PARTIAL" ? "yellow" : "green";
+
+        return <Badge color={color} label={status} />;
+      },
     },
     {
       title: "Total (AU$)",
@@ -360,7 +381,7 @@ const OrdersPage = () => {
         </div>
 
         <div className="w-full flex justify-end">
-          <Button variant="primary" onClick={() => handleOpenForm('create')}>Create Invoice</Button>
+          <Button variant="primary" onClick={() => router.push('/admin/create-invoice')}>Create Invoice</Button>
         </div>
 
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
@@ -506,220 +527,6 @@ const OrdersPage = () => {
           </>
         )}
       </div>
-
-      <CommonDialog
-        isOpen={showForm}
-        size="lg"
-        onClose={handleCloseForm}
-        title={activeTab === 'create' ? "Create New Invoice" : "Edit Invoice"}
-      >
-        <form className="space-y-4">
-          {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              className={`py-2 px-4 text-sm font-medium ${activeTab === 'create'
-                ? 'border-b-2 border-primary text-primary dark:text-primary'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
-              onClick={() => setActiveTab('create')}
-            >
-              Create New Invoice
-            </button>
-            <button
-              type="button"
-              className={`py-2 px-4 text-sm font-medium ${activeTab === 'edit'
-                ? 'border-b-2 border-primary text-primary dark:text-primary'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}`}
-              onClick={() => setActiveTab('edit')}
-            >
-              Edit Invoice
-            </button>
-          </div>
-
-          {/* Create New Invoice Tab */}
-          {activeTab === 'create' && (
-            <div className="pt-4">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Select Order with Partial Payment
-                </label>
-                <Select
-                  value={selectedOrder?._id || ""}
-                  onChange={(value) => {
-                    const order = orders.find(o => o._id === value);
-                    setSelectedOrder(order || null);
-                  }}
-                  options={orders
-                    .filter(order => order.payment.status.toUpperCase() === "PARTIAL")
-                    .map(order => ({
-                      label: `${order.customer.name} - ${order._id} (AU$${order.total.toFixed(2)})`,
-                      value: order._id
-                    }))}
-                  placeholder="Select an order"
-                  className="w-full"
-                />
-              </div>
-
-              {selectedOrder && (
-                <div className="border rounded-lg p-4 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-                    Order Details
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Customer</p>
-                      <p className="font-medium dark:text-gray-100">{selectedOrder.customer.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Order ID</p>
-                      <p className="font-medium dark:text-gray-100">{selectedOrder._id}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Order Date</p>
-                      <p className="font-medium dark:text-gray-100">
-                        {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString() : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
-                      <p className="font-medium dark:text-gray-100">AU${selectedOrder.total.toFixed(2)}</p>
-                    </div>
-                  </div>
-
-                  <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Products</h4>
-                  <div className="space-y-3">
-                    {selectedOrder.items.map((item) => (
-                      <div
-                        key={item._id}
-                        className="flex items-center gap-4 rounded-lg border p-3 dark:border-gray-700"
-                      >
-                        {renderProductImage(item)}
-                        <div className="flex-1">
-                          <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {item.productDetails.name}
-                          </h5>
-                          <p className="text-xs text-gray-600 dark:text-gray-300">
-                            SKU: {item.productDetails.sku}
-                          </p>
-                          <div className="mt-2 flex justify-between text-sm">
-                            <span>Qty: {item.quantity}</span>
-                            <span>AU$ {item.productDetails.price.toFixed(2)}</span>
-                          </div>
-                          <div className="mt-1 text-right font-medium text-gray-800 dark:text-gray-100">
-                            Total: AU${" "}
-                            {(item.productDetails.price * item.quantity).toFixed(2)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Edit Invoice Tab */}
-          {activeTab === 'edit' && (
-            <div className="pt-4">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Select Order to Edit
-                </label>
-                <Select
-                  value={selectedOrder?._id || ""}
-                  onChange={(value) => {
-                    const order = orders.find(o => o._id === value);
-                    setSelectedOrder(order || null);
-                  }}
-                  options={orders
-                    .filter(order => order.payment.status.toUpperCase() === "PARTIAL")
-                    .map(order => ({
-                      label: `${order.customer.name} - ${order._id} (AU$${order.total.toFixed(2)})`,
-                      value: order._id
-                    }))}
-                  placeholder="Select an order to edit"
-                  className="w-full"
-                />
-              </div>
-
-              {selectedOrder && (
-                <div className="border rounded-lg p-4 dark:border-gray-700">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-                    Edit Invoice for Order: {selectedOrder._id}
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Customer</p>
-                      <p className="font-medium dark:text-gray-100">{selectedOrder.customer.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Order Date</p>
-                      <p className="font-medium dark:text-gray-100">
-                        {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString() : "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Current Total</p>
-                      <p className="font-medium dark:text-gray-100">AU${selectedOrder.total.toFixed(2)}</p>
-                    </div>
-                  </div>
-
-                  <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Invoice Details</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Invoice Number
-                      </label>
-                      <TextField
-                        type="text"
-                        placeholder="Enter invoice number"
-                        value={invoiceNumber}
-                        onChange={(e) => setInvoiceNumber(e.target.value)}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Invoice Date
-                      </label>
-                      <DatePicker
-                        selected={new Date()}
-                        onChange={() => { }}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Notes
-                      </label>
-                      <textarea
-                        rows={3}
-                        placeholder="Enter invoice notes"
-                        value={invoiceNotes}
-                        onChange={(e) => setInvoiceNotes(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="secondary" onClick={handleCloseForm}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!selectedOrder}
-            >
-              {activeTab === 'create' ? 'Generate Invoice' : 'Update Invoice'}
-            </Button>
-          </div>
-        </form>
-      </CommonDialog>
     </>
   );
 };

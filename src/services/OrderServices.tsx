@@ -1,4 +1,4 @@
-import { getMethod } from "./methods";
+import { getMethod, postMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -89,5 +89,63 @@ export const getAllOrders = async (
     }`;
 
   const response = await getMethod<ApiResponse<OrderRes>>(url);
+  return response.data;
+};
+
+export interface CreateOrderPayload {
+  items: Array<{
+    id: string;
+    quantity: number;
+  }>;
+  subtotal: number;
+  total: number;
+  appointmentId: string;
+  customer: {
+    name: string;
+    phone: string;
+    email?: string;
+  };
+  payment: {
+    amount: number;
+    method: string;
+    status: string;
+    currency: string;
+  };
+}
+
+export const createOrder = async (
+  payload: CreateOrderPayload,
+): Promise<ApiResponse<Order>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order`;
+  const response = await postMethod<ApiResponse<Order>, CreateOrderPayload>(url, payload);
+  return response.data;
+};
+
+// Define the payload structure for CreateLocalOrder
+export interface CreateLocalOrderPayload {
+  items: Array<{
+    id: string;
+    quantity: number;
+  }>;
+  subtotal: number;
+  total: number;
+  customer: {
+    name: string;
+    phone: string;
+    email?: string;
+  };
+  payment: {
+    amount: number;
+    method: string;
+    status: string;
+    currency: string;
+  };
+}
+
+export const CreateLocalOrder = async (
+  payload: CreateLocalOrderPayload,
+): Promise<ApiResponse<Order>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order/local`;
+  const response = await postMethod<ApiResponse<Order>, CreateLocalOrderPayload>(url, payload);
   return response.data;
 };
