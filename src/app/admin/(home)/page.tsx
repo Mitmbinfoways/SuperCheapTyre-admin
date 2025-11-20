@@ -1,5 +1,6 @@
 "use client";
 
+import Tooltip from "@/components/ui/Tooltip";
 import { getDashboardCount } from "@/services/CreateProductService";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -179,12 +180,14 @@ const Page = () => {
                     </p>
                   </div>
                   <div className="mt-2 flex justify-end">
-                    <button
-                      onClick={() => router.push(stat.link)}
-                      className="flex items-center gap-2 text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      View More <IoMdArrowForward />
-                    </button>
+                    <Tooltip content="View more">
+                      <button
+                        onClick={() => router.push(stat.link)}
+                        className="flex items-center gap-2 text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        View More <IoMdArrowForward />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               );

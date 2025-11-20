@@ -10,6 +10,7 @@ import EmptyState from "@/components/EmptyState";
 import { FiDownload } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
+import Tooltip from "@/components/ui/Tooltip";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -227,11 +228,13 @@ const OrdersPage = () => {
           }}
           className="flex items-center justify-center space-x-2 cursor-pointer"
         >
-          <FiDownload
-            size={18}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            title="Download"
-          />
+          <Tooltip content="Download Invoice">
+            <FiDownload
+              size={18}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              title="Download"
+            />
+          </Tooltip>
         </div>
       ),
     },
@@ -241,7 +244,7 @@ const OrdersPage = () => {
     <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Orders
+          Orders ({orders.length})
         </h1>
       </div>
 

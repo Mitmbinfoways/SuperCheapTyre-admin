@@ -14,6 +14,7 @@ import { LogOutIcon, UserIcon } from "./icons";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/Store/Store";
+import Tooltip from "@/components/ui/Tooltip";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,10 +89,11 @@ export function UserInfo() {
           />
 
           <figcaption className="text-base font-medium overflow-hidden">
-            <div className="leading-none text-dark dark:text-gray-300">
-              {admin.name}
-            </div>
-
+            <Tooltip content="Admin Profile">
+              <div className="leading-none text-dark dark:text-gray-300">
+                {admin.name}
+              </div>
+            </Tooltip >
             <div className="leading-none line-clamp-1 text-gray-6 py-2">{admin.email}</div>
           </figcaption>
         </figure>

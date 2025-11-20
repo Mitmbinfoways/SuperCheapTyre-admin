@@ -24,6 +24,7 @@ import Badge from "@/components/ui/Badge";
 import { getBrandImageUrl } from "@/lib/utils";
 import Skeleton from "@/components/ui/Skeleton";
 import Select from "@/components/ui/Select";
+import Tooltip from "@/components/ui/Tooltip";
 
 type BrandWithId = Brand & { id: string };
 
@@ -173,7 +174,7 @@ const BrandListPage: React.FC = () => {
       width: "80px",
       render: (item) => {
         return (
-          <div 
+          <div
             className="h-12 w-12 sm:h-20 sm:w-28 cursor-pointer"
             onClick={() => handleOpenImagePreview(item)}
           >
@@ -231,21 +232,25 @@ const BrandListPage: React.FC = () => {
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
-          <MdModeEdit
-            size={16}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditBrand(item)}
-            title="Edit brand"
-          />
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            onClick={() => {
-              setDeleteBrandId(item._id);
-              setShowDeleteDialog(true);
-            }}
-            title="Delete brand"
-          />
+          <Tooltip content="Edit brand">
+            <MdModeEdit
+              size={16}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              onClick={() => handleEditBrand(item)}
+              title="Edit brand"
+            />
+          </Tooltip>
+          <Tooltip content="Delete brand">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => {
+                setDeleteBrandId(item._id);
+                setShowDeleteDialog(true);
+              }}
+              title="Delete brand"
+            />
+          </Tooltip>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
@@ -260,7 +265,7 @@ const BrandListPage: React.FC = () => {
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Brands
+          Manage Brands ({brands?.length || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/create-brand")}

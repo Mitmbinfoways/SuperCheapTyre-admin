@@ -22,6 +22,7 @@ import EmptyState from "@/components/EmptyState";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import Select from "@/components/ui/Select";
+import Tooltip from "@/components/ui/Tooltip";
 
 
 interface Technician {
@@ -86,16 +87,16 @@ const AddTechnicianPage: React.FC = () => {
     updateLoading("fetching", true);
     setError({});
     try {
-      const filter: any = { 
-        currentPage, 
-        itemsPerPage, 
-        search: debounceSearch 
+      const filter: any = {
+        currentPage,
+        itemsPerPage,
+        search: debounceSearch
       };
-      
+
       if (statusFilter !== "All") {
         filter.isActive = statusFilter === "Active";
       }
-      
+
       const data = await GetTechnicians(filter);
       const { items, pagination } = data.data;
       setTechnicians(items as Technician[]);
@@ -257,19 +258,23 @@ const AddTechnicianPage: React.FC = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end space-x-3">
-          <MdModeEdit
-            size={16}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditTechnician(item)}
-          />
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            onClick={() => {
-              setDeleteTechnicianId(item._id);
-              setShowDeleteDialog(true);
-            }}
-          />
+          <Tooltip content="Edit employee">
+            <MdModeEdit
+              size={16}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              onClick={() => handleEditTechnician(item)}
+            />
+          </Tooltip>
+          <Tooltip content="Delete employee">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => {
+                setDeleteTechnicianId(item._id);
+                setShowDeleteDialog(true);
+              }}
+            />
+          </Tooltip>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
@@ -283,7 +288,7 @@ const AddTechnicianPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Employee
+          Manage Employee ({technicians?.length || 0})
         </h1>
         <Button
           onClick={() => {
@@ -297,7 +302,7 @@ const AddTechnicianPage: React.FC = () => {
           Add Employee
         </Button>
       </div>
-      
+
       {/* Search and Filters */}
       <div className="mb-4 flex flex-col gap-4 sm:flex-row">
         <div className="sm:py-7 w-full sm:w-1/3">
@@ -327,7 +332,7 @@ const AddTechnicianPage: React.FC = () => {
           </Button>
         </div>
       </div>
-      
+
       <CommonDialog
         isOpen={showForm}
         size="lg"

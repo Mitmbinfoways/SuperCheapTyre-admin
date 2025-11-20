@@ -116,7 +116,7 @@ const ContactList: React.FC = () => {
   return (
     <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-md dark:bg-gray-900">
       <h1 className="mb-6 text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300 text-left">
-        Manage Query
+        Manage Query ({contacts?.length || 0})
       </h1>
       <div className="mb-6 w-full sm:w-2/3 md:w-1/3">
         <TextField

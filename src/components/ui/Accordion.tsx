@@ -15,7 +15,9 @@ interface AccordionProps {
 }
 
 export default function Accordion({ items, className = "" }: AccordionProps) {
-  const [openItem, setOpenItem] = useState<string | number | null>(null);
+  const [openItem, setOpenItem] = useState<string | number | null>(
+    items.length > 0 ? items[0].id : null
+  );
 
   const toggleItem = (id: string | number) => {
     setOpenItem(openItem === id ? null : id);

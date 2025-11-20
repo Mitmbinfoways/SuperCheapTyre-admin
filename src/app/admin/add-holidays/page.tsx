@@ -19,6 +19,7 @@ import DatePicker from "@/components/ui/DatePicker";
 import useDebounce from "@/hooks/useDebounce";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
+import Tooltip from "@/components/ui/Tooltip";
 
 type Holiday = {
   _id: string;
@@ -194,39 +195,43 @@ const AddHolidayPage: React.FC = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end space-x-3">
-          <MdModeEdit
-            size={16}
-            className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+          <Tooltip content="Edit holiday">
+            <MdModeEdit
+              size={16}
+              className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
                 ? "cursor-not-allowed text-gray-400"
                 : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              }`}
-            title="Edit holiday"
-            onClick={() => {
-              if (
-                !loadingStates.fetchingHolidays &&
-                !loadingStates.deletingHoliday
-              ) {
-                handleEditHoliday(item);
-              }
-            }}
-          />
-          <FiTrash2
-            size={16}
-            className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
+                }`}
+              title="Edit holiday"
+              onClick={() => {
+                if (
+                  !loadingStates.fetchingHolidays &&
+                  !loadingStates.deletingHoliday
+                ) {
+                  handleEditHoliday(item);
+                }
+              }}
+            />
+          </Tooltip>
+          <Tooltip content="Delete holiday">
+            <FiTrash2
+              size={16}
+              className={`cursor-pointer transition-colors ${loadingStates.fetchingHolidays || loadingStates.deletingHoliday
                 ? "cursor-not-allowed text-gray-400"
                 : "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-              }`}
-            title="Delete holiday"
-            onClick={() => {
-              if (
-                !loadingStates.fetchingHolidays &&
-                !loadingStates.deletingHoliday
-              ) {
-                setDeleteHolidayId(item._id);
-                setShowDeleteDialog(true);
-              }
-            }}
-          />
+                }`}
+              title="Delete holiday"
+              onClick={() => {
+                if (
+                  !loadingStates.fetchingHolidays &&
+                  !loadingStates.deletingHoliday
+                ) {
+                  setDeleteHolidayId(item._id);
+                  setShowDeleteDialog(true);
+                }
+              }}
+            />
+          </Tooltip>
         </div>
       ),
     },
@@ -236,7 +241,7 @@ const AddHolidayPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Holidays
+          Manage Holidays ({holidays?.length || 0})
         </h1>
         <Button
           onClick={() => {

@@ -18,6 +18,7 @@ import {
 import { MdModeEdit } from "react-icons/md";
 import EmptyState from "@/components/EmptyState";
 import ToggleSwitch from "@/components/ui/Toggle";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface CreateDialogProps {
   isOpen: boolean;
@@ -416,7 +417,7 @@ const AddTimeSlotPage: React.FC = () => {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-              Time Slot Management
+              Time Slot Management ({timeSlots?.length || 0})
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               Create and manage appointment time slots
@@ -454,7 +455,9 @@ const AddTimeSlotPage: React.FC = () => {
                       className="cursor-pointer rounded p-1 px-3 hover:bg-gray-100 dark:hover:bg-gray-800"
                       title="Edit time slot"
                     >
-                      <MdModeEdit className="text-gray-600" size={18} />
+                      <Tooltip content="Edit Time Slot">
+                        <MdModeEdit className="text-gray-600" size={18} />
+                      </Tooltip>
                     </div>
                   </div>
                 ),

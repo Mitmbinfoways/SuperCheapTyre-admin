@@ -20,6 +20,7 @@ import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
+import Tooltip from "@/components/ui/Tooltip";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -47,6 +48,8 @@ const AppointmentsPage = () => {
   >([]);
   const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null); // Added state for view appointment
   const itemsPerPage = 10;
+
+  console.log(technicianOptions)
 
   const debounceSearch = useDebounce<string>(search, 300);
 
@@ -213,31 +216,40 @@ const AppointmentsPage = () => {
       render: (item) => (
         <div className="flex items-center justify-end space-x-3">
           {/* Added View Icon */}
-          <button
-            onClick={() => handleViewAppointment(item)}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            aria-label="View appointment"
-          >
-            <EyeIcon className="h-5 w-5" />
-          </button>
+          <Tooltip
+            content="View appointment">
+            <button
+              onClick={() => handleViewAppointment(item)}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              aria-label="View appointment"
+            >
+              <EyeIcon className="h-5 w-5" />
+            </button>
+          </Tooltip>
           {editingId === item._id ? (
             <>
-              <button
-                onClick={() => setEditingId(null)}
-                className="cursor-pointer text-red-600"
-                aria-label="Cancel edit"
-              >
-                <RxCross2 size={22} />
-              </button>
+              <Tooltip
+                content="Close">
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="cursor-pointer text-red-600"
+                  aria-label="Cancel edit"
+                >
+                  <RxCross2 size={22} />
+                </button>
+              </Tooltip>
             </>
           ) : (
-            <button
-              onClick={() => setEditingId(item._id)}
-              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              aria-label="Edit appointment"
-            >
-              <MdModeEdit size={16} />
-            </button>
+            <Tooltip
+              content="Edit Appointment">
+              <button
+                onClick={() => setEditingId(item._id)}
+                className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                aria-label="Edit appointment"
+              >
+                <MdModeEdit size={16} />
+              </button>
+            </Tooltip>
           )}
         </div>
       ),
@@ -259,7 +271,7 @@ const AppointmentsPage = () => {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
-        Appointments
+        Appointments ({appointments?.length || 0})
       </h1>
 
       <div className="mb-4 w-full sm:w-1/2 lg:w-1/3">

@@ -12,6 +12,7 @@ import logo from "../../../../public/logo_dark.svg";
 import Darklogo from "../../../../public/logo_light.svg";
 import { setCredentials } from "@/Store/Slice/authSlice";
 import { useDispatch } from "react-redux";
+import Link from "next/link";
 
 interface FieldErrors {
   email?: string;
@@ -138,12 +139,12 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <FormLabel label="Password" required />
               <div className="mb-2 text-sm">
-                <a
+                <Link
                   href="/admin/forgot-password"
                   className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
             </div>
             <TextField

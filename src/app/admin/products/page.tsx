@@ -26,6 +26,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import Select from "@/components/ui/Select";
 import { getAllBrands } from "@/services/BrandService";
+import Tooltip from "@/components/ui/Tooltip";
 
 type ProductWithId = ServiceProduct & { id: string };
 
@@ -218,7 +219,7 @@ const ProductListPage: React.FC = () => {
     setTempStatusFilter("all");
     setTempIsPopularFilter(null);
     setTempLowStockFilter(null);
-    
+
     // Also reset the actual filter state
     setSearch("");
     setCategoryFilter("");
@@ -226,7 +227,7 @@ const ProductListPage: React.FC = () => {
     setStatusFilter("all");
     setIsPopularFilter(null);
     setLowStockFilter(null);
-    
+
     // Reset to first page when filters change
     setCurrentPage(1);
   };
@@ -403,21 +404,27 @@ const ProductListPage: React.FC = () => {
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
-          <MdModeEdit
-            size={16}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditProduct({ ...item } as ServiceProduct)}
-            title="Edit product"
-          />
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            onClick={() => {
-              setDeleteProductId(item._id);
-              setShowDeleteDialog(true);
-            }}
-            title="Delete product"
-          />
+          <Tooltip
+            content="Edit Product">
+            <MdModeEdit
+              size={16}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              onClick={() => handleEditProduct({ ...item } as ServiceProduct)}
+              title="Edit product"
+            />
+          </Tooltip>
+          <Tooltip
+            content="View Product">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => {
+                setDeleteProductId(item._id);
+                setShowDeleteDialog(true);
+              }}
+              title="Delete product"
+            />
+          </Tooltip>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive({ ...item } as ServiceProduct)}
@@ -431,7 +438,7 @@ const ProductListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Products
+          Manage Products  ({products?.length || 0})
         </h1>
         <div className="flex gap-2">
           <Button className="w-full sm:w-auto" onClick={() => router.push("/admin/create-product")}>
@@ -450,8 +457,8 @@ const ProductListPage: React.FC = () => {
           className="w-full sm:w-80"
         />
         <div className="flex gap-2">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={handleOpenFilterPopup}
             className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
           >
@@ -459,9 +466,9 @@ const ProductListPage: React.FC = () => {
             Filters
           </Button>
           {areFiltersApplied() && (
-            <Button 
-              variant="secondary" 
-              className="text-nowrap dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700" 
+            <Button
+              variant="secondary"
+              className="text-nowrap dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
               onClick={handleResetFilters}
             >
               Reset Filters
@@ -545,7 +552,7 @@ const ProductListPage: React.FC = () => {
               Is Popular
             </label>
           </div>
-          
+
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -564,23 +571,23 @@ const ProductListPage: React.FC = () => {
         </div>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-between">
-          <Button 
-            variant="secondary" 
-            onClick={handleResetFilters} 
+          <Button
+            variant="secondary"
+            onClick={handleResetFilters}
             className="w-full sm:w-auto dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
           >
             Reset Filters
           </Button>
           <div className="flex flex-col gap-2 sm:flex-row sm:space-x-2">
-            <Button 
-              variant="secondary" 
-              onClick={handleCloseFilterPopup} 
+            <Button
+              variant="secondary"
+              onClick={handleCloseFilterPopup}
               className="w-full sm:w-auto dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleApplyFilters} 
+            <Button
+              onClick={handleApplyFilters}
               className="w-full sm:w-auto dark:bg-primary dark:hover:bg-indigo-700"
             >
               Apply Filters

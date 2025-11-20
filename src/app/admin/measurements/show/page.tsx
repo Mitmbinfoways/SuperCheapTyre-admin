@@ -18,6 +18,7 @@ import {
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import useDebounce from "@/hooks/useDebounce";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface MeasurementItem {
   id: string;
@@ -203,10 +204,12 @@ const ShowMeasurementsPage = () => {
       align: "center",
       render: (item) => (
         <div onClick={() => handleDeleteClick(item.id)} className="flex justify-center">
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-          />
+          <Tooltip content="Delete measurement">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+            />
+          </Tooltip>
         </div>
       ),
     },
@@ -216,7 +219,7 @@ const ShowMeasurementsPage = () => {
     <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-md dark:bg-gray-900">
       <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <h1 className="text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300">
-          Measurements List
+          Measurements List ({measurements?.length || 0})
         </h1>
         <Link href="/admin/measurements" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto">Add New Measurement</Button>

@@ -23,6 +23,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 import Badge from "@/components/ui/Badge";
 import Select from "@/components/ui/Select";
+import Tooltip from "@/components/ui/Tooltip";
 
 type Banner = {
   _id: string;
@@ -264,21 +265,25 @@ const BannerListPage: React.FC = () => {
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
-          <MdModeEdit
-            size={16}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditBanner(item)}
-            title="Edit banner"
-          />
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            onClick={() => {
-              setDeleteBannerId(item._id);
-              setShowDeleteDialog(true);
-            }}
-            title="Delete banner"
-          />
+          <Tooltip content="Edit banner">
+            <MdModeEdit
+              size={16}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              onClick={() => handleEditBanner(item)}
+              title="Edit banner"
+            />
+          </Tooltip>
+          <Tooltip content="Delete banner">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => {
+                setDeleteBannerId(item._id);
+                setShowDeleteDialog(true);
+              }}
+              title="Delete banner"
+            />
+          </Tooltip>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
@@ -292,7 +297,7 @@ const BannerListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Banners
+          Manage Banners ({banners?.length || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/banners")}

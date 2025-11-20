@@ -20,6 +20,7 @@ import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import Select from "@/components/ui/Select";
+import Tooltip from "@/components/ui/Tooltip";
 
 interface Blog {
   _id: string;
@@ -79,15 +80,15 @@ const BlogListPage: React.FC = () => {
         limit: itemsPerPage,
         search: debounceSearch,
       };
-      
+
       if (formatFilter !== "All") {
         filter.formate = formatFilter;
       }
-      
+
       if (statusFilter !== "All") {
         filter.isActive = statusFilter === "Active";
       }
-      
+
       const data = await getAllBlogs(filter);
       const { blogs, pagination } = data.data;
       setBlogs(blogs as Blog[]);
@@ -327,23 +328,32 @@ const BlogListPage: React.FC = () => {
       align: "center",
       render: (item) => (
         <div className="flex items-center justify-end space-x-2">
-          <EyeIcon onClick={() => handleViewBlog(item)}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white h-5 w-5" />
-          <MdModeEdit
-            size={16}
-            className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            onClick={() => handleEditBlog(item)}
-            title="Edit blog"
-          />
-          <FiTrash2
-            size={16}
-            className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
-            onClick={() => {
-              setDeleteBlogId(item._id);
-              setShowDeleteDialog(true);
-            }}
-            title="Delete blog"
-          />
+          <Tooltip
+            content="View blog">
+            <EyeIcon onClick={() => handleViewBlog(item)}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white h-5 w-5" />
+          </Tooltip>
+          <Tooltip
+            content="Edit blog">
+            <MdModeEdit
+              size={16}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              onClick={() => handleEditBlog(item)}
+              title="Edit blog"
+            />
+          </Tooltip>
+          <Tooltip
+            content="Delete blog">
+            <FiTrash2
+              size={16}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => {
+                setDeleteBlogId(item._id);
+                setShowDeleteDialog(true);
+              }}
+              title="Delete blog"
+            />
+          </Tooltip>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
@@ -357,7 +367,7 @@ const BlogListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Blogs
+          Manage Blogs ({blogs?.length || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/create-blog")}
@@ -366,7 +376,7 @@ const BlogListPage: React.FC = () => {
           Create New Blog
         </Button>
       </div>
-      
+
       {/* Search and Filters */}
       <div className="mb-4 flex flex-col gap-4 sm:flex-row">
         <div className="sm:py-7 w-full sm:w-1/3">
@@ -410,7 +420,7 @@ const BlogListPage: React.FC = () => {
           </Button>
         </div>
       </div>
-      
+
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}
