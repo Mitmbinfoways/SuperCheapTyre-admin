@@ -44,6 +44,7 @@ const BrandListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+  const [totalItems, setTotalItems] = useState<number>(0);
 
   // Image preview states
   const [showImagePreview, setShowImagePreview] = useState(false);
@@ -74,6 +75,7 @@ const BrandListPage: React.FC = () => {
       const { items, pagination } = data.data;
       setBrands(items as Brand[]);
       setTotalPages(pagination.totalPages);
+      setTotalItems(pagination.totalItems);
     } catch (e: any) {
       Toast({
         type: "error",
@@ -265,7 +267,7 @@ const BrandListPage: React.FC = () => {
       {/* Header */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Brands ({brands?.length || 0})
+          Manage Brands ({totalItems || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/create-brand")}

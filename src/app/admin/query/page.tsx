@@ -26,6 +26,7 @@ const ContactList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [viewContact, setViewContact] = useState<Contact | null>(null); // Added state for view contact
   const itemsPerPage = 10;
+  const [totalItems, setTotalItems] = useState(0);
 
   // Added function to handle view contact
   const handleViewContact = (contact: Contact) => {
@@ -98,6 +99,7 @@ const ContactList: React.FC = () => {
       });
       setContacts(res.data.items);
       setTotalPages(res.data.pagination.totalPages || 1);
+      setTotalItems(res.data.pagination.totalItems || 0);
     } catch (err: any) {
       setError("Failed to load contacts");
       Toast({
@@ -116,7 +118,7 @@ const ContactList: React.FC = () => {
   return (
     <div className="rounded-2xl bg-white p-4 sm:p-6 shadow-md dark:bg-gray-900">
       <h1 className="mb-6 text-xl sm:text-2xl font-semibold text-primary dark:text-gray-300 text-left">
-        Manage Query ({contacts?.length || 0})
+        Manage Query ({totalItems || 0})
       </h1>
       <div className="mb-6 w-full sm:w-2/3 md:w-1/3">
         <TextField

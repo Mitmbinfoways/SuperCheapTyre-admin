@@ -51,6 +51,7 @@ const ProductListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+  const [totalProduct, setTotalProduct] = useState<number>(0);
 
   // Filter popup state
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -110,11 +111,9 @@ const ProductListPage: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     fetchBrands();
   }, []);
-
 
   const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
@@ -133,7 +132,7 @@ const ProductListPage: React.FC = () => {
       const { items, pagination } = data.data;
       setProducts(items);
       setTotalPages(pagination.totalPages);
-
+      setTotalProduct(pagination.totalItems);
       // Extract unique categories from the products
       const uniqueCategories = Array.from(new Set(items.map((p) => p.category).filter(Boolean))) as string[];
       setCategories(uniqueCategories);
@@ -438,7 +437,7 @@ const ProductListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Products  ({products?.length || 0})
+          Manage Products  ({totalProduct || 0})
         </h1>
         <div className="flex gap-2">
           <Button className="w-full sm:w-auto" onClick={() => router.push("/admin/create-product")}>

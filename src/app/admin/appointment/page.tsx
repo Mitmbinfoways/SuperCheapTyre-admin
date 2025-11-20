@@ -48,8 +48,7 @@ const AppointmentsPage = () => {
   >([]);
   const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null); // Added state for view appointment
   const itemsPerPage = 10;
-
-  console.log(technicianOptions)
+  const [totalAppointments, setTotalAppointments] = useState<number>(0);
 
   const debounceSearch = useDebounce<string>(search, 300);
 
@@ -88,6 +87,7 @@ const AppointmentsPage = () => {
       });
       setAppointments(res.data.items);
       setTotalPages(res.data.pagination.totalPages || 1);
+      setTotalAppointments(res.data.pagination.totalItems || 0);
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message || "Failed to load appointments";
@@ -271,7 +271,7 @@ const AppointmentsPage = () => {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
-        Appointments ({appointments?.length || 0})
+        Appointments ({totalAppointments || 0})
       </h1>
 
       <div className="mb-4 w-full sm:w-1/2 lg:w-1/3">

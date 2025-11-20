@@ -54,6 +54,7 @@ const BlogListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [viewBlog, setViewBlog] = useState<Blog | null>(null); // Added state for view blog
   const itemsPerPage = 10;
+  const [totalBlogs, setTotalBlogs] = useState<number>(0);
 
   // Image preview states
   const [showImagePreview, setShowImagePreview] = useState(false);
@@ -93,6 +94,7 @@ const BlogListPage: React.FC = () => {
       const { blogs, pagination } = data.data;
       setBlogs(blogs as Blog[]);
       setTotalPages(pagination.totalPages);
+      setTotalBlogs(pagination.total);
     } catch (e: any) {
       Toast({
         type: "error",
@@ -367,7 +369,7 @@ const BlogListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Blogs ({blogs?.length || 0})
+          Manage Blogs ({totalBlogs || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/create-blog")}

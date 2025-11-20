@@ -51,10 +51,6 @@ const ShowMeasurementsPage = () => {
       const response = await getAllMasterFilters({});
       const { items } = response.data;
 
-
-      console.log(response)
-
-
       // Transform the flat structure to the format expected by the UI
       const transformedMeasurements: MeasurementItem[] = items.map((item: any) => ({
         id: item._id,

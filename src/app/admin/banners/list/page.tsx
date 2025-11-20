@@ -51,6 +51,7 @@ const BannerListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
+  const [totalBanners, setTotalBanners] = useState<number>(0);
 
   // Image preview states
   const [showImagePreview, setShowImagePreview] = useState(false);
@@ -80,6 +81,7 @@ const BannerListPage: React.FC = () => {
       setBanners(data.data);
       // Since we're not paginating, set totalPages to 1
       setTotalPages(1);
+      setTotalBanners(data.data.length);
     } catch (e: any) {
       Toast({
         type: "error",
@@ -323,7 +325,7 @@ const BannerListPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Banners ({banners?.length || 0})
+          Manage Banners ({totalBanners || 0})
         </h1>
         <Button
           onClick={() => router.push("/admin/banners")}

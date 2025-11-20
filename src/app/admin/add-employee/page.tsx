@@ -74,6 +74,8 @@ const AddTechnicianPage: React.FC = () => {
     submitting: false,
     deleting: false,
   });
+  const [totalItems, setTotalItems] = useState(0);
+  
 
   const updateLoading = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
@@ -101,6 +103,7 @@ const AddTechnicianPage: React.FC = () => {
       const { items, pagination } = data.data;
       setTechnicians(items as Technician[]);
       setTotalPages(pagination.totalPages);
+      setTotalItems(pagination.totalItems);
     } catch (e: any) {
       setError({
         apiError: e?.response?.data?.errorData || "Failed to load technicians",
@@ -288,7 +291,7 @@ const AddTechnicianPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Employee ({technicians?.length || 0})
+          Manage Employee ({totalItems || 0})
         </h1>
         <Button
           onClick={() => {

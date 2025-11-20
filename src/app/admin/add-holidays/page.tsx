@@ -58,6 +58,7 @@ const AddHolidayPage: React.FC = () => {
     submittingForm: false,
     deletingHoliday: false,
   });
+  const [totalHolidays, setTotalHolidays] = useState<number>(0);
 
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
@@ -83,6 +84,7 @@ const AddHolidayPage: React.FC = () => {
       const { items, pagination } = data.data;
       setHolidays(items);
       setTotalPages(pagination.totalPages);
+      setTotalHolidays(pagination.totalItems);
     } catch (e: any) {
       setError({
         apiError: e?.response?.data?.errorData || "Failed to load holidays",
@@ -241,7 +243,7 @@ const AddHolidayPage: React.FC = () => {
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Manage Holidays ({holidays?.length || 0})
+          Manage Holidays ({totalHolidays || 0})
         </h1>
         <Button
           onClick={() => {
