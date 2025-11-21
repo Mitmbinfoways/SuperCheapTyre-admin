@@ -600,7 +600,7 @@ const CreateInvoicePage = () => {
           {selectedProducts.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-gray-500 dark:text-gray-400">
-                No products selected. Click "Add Products" to select items.
+                No products selected. Click Add Products to select items.
               </p>
             </div>
           ) : (
