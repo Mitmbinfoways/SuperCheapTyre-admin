@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { CreateLocalOrder, CreateLocalOrderPayload } from "@/services/OrderServices";
+import { CreateLocalOrder, CreateLocalOrderPayload, getAllOrders, Order } from "@/services/OrderServices";
 import { getAllProducts, Product } from "@/services/CreateProductService";
 import TextField from "@/components/ui/TextField";
 import Select from "@/components/ui/Select";
@@ -15,21 +15,26 @@ import Pagination from "@/components/ui/Pagination";
 import CommonDialog from "@/components/ui/Dialogbox";
 import { SearchIcon } from "@/components/ui/icons";
 import { FiTrash2 } from "react-icons/fi";
+import EditInvoice from "./Edit-invoice";
 
 type LoadingStates = {
   fetchingProducts: boolean;
   fetchingAllProducts: boolean;
+  fetchingOrders: boolean;
 };
 
 const CreateInvoicePage = () => {
   const router = useRouter();
   const hasLoadedSelectedProducts = useRef(false);
 
+  const [activeTab, setActiveTab] = useState<'create' | 'edit'>('create');
+
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingProducts: false,
     fetchingAllProducts: false,
+    fetchingOrders: false,
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -70,6 +75,10 @@ const CreateInvoicePage = () => {
 
   // Validation error state
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleTabChange = (tab: 'create' | 'edit') => {
+    setActiveTab(tab);
+  };
 
   // Calculate subtotal based on selected products and quantities
   const subtotal = useMemo(() => {
@@ -355,10 +364,6 @@ const CreateInvoicePage = () => {
     // Set errors if any
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      Toast({
-        type: "error",
-        message: "Please fix the errors in the form",
-      });
       return;
     }
 
@@ -405,7 +410,6 @@ const CreateInvoicePage = () => {
         message: "Order created successfully",
       });
 
-      // Clear localStorage and reset state after successful creation
       if (typeof window !== 'undefined') {
         localStorage.removeItem('selectedProducts');
         localStorage.removeItem('productQuantities');
@@ -413,7 +417,6 @@ const CreateInvoicePage = () => {
       setSelectedProducts([]);
       setProductQuantities({});
 
-      // Redirect to orders page after successful creation
       router.push('/admin/orders');
     } catch (error: any) {
       console.error("Error creating order:", error);
@@ -427,7 +430,6 @@ const CreateInvoicePage = () => {
   };
 
   const handleCancel = () => {
-    // Clear localStorage when canceling
     if (typeof window !== 'undefined') {
       localStorage.removeItem('selectedProducts');
       localStorage.removeItem('productQuantities');
@@ -468,7 +470,7 @@ const CreateInvoicePage = () => {
             if (parent) {
               const fallback = document.createElement("div");
               fallback.className =
-                "h-full w-full bg-gray-200 flex items-  enter justify-center dark:bg-gray-700";
+                "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
               fallback.innerHTML =
                 '<span class="text-xs text-gray-500 dark:text-gray-400">No Image</span>';
               parent.appendChild(fallback);
@@ -489,278 +491,302 @@ const CreateInvoicePage = () => {
     <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-          Create New Invoice
+          Manage Invoices
         </h1>
       </div>
 
-      <form className="space-y-6" onSubmit={handleCreateInvoice}>
-        {/* Customer Information Section */}
-        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Customer Information</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                First Name
-              </label>
-              <TextField
-                type="text"
-                placeholder="Enter first name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className={`w-full ${errors.firstName ? 'border-red-500' : ''}`}
-              />
-              {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Last Name
-              </label>
-              <TextField
-                type="text"
-                placeholder="Enter last name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className={`w-full ${errors.lastName ? 'border-red-500' : ''}`}
-              />
-              {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
-              </label>
-              <TextField
-                type="email"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full ${errors.email ? 'border-red-500' : ''}`}
-              />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone
-              </label>
-              <TextField
-                type="tel"
-                placeholder="Enter phone number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
-              />
-              {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Date
-              </label>
-              <DatePicker
-                selected={orderDate}
-                onChange={(date) => setOrderDate(date)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-              />
-            </div>
-          </div>
-        </div>
+      {/* Tab Navigation */}
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => handleTabChange('create')}
+            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium ${activeTab === 'create'
+              ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+          >
+            Create Invoice
+          </button>
+          <button
+            onClick={() => handleTabChange('edit')}
+            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium ${activeTab === 'edit'
+              ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+          >
+            Edit Invoice
+          </button>
+        </nav>
+      </div>
 
-        {/* Product Selection Section */}
-        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Product Selection</h3>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="primary"
-                onClick={handleOpenModal}
-                className="text-sm"
-                type="button"
-              >
-                Add Products
-              </Button>
-              {selectedProducts.length > 0 && (
-                <Button
-                  variant="secondary"
-                  onClick={clearSavedSelection}
-                  className="text-sm"
-                >
-                  Clear Selection
-                </Button>
-              )}
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {selectedProducts.length} selected
-              </span>
-            </div>
-          </div>
-
-          {errors.products && (
-            <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded">
-              <p className="text-red-500 text-sm">{errors.products}</p>
-            </div>
-          )}
-
-          {selectedProducts.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">
-                No products selected. Click Add Products to select items.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {allProducts
-                .filter(product => selectedProducts.includes(product._id))
-                .map((product) => {
-                  const quantity = productQuantities[product._id] || "1";
-                  const numericQuantity = parseInt(quantity, 10) || 1;
-
-                  return (
-                    <div
-                      key={product._id}
-                      className="flex flex-col rounded-lg border border-blue-500 bg-blue-50 p-3 dark:bg-blue-900/20"
-                    >
-                      <div className="flex items-start gap-3">
-                        {renderProductImage(product)}
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
-                            {product.name}
-                          </h4>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            SKU: {product.sku}
-                          </p>
-                          <div className="mt-1 flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              AU$ {product.price.toFixed(2)}
-                            </span>
-                            <span className={`text-xs ${product.stock > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400'}`}>
-                              Stock: {product.stock}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {product.stock <= 0 ? (
-                        <div className="mt-2">
-                          <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                            Out of Stock
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="mt-3 flex items-center gap-2">
-                          <label className="text-sm text-gray-700 dark:text-gray-300">Qty:</label>
-                          <div className="flex items-center">
-                            <button
-                              type="button"
-                              className="flex h-8 w-8 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                              onClick={() => {
-                                const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
-                                const newQuantity = Math.max(1, currentQuantity - 1);
-                                setProductQuantities(prev => ({
-                                  ...prev,
-                                  [product._id]: newQuantity.toString()
-                                }));
-                              }}
-                              disabled={parseInt(productQuantities[product._id] || "1", 10) <= 1}
-                            >
-                              <span className="text-lg">-</span>
-                            </button>
-                            <div className="flex h-8 w-12 items-center justify-center border-y border-gray-300 bg-white text-sm dark:border-gray-600 dark:bg-gray-800">
-                              {productQuantities[product._id] || "1"}
-                            </div>
-                            <button
-                              type="button"
-                              className="flex h-8 w-8 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                              onClick={() => {
-                                const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
-                                const newQuantity = Math.min(product.stock, currentQuantity + 1);
-                                setProductQuantities(prev => ({
-                                  ...prev,
-                                  [product._id]: newQuantity.toString()
-                                }));
-                              }}
-                              disabled={parseInt(productQuantities[product._id] || "1", 10) >= product.stock}
-                            >
-                              <span className="text-lg">+</span>
-                            </button>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Max: {product.stock}</span>
-                        </div>
-                      )}
-
-                      <div className="mt-2 flex justify-end">
-                        <Button
-                          variant="danger"
-                          onClick={() => handleRemoveProduct(product._id)}
-                          className="text-xs"
-                        >
-                          <FiTrash2
-                            size={16}
-                            title="Delete product"
-                          />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-
-        {/* Payment Details Section */}
-        <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Payment Details</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Payment Method
-              </label>
-              <TextField
-                type="text"
-                value="Offline"
-                disabled={true}
-                onChange={() => { }} // Required prop, but not used for disabled fields
-                className="w-full bg-gray-100 dark:bg-gray-700"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Payment Type
-              </label>
-              <Select
-                value={paymentType}
-                onChange={(value) => setPaymentType(value)}
-                options={[
-                  { label: "Cash", value: "cash" },
-                  { label: "Credit Card/Debit Card", value: "creditcard" },
-                  { label: "EFTPOS", value: "etfpos" },
-                  { label: "Afterpay", value: "afterpay" },
-                  { label: "Other", value: "other" },
-                ]}
-                placeholder="Select payment method"
-                className="w-full"
-              />
-            </div>
-            <div className="col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {/* Create Invoice Tab Content */}
+      {activeTab === 'create' && (
+        <form className="space-y-6" onSubmit={handleCreateInvoice}>
+          {/* Customer Information Section */}
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Customer Information</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Payment Status
-                </label>
-                <Select
-                  value={paymentStatus}
-                  onChange={(value) => setPaymentStatus(value)}
-                  options={[
-                    { label: "Partial", value: "PARTIAL" },
-                    { label: "Full", value: "full" },
-                  ]}
-                  placeholder="Select payment status"
-                  className="w-full"
-                />
-                {errors.paymentStatus && <p className="text-red-500 text-sm mt-1">{errors.paymentStatus}</p>}
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Subtotal
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <TextField
                   type="text"
-                  value={`AU$ ${subtotal.toFixed(2)}`}
+                  placeholder="Enter first name"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    // Clear error when user starts typing
+                    if (errors.firstName) {
+                      setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.firstName;
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  className={`w-full ${errors.firstName ? 'border-red-500' : ''}`}
+                />
+                {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <TextField
+                  type="text"
+                  placeholder="Enter last name"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    // Clear error when user starts typing
+                    if (errors.lastName) {
+                      setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.lastName;
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  className={`w-full ${errors.lastName ? 'border-red-500' : ''}`}
+                />
+                {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <TextField
+                  type="email"
+                  placeholder="Enter email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    // Clear error when user starts typing
+                    if (errors.email) {
+                      setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.email;
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  className={`w-full ${errors.email ? 'border-red-500' : ''}`}
+                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Phone <span className="text-red-500">*</span>
+                </label>
+                <TextField
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    // Clear error when user starts typing
+                    if (errors.phone) {
+                      setErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.phone;
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
+                />
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Date
+                </label>
+                <DatePicker
+                  selected={orderDate}
+                  onChange={(date) => setOrderDate(date)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Product Selection Section */}
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Product Selection
+              </h3>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <Button
+                  variant="primary"
+                  onClick={handleOpenModal}
+                  className="text-sm w-full sm:w-auto"
+                  type="button"
+                >
+                  Add Products
+                </Button>
+
+                {selectedProducts.length > 0 && (
+                  <Button
+                    variant="secondary"
+                    onClick={clearSavedSelection}
+                    className="text-sm w-full sm:w-auto"
+                  >
+                    Clear Selection
+                  </Button>
+                )}
+
+                <span className="text-sm text-gray-500 dark:text-gray-400 sm:ml-2">
+                  {selectedProducts.length} selected
+                </span>
+              </div>
+            </div>
+
+            {errors.products && (
+              <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded">
+                <p className="text-red-500 text-sm">{errors.products}</p>
+              </div>
+            )}
+
+            {selectedProducts.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No products selected. Click Add Products to select items.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {allProducts
+                  .filter(product => selectedProducts.includes(product._id))
+                  .map((product) => {
+                    const quantity = productQuantities[product._id] || "1";
+                    const numericQuantity = parseInt(quantity, 10) || 1;
+
+                    return (
+                      <div
+                        key={product._id}
+                        className="flex flex-col rounded-lg border border-blue-500 bg-blue-50 p-3 dark:bg-blue-900/20"
+                      >
+                        <div className="flex items-start gap-3">
+                          {renderProductImage(product)}
+                          <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                              {product.name}
+                            </h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              SKU: {product.sku}
+                            </p>
+                            <div className="mt-1 flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                AU$ {product.price.toFixed(2)}
+                              </span>
+                              <span className={`text-xs ${product.stock > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400'}`}>
+                                Stock: {product.stock}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {product.stock <= 0 ? (
+                          <div className="mt-2">
+                            <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                              Out of Stock
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="mt-3 flex items-center gap-2">
+                            <label className="text-sm text-gray-700 dark:text-gray-300">Qty:</label>
+                            <div className="flex items-center">
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                onClick={() => {
+                                  const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
+                                  const newQuantity = Math.max(1, currentQuantity - 1);
+                                  setProductQuantities(prev => ({
+                                    ...prev,
+                                    [product._id]: newQuantity.toString()
+                                  }));
+                                }}
+                                disabled={parseInt(productQuantities[product._id] || "1", 10) <= 1}
+                              >
+                                <span className="text-lg">-</span>
+                              </button>
+                              <div className="flex h-8 w-12 items-center justify-center border-y border-gray-300 bg-white text-sm dark:border-gray-600 dark:bg-gray-800">
+                                {productQuantities[product._id] || "1"}
+                              </div>
+                              <button
+                                type="button"
+                                className="flex h-8 w-8 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                onClick={() => {
+                                  const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
+                                  const newQuantity = Math.min(product.stock, currentQuantity + 1);
+                                  setProductQuantities(prev => ({
+                                    ...prev,
+                                    [product._id]: newQuantity.toString()
+                                  }));
+                                }}
+                                disabled={parseInt(productQuantities[product._id] || "1", 10) >= product.stock}
+                              >
+                                <span className="text-lg">+</span>
+                              </button>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Max: {product.stock}</span>
+                          </div>
+                        )}
+
+                        <div className="mt-2 flex justify-end">
+                          <Button
+                            variant="danger"
+                            onClick={() => handleRemoveProduct(product._id)}
+                            className="text-xs"
+                          >
+                            <FiTrash2
+                              size={16}
+                              title="Delete product"
+                            />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+
+          {/* Payment Details Section */}
+          <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Payment Details</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Payment Method
+                </label>
+                <TextField
+                  type="text"
+                  value="Offline"
                   disabled={true}
                   onChange={() => { }} // Required prop, but not used for disabled fields
                   className="w-full bg-gray-100 dark:bg-gray-700"
@@ -768,46 +794,118 @@ const CreateInvoicePage = () => {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Amount
+                  Payment Type
                 </label>
-                <TextField
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className={`w-full ${errors.amount ? 'border-red-500' : ''}`}
+                <Select
+                  value={paymentType}
+                  onChange={(value) => setPaymentType(value)}
+                  options={[
+                    { label: "Cash", value: "cash" },
+                    { label: "Credit Card/Debit Card", value: "creditcard" },
+                    { label: "EFTPOS", value: "etfpos" },
+                    { label: "Afterpay", value: "afterpay" },
+                    { label: "Other", value: "other" },
+                  ]}
+                  placeholder="Select payment method"
+                  className="w-full"
                 />
-                {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+              </div>
+              <div className="col-span-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Payment Status <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={paymentStatus}
+                    onChange={(value) => {
+                      setPaymentStatus(value);
+                      // Clear error when user selects an option
+                      if (errors.paymentStatus) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.paymentStatus;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                    options={[
+                      { label: "Partial", value: "PARTIAL" },
+                      { label: "Full", value: "full" },
+                    ]}
+                    placeholder="Select payment status"
+                    className="w-full"
+                  />
+                  {errors.paymentStatus && <p className="text-red-500 text-sm mt-1">{errors.paymentStatus}</p>}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Subtotal
+                  </label>
+                  <TextField
+                    type="text"
+                    value={`AU$ ${subtotal.toFixed(2)}`}
+                    disabled={true}
+                    onChange={() => { }} // Required prop, but not used for disabled fields
+                    className="w-full bg-gray-100 dark:bg-gray-700"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Amount <span className="text-red-500">*</span>
+                  </label>
+                  <TextField
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      // Clear error when user starts typing
+                      if (errors.amount) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.amount;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                    className={`w-full ${errors.amount ? 'border-red-500' : ''}`}
+                  />
+                  {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+                </div>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Notes
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Enter payment notes"
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                />
               </div>
             </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Notes
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Enter payment notes"
-                value={paymentNotes}
-                onChange={(e) => setPaymentNotes(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-              />
-            </div>
           </div>
-        </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button variant="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-          >
-            Generate Invoice
-          </Button>
-        </div>
-      </form>
-
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+            >
+              Generate Invoice
+            </Button>
+          </div>
+        </form>
+      )}
+      {activeTab === 'edit' && (
+        <>
+          <EditInvoice onBack={() => router.push('/admin/orders')} />
+        </>
+      )}
       <CommonDialog
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

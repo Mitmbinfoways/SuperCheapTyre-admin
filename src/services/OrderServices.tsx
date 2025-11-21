@@ -1,4 +1,4 @@
-import { getMethod, postMethod } from "./methods";
+import { getMethod, postMethod, putMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -120,5 +120,21 @@ export const CreateLocalOrder = async (
 ): Promise<ApiResponse<Order>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order/local`;
   const response = await postMethod<ApiResponse<Order>, CreateLocalOrderPayload>(url, payload);
+  return response.data;
+};
+
+export interface UpdateOrderPayload {
+  method?: string;
+  amount: number;
+  status: string;
+  note?: string;
+}
+
+export const updateOrder = async (
+  orderId: string,
+  payload: UpdateOrderPayload,
+): Promise<ApiResponse<Order>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order/${orderId}`;
+  const response = await putMethod<ApiResponse<Order>, UpdateOrderPayload>(url, payload);
   return response.data;
 };
