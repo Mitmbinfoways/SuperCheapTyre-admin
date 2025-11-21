@@ -79,7 +79,6 @@ export default function ForgotPasswordPage() {
             variant="primary"
             className="w-full rounded-lg py-2 text-base font-medium"
             type="submit"
-            disabled={isLoading}
           >
             {isLoading ? "Sending..." : "Send"}
           </Button>

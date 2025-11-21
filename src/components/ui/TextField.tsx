@@ -4,7 +4,7 @@ import React, { ChangeEvent, useState } from "react";
 
 interface TextFieldProps {
   value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   type?: string;
   disabled?: boolean;

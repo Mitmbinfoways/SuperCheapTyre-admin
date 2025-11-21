@@ -789,7 +789,6 @@ const CreateInvoicePage = () => {
                   type="text"
                   value="Offline"
                   disabled={true}
-                  onChange={() => { }} // Required prop, but not used for disabled fields
                   className="w-full bg-gray-100 dark:bg-gray-700"
                 />
               </div>
@@ -820,7 +819,6 @@ const CreateInvoicePage = () => {
                     value={paymentStatus}
                     onChange={(value) => {
                       setPaymentStatus(value);
-                      // Clear error when user selects an option
                       if (errors.paymentStatus) {
                         setErrors(prev => {
                           const newErrors = { ...prev };
@@ -846,7 +844,6 @@ const CreateInvoicePage = () => {
                     type="text"
                     value={`AU$ ${subtotal.toFixed(2)}`}
                     disabled={true}
-                    onChange={() => { }} // Required prop, but not used for disabled fields
                     className="w-full bg-gray-100 dark:bg-gray-700"
                   />
                 </div>
@@ -860,7 +857,6 @@ const CreateInvoicePage = () => {
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
-                      // Clear error when user starts typing
                       if (errors.amount) {
                         setErrors(prev => {
                           const newErrors = { ...prev };

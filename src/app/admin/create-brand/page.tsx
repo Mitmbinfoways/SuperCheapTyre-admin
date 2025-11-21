@@ -248,7 +248,7 @@ const CreateBrandPage = () => {
                 Cancel
               </Button>
             )}
-            <Button variant="primary" disabled={isSubmitting}>
+            <Button variant="primary">
               {isEdit
                 ? isSubmitting
                   ? "Updating..."

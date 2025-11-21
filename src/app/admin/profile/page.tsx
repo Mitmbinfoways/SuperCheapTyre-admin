@@ -320,7 +320,6 @@ const Page = () => {
                     color="primary"
                     onClick={handleUpdate}
                     className="w-full sm:w-auto"
-                    disabled={isLoading}
                   >
                     {isLoading ? "Saving..." : "Save"}
                   </Button>
@@ -328,7 +327,6 @@ const Page = () => {
                     color="gray"
                     onClick={() => setIsEditing(false)}
                     className="w-full sm:w-auto"
-                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
