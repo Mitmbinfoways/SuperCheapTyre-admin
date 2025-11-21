@@ -18,16 +18,6 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  format,
-  startOfDay,
-  endOfDay,
-  subDays,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-} from "date-fns";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -79,54 +69,58 @@ const OrdersPage = () => {
     }
   }, []);
 
-  const formatDateForAPI = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const getDateRange = useCallback(() => {
-    const now = new Date();
-    switch (dateFilter) {
-      case "Today":
-        return { startDate: startOfDay(now), endDate: endOfDay(now) };
-      case "Yesterday":
-        const yesterday = subDays(now, 1);
-        return { startDate: startOfDay(yesterday), endDate: endOfDay(yesterday) };
-      case "This Week":
-        return {
-          startDate: startOfWeek(now, { weekStartsOn: 1 }),
-          endDate: endOfWeek(now, { weekStartsOn: 1 }),
-        };
-      case "This Month":
-        return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
-      case "Custom Range":
-        if (customStartDate && customEndDate) {
-          return {
-            startDate: startOfDay(customStartDate),
-            endDate: endOfDay(customEndDate),
-          };
-        }
-        return null;
-      default:
-        return null;
-    }
-  }, [dateFilter, customStartDate, customEndDate]);
-
   const fetchOrders = useCallback(async () => {
+    // Don't make API call for Custom Range until both dates are selected
+    if (dateFilter === "Custom Range" && (!customStartDate || !customEndDate)) {
+      return;
+    }
+
     updateLoadingState("fetchingOrders", true);
     try {
-      const range = getDateRange();
+      // Map frontend date filter values to backend values
+      let dateFilterValue = undefined;
+      if (dateFilter !== "All Time") {
+        switch (dateFilter) {
+          case "Today":
+            dateFilterValue = "today";
+            break;
+          case "Yesterday":
+            dateFilterValue = "yesterday";
+            break;
+          case "This Week":
+            dateFilterValue = "this week";
+            break;
+          case "This Month":
+            dateFilterValue = "this month";
+            break;
+          case "Custom Range":
+            dateFilterValue = "custom range";
+            break;
+          default:
+            dateFilterValue = undefined;
+        }
+      }
+
+      // Fix timezone issue by using date formatting instead of toISOString()
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
 
       const response = await getAllOrders({
         page: currentPage,
         limit: pageSize,
         search: debouncedSearchTerm || undefined,
         status: formatFilter === "All" ? undefined : formatFilter,
-        ...(range && {
-          startDate: formatDateForAPI(range.startDate),
-          endDate: formatDateForAPI(range.endDate),
+        dateFilter: dateFilterValue,
+        // Fix: Use formatDateForAPI to prevent timezone issues
+        ...(dateFilter === "Custom Range" && customStartDate && {
+          startDate: formatDateForAPI(customStartDate),
+        }),
+        ...(dateFilter === "Custom Range" && customEndDate && {
+          endDate: formatDateForAPI(customEndDate),
         }),
       });
 
@@ -146,7 +140,9 @@ const OrdersPage = () => {
     pageSize,
     debouncedSearchTerm,
     formatFilter,
-    getDateRange,
+    dateFilter,
+    customStartDate,
+    customEndDate,
   ]);
 
   useEffect(() => {

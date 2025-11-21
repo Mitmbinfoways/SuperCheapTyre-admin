@@ -74,13 +74,14 @@ export interface ApiResponse<T> {
 }
 
 export const getAllOrders = async (
-  filter: { page?: number; limit?: number; search?: string; status?: string; startDate?: string; endDate?: string } = {},
+  filter: { page?: number; limit?: number; search?: string; status?: string; startDate?: string; endDate?: string; dateFilter?: string } = {},
 ): Promise<ApiResponse<OrderRes>> => {
   const params: string[] = [];
 
   if (filter.page !== undefined) params.push(`page=${filter.page}`);
   if (filter.limit !== undefined) params.push(`limit=${filter.limit}`);
   if (filter.status !== undefined) params.push(`status=${filter.status}`);
+  if (filter.dateFilter) params.push(`dateFilter=${filter.dateFilter}`);
   if (filter.startDate) params.push(`startDate=${filter.startDate}`);
   if (filter.endDate) params.push(`endDate=${filter.endDate}`);
   if (filter.search) params.push(`search=${encodeURIComponent(filter.search)}`);
