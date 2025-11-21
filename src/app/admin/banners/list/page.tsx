@@ -24,6 +24,7 @@ import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 import Badge from "@/components/ui/Badge";
 import Select from "@/components/ui/Select";
 import Tooltip from "@/components/ui/Tooltip";
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 type Banner = {
   _id: string;
@@ -119,7 +120,14 @@ const BannerListPage: React.FC = () => {
       await deleteBanner(deleteBannerId);
       Toast({ type: "success", message: "Banner deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadBanners();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      } else {
+        await loadBanners();
+      }
     } catch (e: any) {
       Toast({
         type: "error",
@@ -448,13 +456,13 @@ const BannerListPage: React.FC = () => {
         ) : (
           <>
             <Table columns={columns} data={tableData} />
-            <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
+            {/* <div className="mt-4 flex flex-col items-center sm:flex-row sm:justify-center">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
               />
-            </div>
+            </div> */}
           </>
         )}
       </div>

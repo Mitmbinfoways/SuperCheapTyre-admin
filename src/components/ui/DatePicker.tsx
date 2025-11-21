@@ -71,6 +71,8 @@ const DatePicker: React.FC<Props> = ({
           e.preventDefault();
         }
       }}
+      // Ensure the calendar appears above modals
+      portalId="root-portal"
     />
   );
 };

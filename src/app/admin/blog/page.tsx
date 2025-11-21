@@ -21,6 +21,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import Select from "@/components/ui/Select";
 import Tooltip from "@/components/ui/Tooltip";
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 interface Blog {
   _id: string;
@@ -117,7 +118,14 @@ const BlogListPage: React.FC = () => {
       await deleteBlog(deleteBlogId);
       Toast({ type: "success", message: "Blog deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadBlogs();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      } else {
+        await loadBlogs();
+      }
     } catch (e: any) {
       Toast({
         type: "error",

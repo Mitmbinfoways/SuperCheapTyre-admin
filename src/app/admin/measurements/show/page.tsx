@@ -19,6 +19,7 @@ import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 interface MeasurementItem {
   id: string;
@@ -157,6 +158,12 @@ const ShowMeasurementsPage = () => {
 
       Toast({ message: "Measurement deleted successfully!", type: "success" });
       handleCloseDeleteDialog();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(paginatedMeasurements.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      }
     } catch (error: any) {
       Toast({
         message: error?.response?.data?.message || "Failed to delete measurement",

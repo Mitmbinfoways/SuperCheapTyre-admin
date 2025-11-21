@@ -27,7 +27,7 @@ export default function CommonDialog({
       : size === "lg"
       ? "max-w-3xl"
       : size === "xl"
-      ? "max-w-5xl"
+      ? "max-w-5xl" 
       : "max-w-md";
 
   const handleDialogClick = (e: MouseEvent) => e.stopPropagation();

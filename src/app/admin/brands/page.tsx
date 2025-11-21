@@ -25,6 +25,7 @@ import { getBrandImageUrl } from "@/lib/utils";
 import Skeleton from "@/components/ui/Skeleton";
 import Select from "@/components/ui/Select";
 import Tooltip from "@/components/ui/Tooltip";
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 type BrandWithId = Brand & { id: string };
 
@@ -98,7 +99,14 @@ const BrandListPage: React.FC = () => {
       await deleteBrand(deleteBrandId);
       Toast({ type: "success", message: "Brand deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadBrands();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      } else {
+        await loadBrands();
+      }
     } catch (e: any) {
       Toast({
         type: "error",

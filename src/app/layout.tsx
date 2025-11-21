@@ -29,6 +29,8 @@ export default function RootLayout({ children }: PropsWithChildren) {
           <NextTopLoader color="#5750F1" showSpinner={false} />
           <AppShell>{children}</AppShell>
         </Providers>
+        {/* Portal container for datepickers and other overlays */}
+        <div id="root-portal"></div>
       </body>
     </html>
   );

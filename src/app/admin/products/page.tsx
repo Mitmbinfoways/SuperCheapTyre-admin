@@ -27,6 +27,7 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import Select from "@/components/ui/Select";
 import { getAllBrands } from "@/services/BrandService";
 import Tooltip from "@/components/ui/Tooltip";
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 type ProductWithId = ServiceProduct & { id: string };
 
@@ -162,7 +163,14 @@ const ProductListPage: React.FC = () => {
       await deleteProduct(deleteProductId);
       Toast({ type: "success", message: "Product deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadProducts();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      } else {
+        await loadProducts();
+      }
     } catch (e: any) {
       Toast({
         type: "error",

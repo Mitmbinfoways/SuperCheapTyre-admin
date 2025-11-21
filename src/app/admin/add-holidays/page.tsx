@@ -149,7 +149,16 @@ const AddHolidayPage: React.FC = () => {
       await DeleteHoliday(deleteHolidayId);
       Toast({ type: "success", message: "Holiday deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadHolidays();
+      
+      // Check if we're deleting the last item on the current page
+      // and there are multiple pages
+      if (tableData.length === 1 && currentPage > 1) {
+        // If we're deleting the last item, go to the previous page
+        setCurrentPage(prev => prev - 1);
+      } else {
+        // Otherwise, reload the current page
+        await loadHolidays();
+      }
     } catch (e: any) {
       setError({
         apiError: e.response?.data?.errorData || "Failed to delete holiday",
@@ -184,7 +193,7 @@ const AddHolidayPage: React.FC = () => {
   };
 
   const columns: Column<HolidayWithId>[] = [
-    { title: "Index", key: "index", render: (_, index) => index + 1 },
+    { title: "Index", key: "index", render: (_, index) => (currentPage - 1) * itemsPerPage + index + 1 },
     {
       title: "Date",
       key: "date",

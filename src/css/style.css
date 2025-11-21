@@ -526,3 +526,9 @@ input[type="search"]::-webkit-search-cancel-button {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Datepicker portal container */
+#root-portal {
+  position: relative;
+  z-index: 10000;
+}

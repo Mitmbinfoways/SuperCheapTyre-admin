@@ -23,7 +23,7 @@ import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import Select from "@/components/ui/Select";
 import Tooltip from "@/components/ui/Tooltip";
-
+import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
 interface Technician {
   _id: string;
@@ -170,7 +170,14 @@ const AddTechnicianPage: React.FC = () => {
       await DeleteTechnician(deleteTechnicianId);
       Toast({ type: "success", message: "Technician deleted successfully!" });
       handleCloseDeleteDialog();
-      await loadTechnicians();
+      
+      // Check if we need to navigate to the previous page
+      const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
+      if (newPage !== currentPage) {
+        setCurrentPage(newPage);
+      } else {
+        await loadTechnicians();
+      }
     } catch (e: any) {
       setError({
         apiError: e?.response?.data?.errorData || "Failed to delete technician",
