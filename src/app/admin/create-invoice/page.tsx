@@ -8,8 +8,7 @@ import { getAllProducts, Product } from "@/services/CreateProductService";
 import TextField from "@/components/ui/TextField";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "@/components/ui/DatePicker";
 import { Toast } from "@/components/ui/Toast";
 import Pagination from "@/components/ui/Pagination";
 import CommonDialog from "@/components/ui/Dialogbox";
@@ -604,7 +603,9 @@ const CreateInvoicePage = () => {
                   placeholder="Enter phone number"
                   value={phone}
                   onChange={(e) => {
-                    setPhone(e.target.value);
+                    // Allow only numeric input and limit to 15 digits
+                    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 15);
+                    setPhone(value);
                     // Clear error when user starts typing
                     if (errors.phone) {
                       setErrors(prev => {
@@ -623,7 +624,7 @@ const CreateInvoicePage = () => {
                   Date
                 </label>
                 <DatePicker
-                  selected={orderDate}
+                  value={orderDate}
                   onChange={(date) => setOrderDate(date)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                 />
@@ -940,11 +941,11 @@ const CreateInvoicePage = () => {
                       }`}
                   >
                     {renderProductImage(product)}
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {product.name}
                       </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                         SKU: {product.sku}
                       </p>
                       <div className="mt-1 flex items-center justify-between">
@@ -1003,7 +1004,7 @@ const CreateInvoicePage = () => {
                           <Button
                             variant="danger"
                             onClick={() => handleRemoveProduct(product._id)}
-                            className="text-xs"
+                            className="text-xs p-2"
                           >
                             <FiTrash2
                               size={16}
