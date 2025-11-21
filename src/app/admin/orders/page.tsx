@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
 import { getAllProducts, Product } from "@/services/CreateProductService";
@@ -46,6 +46,103 @@ const OrdersPage = () => {
     fetchingProducts: false,
   });
 
+  // Filter orders based on search, format, and date filters
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+
+    let filtered = [...orders];
+
+    // Apply search filter
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        (order.customer.name && order.customer.name.toLowerCase().includes(searchLower)) ||
+        (order.customer.email && order.customer.email.toLowerCase().includes(searchLower)) ||
+        (order.customer.phone && order.customer.phone.includes(searchLower))
+      );
+    }
+
+    // Apply format/payment status filter
+    if (formatFilter !== "All") {
+      filtered = filtered.filter(order => {
+        // Helper to resolve status safely
+        const getPaymentStatus = (): string => {
+          const payment = order?.payment;
+          if (!payment) return "";
+          if (Array.isArray(payment)) {
+            if (payment.length === 0) return "";
+            const hasFullPayment = payment.some(
+              (p) => p?.status?.toUpperCase() === "FULL"
+            );
+            return hasFullPayment ? "FULL" : "PARTIAL";
+          }
+          if (payment && typeof payment === "object") {
+            return payment.status?.toUpperCase() || "";
+          }
+          return "";
+        };
+
+        const status = getPaymentStatus();
+        return status === formatFilter.toUpperCase();
+      });
+    }
+
+    // Apply date filter
+    if (dateFilter !== "All Time") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      filtered = filtered.filter(order => {
+        if (!order.createdAt) return false;
+
+        const orderDate = new Date(order.createdAt);
+        orderDate.setHours(0, 0, 0, 0);
+
+        switch (dateFilter) {
+          case "Today":
+            return orderDate.getTime() === today.getTime();
+          case "Yesterday":
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            return orderDate.getTime() === yesterday.getTime();
+          case "This Week":
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6); // Saturday
+            return orderDate >= weekStart && orderDate <= weekEnd;
+          case "This Month":
+            return orderDate.getMonth() === today.getMonth() &&
+              orderDate.getFullYear() === today.getFullYear();
+          case "Custom Range":
+            if (customStartDate && customEndDate) {
+              const startDate = new Date(customStartDate);
+              startDate.setHours(0, 0, 0, 0);
+              const endDate = new Date(customEndDate);
+              endDate.setHours(23, 59, 59, 999);
+              return orderDate >= startDate && orderDate <= endDate;
+            }
+            return true; // If no custom dates selected, show all
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  }, [orders, debouncedSearchTerm, formatFilter, dateFilter, customStartDate, customEndDate]);
+
+  // Paginate filtered orders
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredOrders.slice(startIndex, startIndex + pageSize);
+  }, [filteredOrders, currentPage, pageSize]);
+
+  // Update total pages based on filtered orders
+  const filteredTotalPages = useMemo(() => {
+    return Math.ceil(filteredOrders.length / pageSize);
+  }, [filteredOrders.length, pageSize]);
+
   const updateLoadingState = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
   };
@@ -70,63 +167,18 @@ const OrdersPage = () => {
   }, []);
 
   const fetchOrders = useCallback(async () => {
-    // Don't make API call for Custom Range until both dates are selected
-    if (dateFilter === "Custom Range" && (!customStartDate || !customEndDate)) {
-      return;
-    }
-
     updateLoadingState("fetchingOrders", true);
     try {
-      // Map frontend date filter values to backend values
-      let dateFilterValue = undefined;
-      if (dateFilter !== "All Time") {
-        switch (dateFilter) {
-          case "Today":
-            dateFilterValue = "today";
-            break;
-          case "Yesterday":
-            dateFilterValue = "yesterday";
-            break;
-          case "This Week":
-            dateFilterValue = "this week";
-            break;
-          case "This Month":
-            dateFilterValue = "this month";
-            break;
-          case "Custom Range":
-            dateFilterValue = "custom range";
-            break;
-          default:
-            dateFilterValue = undefined;
-        }
-      }
-
-      // Fix timezone issue by using date formatting instead of toISOString()
-      const formatDateForAPI = (date: Date): string => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
-
+      // Fetch all orders or a large batch to enable frontend filtering
       const response = await getAllOrders({
-        page: currentPage,
-        limit: pageSize,
-        search: debouncedSearchTerm || undefined,
-        status: formatFilter === "All" ? undefined : formatFilter,
-        dateFilter: dateFilterValue,
-        // Fix: Use formatDateForAPI to prevent timezone issues
-        ...(dateFilter === "Custom Range" && customStartDate && {
-          startDate: formatDateForAPI(customStartDate),
-        }),
-        ...(dateFilter === "Custom Range" && customEndDate && {
-          endDate: formatDateForAPI(customEndDate),
-        }),
+        page: 1,
+        limit: 1000, // Fetch a large number to enable frontend filtering
       });
 
       setOrders(response.data.orders);
-      setTotalPages(response.data.pagination.totalPages);
       setTotalOrders(response.data.pagination.totalItems);
+      // For frontend filtering, we don't need to update totalPages from API
+      // We'll calculate it based on filtered results
     } catch (e: any) {
       Toast({
         type: "error",
@@ -135,15 +187,7 @@ const OrdersPage = () => {
     } finally {
       updateLoadingState("fetchingOrders", false);
     }
-  }, [
-    currentPage,
-    pageSize,
-    debouncedSearchTerm,
-    formatFilter,
-    dateFilter,
-    customStartDate,
-    customEndDate,
-  ]);
+  }, []);
 
   useEffect(() => {
     fetchOrders();
@@ -263,7 +307,7 @@ const OrdersPage = () => {
         <div className="flex items-center">
           {(currentPage - 1) * pageSize + i + 1}
           <span className="ml-2 transition-transform duration-300">
-            {expandedOrderId === orders[i]?._id ? (
+            {expandedOrderId === (dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders[i]?._id : paginatedOrders[i]?._id) ? (
               <IoIosArrowUp className="text-gray-500 dark:text-gray-400" />
             ) : (
               <IoIosArrowDown className="text-gray-500 dark:text-gray-400" />
@@ -364,30 +408,30 @@ const OrdersPage = () => {
       <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 ">
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-            Orders ({totalOrders || 0})
+            Orders ({dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalOrders : filteredOrders.length || 0})
           </h1>
           <h2 className="text-xl font-semibold text-primary dark:text-gray-300">
             Total Amount:{" "}
             <span>
               AU$
-              {orders
+              {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : filteredOrders)
                 .reduce((sum, order) => sum + order.total, 0)
                 .toFixed(2)}
             </span>
           </h2>
         </div>
 
-        <div className="w-full flex justify-end">
+        <div className="w-full flex justify-end mb-4">
           <Button variant="primary" onClick={() => router.push('/admin/create-invoice')}>Create Invoice</Button>
         </div>
 
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
           <TextField
             type="text"
-            placeholder="Search by name or phone..."
+            placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full col-span-1 sm:col-span-2 lg:col-span-1"
+            className="w-full col-span-1 sm:col-span-1 lg:col-span-1"
           />
           <Select
             value={formatFilter}
@@ -464,7 +508,7 @@ const OrdersPage = () => {
 
         {loadingStates.fetchingOrders ? (
           <Skeleton />
-        ) : orders.length === 0 ? (
+        ) : (dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : paginatedOrders).length === 0 ? (
           <EmptyState message="No orders found." />
         ) : (
           <>
@@ -484,7 +528,7 @@ const OrdersPage = () => {
                   </tr>
                 </thead>
                 <tbody className="border-b border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-                  {orders.map((order, index) => (
+                  {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : paginatedOrders).map((order, index) => (
                     <React.Fragment key={order._id}>
                       <tr
                         className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
@@ -512,11 +556,11 @@ const OrdersPage = () => {
               </table>
             </div>
 
-            {totalPages > 1 && (
+            {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalPages : filteredTotalPages) > 1 && (
               <div className="mt-6 flex justify-center">
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={totalPages}
+                  totalPages={dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalPages : filteredTotalPages}
                   onPageChange={setCurrentPage}
                 />
               </div>

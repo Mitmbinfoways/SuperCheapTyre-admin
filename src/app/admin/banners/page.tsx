@@ -191,13 +191,13 @@ const BannerPage = () => {
             <div className="mb-6 flex items-center gap-2">
               <FiImage className="h-5 w-5 text-blue-600" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-300">
-                Banner Images
+                Banner Images and Video
               </h2>
             </div>
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div>
-                <FormLabel label="Laptop/Desktop Banner" required />
+                <FormLabel label="Laptop/Desktop Banner and Video" required />
                 <p className="mb-3 text-sm text-gray-500">
                   For Desktop & Tablet: Use 16:9 aspect ratio
                 </p>
@@ -206,7 +206,7 @@ const BannerPage = () => {
                   onChange={setLaptopImages}
                   onFilesSelected={handleLaptopFilesSelected}
                   onRemove={handleRemoveLaptopImage}
-                  ImageTitle="Banner Image"
+                  ImageTitle="Banner Image and Video"
                   maxFiles={1}
                   multiple={false}
                   video={true}
@@ -214,7 +214,7 @@ const BannerPage = () => {
                 />
               </div>
               <div>
-                <FormLabel label="Mobile Banner" required />
+                <FormLabel label="Mobile Banner and Video" required />
                 <p className="mb-3 text-sm text-gray-500">
                   For Mobile: Use 4:5 aspect ratio
                 </p>
@@ -224,7 +224,7 @@ const BannerPage = () => {
                   isMobile={true}
                   onFilesSelected={handleMobileFilesSelected}
                   onRemove={handleRemoveMobileImage}
-                  ImageTitle="Banner Image"
+                  ImageTitle="Banner Image and Video"
                   maxFiles={1}
                   multiple={false}
                   video={true}
