@@ -16,7 +16,7 @@ import Tooltip from "@/components/ui/Tooltip";
 import Badge from "@/components/ui/Badge";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
-import DatePicker from "react-datepicker";
+import DatePicker from "@/components/ui/DatePicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 type LoadingStates = {
@@ -423,24 +423,24 @@ const OrdersPage = () => {
           {dateFilter === "Custom Range" && (
             <div className="flex flex-col sm:flex-row gap-3 col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-2">
               <DatePicker
-                selected={customStartDate}
+                value={customStartDate}
                 onChange={(date) => setCustomStartDate(date)}
-                selectsStart
+                selectsStart={true}
                 startDate={customStartDate}
                 endDate={customEndDate}
                 maxDate={new Date()}
-                placeholderText="Start Date"
+                placeholder="Start Date"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
               />
               <DatePicker
-                selected={customEndDate}
+                value={customEndDate}
                 onChange={(date) => setCustomEndDate(date)}
-                selectsEnd
+                selectsEnd={true}
                 startDate={customStartDate}
                 endDate={customEndDate}
                 minDate={customStartDate || undefined}
                 maxDate={new Date()}
-                placeholderText="End Date"
+                placeholder="End Date"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
               />
             </div>

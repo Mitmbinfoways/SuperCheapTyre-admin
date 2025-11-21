@@ -8,7 +8,7 @@ interface CommonDialogProps {
   title?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export default function CommonDialog({
@@ -22,7 +22,13 @@ export default function CommonDialog({
   if (!isOpen) return null;
 
   const sizeClass =
-    size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-3xl" : "max-w-md";
+    size === "sm"
+      ? "max-w-sm"
+      : size === "lg"
+      ? "max-w-3xl"
+      : size === "xl"
+      ? "max-w-5xl"
+      : "max-w-md";
 
   const handleDialogClick = (e: MouseEvent) => e.stopPropagation();
 

@@ -93,36 +93,6 @@ export const getAllOrders = async (
   return response.data;
 };
 
-export interface CreateOrderPayload {
-  items: Array<{
-    id: string;
-    quantity: number;
-  }>;
-  subtotal: number;
-  total: number;
-  appointmentId: string;
-  customer: {
-    name: string;
-    phone: string;
-    email?: string;
-  };
-  payment: {
-    amount: number;
-    method: string;
-    status: string;
-    currency: string;
-  };
-}
-
-export const createOrder = async (
-  payload: CreateOrderPayload,
-): Promise<ApiResponse<Order>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order`;
-  const response = await postMethod<ApiResponse<Order>, CreateOrderPayload>(url, payload);
-  return response.data;
-};
-
-// Define the payload structure for CreateLocalOrder
 export interface CreateLocalOrderPayload {
   items: Array<{
     id: string;
@@ -131,7 +101,8 @@ export interface CreateLocalOrderPayload {
   subtotal: number;
   total: number;
   customer: {
-    name: string;
+    firstName: string;
+    lastName: string;
     phone: string;
     email?: string;
   };
@@ -140,6 +111,7 @@ export interface CreateLocalOrderPayload {
     method: string;
     status: string;
     currency: string;
+    note: string;
   };
 }
 
