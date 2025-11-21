@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import {
   GetAllAppointments,
@@ -21,6 +21,7 @@ import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 import Tooltip from "@/components/ui/Tooltip";
+import DatePicker from "@/components/ui/DatePicker";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -47,10 +48,98 @@ const AppointmentsPage = () => {
     { label: string; value: string }[]
   >([]);
   const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null); // Added state for view appointment
+  const [dateFilter, setDateFilter] = useState("all"); // Date filter state
+  const [customStartDate, setCustomStartDate] = useState(""); // Custom start date
+  const [customEndDate, setCustomEndDate] = useState(""); // Custom end date
   const itemsPerPage = 10;
   const [totalAppointments, setTotalAppointments] = useState<number>(0);
 
+  // Function to format date for input without timezone issues
+  const formatDateForInput = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const debounceSearch = useDebounce<string>(search, 300);
+
+  // Filter appointments based on date filter
+  const filteredAppointments = useMemo(() => {
+    if (!appointments) return [];
+
+    let filtered = [...appointments];
+
+    // Apply date filter
+    if (dateFilter !== "all") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      filtered = filtered.filter(appointment => {
+        if (!appointment.date) return false;
+
+        const appointmentDate = new Date(appointment.date);
+        appointmentDate.setHours(0, 0, 0, 0);
+
+        switch (dateFilter) {
+          case "today":
+            return appointmentDate.getTime() === today.getTime();
+          case "yesterday":
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            return appointmentDate.getTime() === yesterday.getTime();
+          case "tomorrow":
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            return appointmentDate.getTime() === tomorrow.getTime();
+          case "thisWeek":
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6); // Saturday
+            return appointmentDate >= weekStart && appointmentDate <= weekEnd;
+          case "thisMonth":
+            return appointmentDate.getMonth() === today.getMonth() &&
+              appointmentDate.getFullYear() === today.getFullYear();
+          case "custom":
+            if (customStartDate && customEndDate) {
+              const startDate = new Date(customStartDate);
+              startDate.setHours(0, 0, 0, 0);
+              const endDate = new Date(customEndDate);
+              endDate.setHours(23, 59, 59, 999);
+              return appointmentDate >= startDate && appointmentDate <= endDate;
+            }
+            return true; // If no custom dates selected, show all
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply search filter
+    if (debounceSearch) {
+      const searchLower = debounceSearch.toLowerCase();
+      filtered = filtered.filter(appointment =>
+        (appointment.firstname && appointment.firstname.toLowerCase().includes(searchLower)) ||
+        (appointment.lastname && appointment.lastname.toLowerCase().includes(searchLower)) ||
+        (appointment.email && appointment.email.toLowerCase().includes(searchLower)) ||
+        (appointment.phone && appointment.phone.includes(searchLower))
+      );
+    }
+
+    return filtered;
+  }, [appointments, dateFilter, customStartDate, customEndDate, debounceSearch]);
+
+  // Paginate filtered appointments
+  const paginatedAppointments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredAppointments.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredAppointments, currentPage, itemsPerPage]);
+
+  // Update total pages based on filtered appointments
+  const filteredTotalPages = useMemo(() => {
+    return Math.ceil(filteredAppointments.length / itemsPerPage);
+  }, [filteredAppointments.length, itemsPerPage]);
 
   const loadTechnicians = useCallback(async () => {
     try {
@@ -266,22 +355,70 @@ const AppointmentsPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debounceSearch]);
+  }, [debounceSearch, dateFilter, customStartDate, customEndDate]);
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
       <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
-        Appointments ({totalAppointments || 0})
+        Appointments ({dateFilter === "all" && !debounceSearch ? totalAppointments : filteredAppointments.length || 0})
       </h1>
 
-      <div className="mb-4 w-full sm:w-1/2 lg:w-1/3">
-        <TextField
-          type="text"
-          placeholder="Search appointments..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+
+        {/* Search */}
+        <div className="flex flex-col gap-1">
+          <TextField
+            type="text"
+            placeholder="Search appointments..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* Date Filter Dropdown */}
+        <div className="flex flex-col gap-1">
+          <Select
+            value={dateFilter}
+            onChange={setDateFilter}
+            options={[
+              { label: "All", value: "all" },
+              { label: "Today", value: "today" },
+              { label: "Yesterday", value: "yesterday" },
+              { label: "Tomorrow", value: "tomorrow" },
+              { label: "This Week", value: "thisWeek" },
+              { label: "This Month", value: "thisMonth" },
+              { label: "Custom Range", value: "custom" },
+            ]}
+            placeholder="Filter by date"
+          />
+        </div>
+
+        {/* Start Date */}
+        {dateFilter === "custom" && (
+          <div className="flex gap-2 w-full">
+            <DatePicker
+              value={customStartDate ? new Date(customStartDate) : null}
+              onChange={(date: Date | null) =>
+                setCustomStartDate(date ? formatDateForInput(date) : "")
+              }
+              placeholder="Start date"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+
+            />
+            <DatePicker
+              value={customEndDate ? new Date(customEndDate) : null}
+              onChange={(date: Date | null) =>
+                setCustomEndDate(date ? formatDateForInput(date) : "")
+              }
+              placeholder="End date"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+
+            />
+          </div>
+        )}
+
       </div>
+
 
       <div>
         {loading ? (
@@ -290,19 +427,19 @@ const AppointmentsPage = () => {
           <div className="py-8 text-center text-red-600 dark:text-red-400">
             {error}
           </div>
-        ) : appointments.length === 0 ? (
+        ) : (dateFilter === "all" && !debounceSearch ? appointments : paginatedAppointments).length === 0 ? (
           <EmptyState message="No appointments found." />
         ) : (
           <>
             <Table
               columns={columns}
-              data={appointments}
+              data={dateFilter === "all" && !debounceSearch ? appointments : paginatedAppointments}
               className="dark:divide-gray-700"
             />
             <div className="mt-4 flex justify-center">
               <Pagination
                 currentPage={currentPage}
-                totalPages={totalPages}
+                totalPages={dateFilter === "all" && !debounceSearch ? totalPages : filteredTotalPages}
                 onPageChange={setCurrentPage}
               />
             </div>

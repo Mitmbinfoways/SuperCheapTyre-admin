@@ -300,6 +300,7 @@ const OrdersPage = () => {
     {
       title: "Product Count",
       key: "itemsCount",
+      width: "50px",
       render: (order: Order) => (
         <div className="text-center">{getTotalItems(order.items)}</div>
       ),
@@ -360,7 +361,7 @@ const OrdersPage = () => {
 
   return (
     <>
-      <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
+      <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 ">
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
             Orders ({totalOrders || 0})
@@ -474,7 +475,7 @@ const OrdersPage = () => {
                     {columns.map((col) => (
                       <th
                         key={col.key as string}
-                        className={`whitespace-nowrap px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200`}
+                        className={`whitespace-nowrap px-3 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200`}
                         style={col.width ? { width: col.width } : undefined}
                       >
                         {col.title}
@@ -495,7 +496,7 @@ const OrdersPage = () => {
                         {columns.map((col) => (
                           <td
                             key={col.key as string}
-                            className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-gray-200"
+                            className="whitespace-nowrap px-3 py-3 text-sm text-gray-900 dark:text-gray-200"
                             style={col.width ? { width: col.width } : undefined}
                           >
                             {col.render
