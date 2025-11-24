@@ -34,9 +34,11 @@ export interface Customer {
 export interface Payment {
   method: string;
   status: string;
-  transactionId: string;
-  amount: number;
+  transactionId?: string;
+  amount?: number;
   currency: string;
+  paidAt?: string;
+  note?: string;
   providerPayload: {
     gateway: string;
     cardLast4: string;

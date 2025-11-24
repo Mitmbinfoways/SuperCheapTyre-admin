@@ -295,15 +295,15 @@ const CreateInvoicePage = () => {
     // Validate required fields
     const newErrors: Record<string, string> = {};
 
-    if (!firstName.trim()) {
+    if (!firstName) {
       newErrors.firstName = "First name is required";
     }
 
-    if (!lastName.trim()) {
+    if (!lastName) {
       newErrors.lastName = "Last name is required";
     }
 
-    if (!phone.trim()) {
+    if (!phone) {
       newErrors.phone = "Phone number is required";
     } else if (!/^\d{10,15}$/.test(phone)) {
       newErrors.phone = "Please enter a valid phone number";
@@ -428,7 +428,8 @@ const CreateInvoicePage = () => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (typeof window !== 'undefined') {
       localStorage.removeItem('selectedProducts');
       localStorage.removeItem('productQuantities');
@@ -486,6 +487,23 @@ const CreateInvoicePage = () => {
     );
   };
 
+  // Add a function to handle key down events in form fields
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
+  // Add a ref to the form to handle Enter key prevention
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Handle form level key down to prevent Enter submission
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  };
+
   return (
     <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -520,7 +538,12 @@ const CreateInvoicePage = () => {
 
       {/* Create Invoice Tab Content */}
       {activeTab === 'create' && (
-        <form className="space-y-6" onSubmit={handleCreateInvoice}>
+        <form 
+          ref={formRef} 
+          className="space-y-6" 
+          onSubmit={handleCreateInvoice}
+          onKeyDown={handleFormKeyDown}
+        >
           {/* Customer Information Section */}
           <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
             <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Customer Information</h3>
@@ -893,7 +916,7 @@ const CreateInvoicePage = () => {
               variant="primary"
               type="submit"
             >
-              Generate Invoice
+              Create Invoice
             </Button>
           </div>
         </form>

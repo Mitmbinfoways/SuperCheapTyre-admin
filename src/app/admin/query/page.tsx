@@ -14,6 +14,7 @@ import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
+import Tooltip from "@/components/ui/Tooltip";
 
 type Contact = ContactType;
 
@@ -40,9 +41,9 @@ const ContactList: React.FC = () => {
 
   const columns: Column<Contact>[] = [
     { title: "SR.NO", key: "index", render: (item, index) => (currentPage - 1) * itemsPerPage + index + 1 },
-    { 
-      title: "Name", 
-      key: "name", 
+    {
+      title: "Name",
+      key: "name",
       render: (item) => (
         <div className="line-clamp-1" title={item.name}>
           {item.name}
@@ -60,12 +61,12 @@ const ContactList: React.FC = () => {
       title: "Message",
       key: "message",
       render: (item) => (
-          <div
-            className="max-w-36 truncate line-clamp-2 cursor-pointer"
-            title={item.message}
-          >
-            {item.message}
-          </div>
+        <div
+          className="max-w-36 truncate line-clamp-2 cursor-pointer"
+          title={item.message}
+        >
+          {item.message}
+        </div>
       ),
     },
     {
@@ -79,7 +80,9 @@ const ContactList: React.FC = () => {
             className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             aria-label="View contact"
           >
-            <EyeIcon className="h-5 w-5" />
+            <Tooltip content="View query">
+              <EyeIcon className="h-5 w-5" />
+            </Tooltip>
           </button>
         </div>
       ),

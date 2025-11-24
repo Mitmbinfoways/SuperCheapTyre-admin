@@ -252,8 +252,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
 
         if (!phone.trim()) {
             newErrors.phone = "Phone number is required";
-        } else if (!/^\d{10,15}$/.test(phone)) {
-            newErrors.phone = "Please enter a valid phone number";
         }
 
         if (!email.trim()) {
@@ -297,7 +295,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
             const payment = paymentDetails[i];
 
             if (!payment.status) {
-                newErrors[`paymentStatus${i}`] = `Payment status is required for payment #${i + 1}`;
+                newErrors[`paymentStatus${i}`] = `Payment status is required for payment `;
             }
 
             if (!payment.amount) {
@@ -369,7 +367,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
         onBack();
     };
 
-    const renderProductImage = (product: Product) => {
+    const renderProductImage = (product: any) => {
         const imageUrl = product.images?.[0]
             ? `${process.env.NEXT_PUBLIC_API_URL}/Product/${product.images[0]}`
             : null;
@@ -570,55 +568,44 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                                    {allProducts
-                                        .filter(product => selectedProducts.includes(product._id))
-                                        .map((product) => {
-                                            const quantity = productQuantities[product._id] || "1";
-                                            const numericQuantity = parseInt(quantity, 10) || 1;
+                                    {selectedOrder.items.map((item) => {
+                                        // Create a Product-like object from the OrderItem data
+                                        const product = {
+                                            name: item.productDetails?.name,
+                                            images: item.productDetails?.images,
+                                            sku: item.productDetails?.sku,
+                                            price: item.productDetails?.price,
+                                        };
+                                        
+                                        const quantity = item.quantity?.toString() || "1";
 
-                                            return (
-                                                <div
-                                                    key={product._id}
-                                                    className="flex flex-col rounded-lg border border-blue-500 bg-blue-50 p-3 dark:bg-blue-900/20"
-                                                >
-                                                    <div className="flex items-start gap-3">
-                                                        {renderProductImage(product)}
-                                                        <div className="flex-1">
-                                                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
-                                                                {product.name}
-                                                            </h4>
-                                                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                SKU: {product.sku}
-                                                            </p>
-                                                            <div className="mt-1 flex items-center justify-between">
-                                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                    AU$ {product.price.toFixed(2)}
-                                                                </span>
-                                                                <span className={`text-xs ${product.stock > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400'}`}>
-                                                                    Stock: {product.stock}
-                                                                </span>
-                                                            </div>
+                                        return (
+                                            <div
+                                                key={item._id}
+                                                className="flex flex-col rounded-lg border border-blue-500 bg-blue-50 p-3 dark:bg-blue-900/20"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    {renderProductImage(product)}
+                                                    <div className="flex-1">
+                                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                                                            {product.name}
+                                                        </h4>
+                                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                            SKU: {product.sku}
+                                                        </p>
+                                                        <div className="mt-1 flex items-center justify-between">
+                                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                AU$ {product.price?.toFixed(2)}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                Qty: {quantity}
+                                                            </span>
                                                         </div>
                                                     </div>
-
-                                                    {product.stock <= 0 ? (
-                                                        <div className="mt-2">
-                                                            <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                                                Out of Stock
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="mt-3 flex items-center gap-2">
-                                                            <label className="text-sm text-gray-700 dark:text-gray-300">Qty:</label>
-                                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {productQuantities[product._id] || "1"}
-                                                            </span>
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">(Max: {product.stock})</span>
-                                                        </div>
-                                                    )}
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -647,7 +634,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                             <div className="space-y-6">
 
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4">
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                                         <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Subtotal</p>
                                             <p className="font-medium">AU$ {subtotal().toFixed(2)}</p>
@@ -661,27 +648,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                 }, 0).toFixed(2)}
                                             </p>
                                         </div>
-                                        {/* <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">New Payments</p>
-                                            <p className="font-medium">
-                                                AU$ {paymentDetails.reduce((total, payment) => {
-                                                    const amount = parseFloat(payment.amount) || 0;
-                                                    return total + amount;
-                                                }, 0).toFixed(2)}
-                                            </p>
-                                        </div> */}
-                                        {/* <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Total Payments</p>
-                                            <p className="font-medium">
-                                                AU$ {(previousPayments.reduce((total, payment) => {
-                                                    const amount = parseFloat(payment.amount) || 0;
-                                                    return total + amount;
-                                                }, 0) + paymentDetails.reduce((total, payment) => {
-                                                    const amount = parseFloat(payment.amount) || 0;
-                                                    return total + amount;
-                                                }, 0)).toFixed(2)}
-                                            </p>
-                                        </div> */}
                                         <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Remaining Balance</p>
                                             <p className="font-medium">
@@ -696,6 +662,35 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                         </div>
                                     </div>
                                 </div>
+
+                                {previousPayments.length > 0 && (
+                                    <div className="mb-6">
+                                        <h4 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-3">Previous Payments</h4>
+                                        <div className="space-y-2 max-h-40 overflow-y-auto mb-3">
+                                            {previousPayments.map((payment, index) => (
+                                                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                                    <div>
+                                                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                                                            {payment.method || 'Online'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-medium">
+                                                        AU$ {parseFloat(payment.amount || 0).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">Total Previous Payments:</span>
+                                            <span className="font-bold text-lg">
+                                                AU$ {previousPayments.reduce((total, payment) => {
+                                                    const amount = parseFloat(payment.amount) || 0;
+                                                    return total + amount;
+                                                }, 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {paymentDetails.map((payment, index) => (
                                     <div key={payment.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -743,7 +738,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                     Payment Status <span className="text-red-500">*</span>
                                                 </label>
                                                 <Select
-                                                    value="full"
+                                                    value={payment.status}
                                                     onChange={(value) => {
                                                         updatePaymentDetail(payment.id, 'status', value);
                                                         // Clear error when user selects an option
@@ -756,7 +751,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                         }
                                                     }}
                                                     options={[
-                                                        { label: "Partial", value: "Partial" },
+                                                        { label: "Partial", value: "partial" },
                                                         { label: "Full", value: "full" },
                                                     ]}
                                                     placeholder="Select payment status"

@@ -169,16 +169,16 @@ const OrdersPage = () => {
   const fetchOrders = useCallback(async () => {
     updateLoadingState("fetchingOrders", true);
     try {
-      // Fetch all orders or a large batch to enable frontend filtering
+      const isFiltering = debouncedSearchTerm || formatFilter !== "All" || dateFilter !== "All Time";
+
       const response = await getAllOrders({
-        page: 1,
-        limit: 1000, // Fetch a large number to enable frontend filtering
+        page: isFiltering ? 1 : currentPage,
+        limit: isFiltering ? 1000 : pageSize,
       });
 
       setOrders(response.data.orders);
+      setTotalPages(response.data.pagination.totalPages);
       setTotalOrders(response.data.pagination.totalItems);
-      // For frontend filtering, we don't need to update totalPages from API
-      // We'll calculate it based on filtered results
     } catch (e: any) {
       Toast({
         type: "error",
@@ -187,7 +187,7 @@ const OrdersPage = () => {
     } finally {
       updateLoadingState("fetchingOrders", false);
     }
-  }, []);
+  }, [currentPage, pageSize, debouncedSearchTerm, formatFilter, dateFilter]);
 
   useEffect(() => {
     fetchOrders();
@@ -242,12 +242,12 @@ const OrdersPage = () => {
     );
   };
 
-  const renderProductDetails = (items: OrderItem[], orderId: string) => {
+  const renderProductDetails = (items: OrderItem[], orderId: string, order: Order) => {
     const isExpanded = expandedOrderId === orderId;
 
     return (
       <tr>
-        <td colSpan={8} className="p-0">
+        <td colSpan={9} className="p-0">
           <div
             className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
               }`}
@@ -256,6 +256,118 @@ const OrdersPage = () => {
               <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-200">
                 Product Details
               </h3>
+
+              {/* Payment Information Section */}
+              <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
+                <h4 className="mb-3 text-md font-semibold text-gray-900 dark:text-gray-100">
+                  Payment Information
+                </h4>
+
+                {Array.isArray(order.payment) ? (
+                  <div className="space-y-4">
+                    {order.payment.map((payment, index) => (
+                      <div key={index} className="rounded-md border border-gray-300 p-3 dark:border-gray-600">
+                        <h5 className="mb-2 font-medium text-gray-800 dark:text-gray-200">
+                          Payment #{index + 1}
+                        </h5>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Method</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.method || 'Online'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Status</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.status.toLowerCase() || '-'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.currency || 'AU$'} {payment?.amount?.toFixed(2) || '-'}
+                            </p>
+                          </div>
+                          {payment?.transactionId && (
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                                {payment?.transactionId}
+                              </p>
+                            </div>
+                          )}
+                          {payment?.note && (
+                            <div className="mt-2">
+                              <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                                {payment?.note}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : order.payment ? (
+                  // Handle single payment object
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Method</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {order.payment?.method || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Status</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {order.payment?.status.toLowerCase() || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        AU$ {order.total.toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Currency</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {order.payment?.currency || 'AU$'}
+                      </p>
+                    </div>
+                    {(order.payment as any)?.transactionId && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                          {order.payment?.transactionId}
+                        </p>
+                      </div>
+                    )}
+                    {order.payment?.paidAt && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Payment Date</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {order.payment?.paidAt ? new Date(order.payment?.paidAt).toLocaleDateString() : '-'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Handle no payment
+                  <p className="text-gray-600 dark:text-gray-300">No payment information available</p>
+                )}
+
+                {order.payment && !Array.isArray(order.payment) && order.payment?.note && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                      {order.payment?.note}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((item) => (
                   <div
@@ -307,7 +419,7 @@ const OrdersPage = () => {
         <div className="flex items-center">
           {(currentPage - 1) * pageSize + i + 1}
           <span className="ml-2 transition-transform duration-300">
-            {expandedOrderId === (dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders[i]?._id : paginatedOrders[i]?._id) ? (
+            {expandedOrderId === displayOrders[i]?._id ? (
               <IoIosArrowUp className="text-gray-500 dark:text-gray-400" />
             ) : (
               <IoIosArrowDown className="text-gray-500 dark:text-gray-400" />
@@ -403,18 +515,42 @@ const OrdersPage = () => {
     },
   ];
 
+  // Determine which orders to display based on filtering
+  const displayOrders = useMemo(() => {
+    // If we're filtering, use the filtered and paginated orders
+    // If we're not filtering, use the raw orders from backend pagination
+    const isFiltering = debouncedSearchTerm || formatFilter !== "All" || dateFilter !== "All Time";
+
+    if (isFiltering) {
+      return paginatedOrders;
+    } else {
+      return orders;
+    }
+  }, [orders, paginatedOrders, debouncedSearchTerm, formatFilter, dateFilter]);
+
+  // Determine total pages to display
+  const displayTotalPages = useMemo(() => {
+    const isFiltering = debouncedSearchTerm || formatFilter !== "All" || dateFilter !== "All Time";
+
+    if (isFiltering) {
+      return filteredTotalPages;
+    } else {
+      return totalPages;
+    }
+  }, [filteredTotalPages, totalPages, debouncedSearchTerm, formatFilter, dateFilter]);
+
   return (
     <>
       <div className="rounded-2xl bg-white p-4 shadow-md dark:bg-gray-900 ">
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
-            Orders ({dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalOrders : filteredOrders.length || 0})
+            Orders ({displayOrders.length})
           </h1>
           <h2 className="text-xl font-semibold text-primary dark:text-gray-300">
             Total Amount:{" "}
             <span>
               AU$
-              {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : filteredOrders)
+              {displayOrders
                 .reduce((sum, order) => sum + order.total, 0)
                 .toFixed(2)}
             </span>
@@ -508,7 +644,7 @@ const OrdersPage = () => {
 
         {loadingStates.fetchingOrders ? (
           <Skeleton />
-        ) : (dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : paginatedOrders).length === 0 ? (
+        ) : displayOrders.length === 0 ? (
           <EmptyState message="No orders found." />
         ) : (
           <>
@@ -528,7 +664,7 @@ const OrdersPage = () => {
                   </tr>
                 </thead>
                 <tbody className="border-b border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-                  {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? orders : paginatedOrders).map((order, index) => (
+                  {displayOrders.map((order, index) => (
                     <React.Fragment key={order._id}>
                       <tr
                         className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
@@ -549,18 +685,18 @@ const OrdersPage = () => {
                           </td>
                         ))}
                       </tr>
-                      {renderProductDetails(order.items, order._id)}
+                      {renderProductDetails(order.items, order._id, order)}
                     </React.Fragment>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            {(dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalPages : filteredTotalPages) > 1 && (
+            {displayTotalPages > 1 && (
               <div className="mt-6 flex justify-center">
                 <Pagination
                   currentPage={currentPage}
-                  totalPages={dateFilter === "All Time" && formatFilter === "All" && !debouncedSearchTerm ? totalPages : filteredTotalPages}
+                  totalPages={displayTotalPages}
                   onPageChange={setCurrentPage}
                 />
               </div>

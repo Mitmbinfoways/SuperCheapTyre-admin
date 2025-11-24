@@ -389,7 +389,7 @@ const ProductListPage: React.FC = () => {
       render: (item) => (
         <Badge
           label={item.stock}
-          color={item.stock > 5 ? "green" : item.stock > 0 ? "yellow" : "red"}
+          color={item.stock > 2 ? "green" : item.stock > 0 ? "yellow" : "red"}
         />
       ),
     },
