@@ -17,6 +17,8 @@ import Badge from "@/components/ui/Badge";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import DatePicker from "@/components/ui/DatePicker";
+import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
+import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 import "react-datepicker/dist/react-datepicker.css";
 
 type LoadingStates = {
@@ -40,6 +42,7 @@ const OrdersPage = () => {
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -410,6 +413,16 @@ const OrdersPage = () => {
     link.remove();
   };
 
+  // Added function to handle view order
+  const handleViewOrder = (order: Order) => {
+    setViewOrder(order);
+  };
+
+  // Added function to close view modal
+  const handleCloseViewModal = () => {
+    setViewOrder(null);
+  };
+
   const columns = [
     {
       title: "Sr.No",
@@ -499,6 +512,18 @@ const OrdersPage = () => {
       key: "actions",
       render: (order: Order) => (
         <div className="flex items-center justify-center space-x-2">
+          <Tooltip content="View Order">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewOrder(order);
+              }}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              aria-label="View order"
+            >
+              <EyeIcon className="h-5 w-5" />
+            </button>
+          </Tooltip>
           <Tooltip content="Download Invoice">
             <FiDownload
               size={18}
@@ -513,6 +538,7 @@ const OrdersPage = () => {
         </div>
       ),
     },
+
   ];
 
   // Determine which orders to display based on filtering
@@ -703,6 +729,180 @@ const OrdersPage = () => {
             )}
           </>
         )}
+
+        {/* Added View Order Modal */}
+        <CommonDialog
+          isOpen={!!viewOrder}
+          onClose={handleCloseViewModal}
+          title="Order Details"
+          size="xl"
+        >
+          {viewOrder && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Order ID</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{viewOrder._id}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Order Date</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    {viewOrder.createdAt ? new Date(viewOrder.createdAt).toLocaleDateString() : "-"}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer Name</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{viewOrder.customer.name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer Email</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{viewOrder.customer.email}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer Phone</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{viewOrder.customer.phone}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Amount</h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                    AU$ {viewOrder.total.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Payment Information Section */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
+                <h3 className="mb-3 text-md font-semibold text-gray-900 dark:text-gray-100">
+                  Payment Information
+                </h3>
+
+                {Array.isArray(viewOrder.payment) ? (
+                  <div className="space-y-4">
+                    {viewOrder.payment.map((payment, index) => (
+                      <div key={index} className="rounded-md border border-gray-300 p-3 dark:border-gray-600">
+                        <h4 className="mb-2 font-medium text-gray-800 dark:text-gray-200">
+                          Payment #{index + 1}
+                        </h4>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Method</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.method || 'Online'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Status</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.status?.toUpperCase() || '-'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {payment?.currency || 'AU$'} {payment?.amount?.toFixed(2) || '-'}
+                            </p>
+                          </div>
+                          {payment?.note && (
+                            <div>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
+                              <p className="font-medium text-gray-900 dark:text-gray-100 max-h-28 overflow-y-auto">
+                                {payment?.note}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : viewOrder.payment ? (
+                  // Handle single payment object
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Method</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {viewOrder.payment?.method || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Status</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {viewOrder.payment?.status?.toLowerCase() || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {viewOrder.payment?.currency || 'AU$'} {viewOrder.payment?.amount?.toFixed(2) || viewOrder.total.toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Currency</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {viewOrder.payment?.currency || 'AU$'}
+                      </p>
+                    </div>
+                    {viewOrder.payment?.transactionId && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                          {viewOrder.payment?.transactionId}
+                        </p>
+                      </div>
+                    )}
+                    {viewOrder.payment?.paidAt && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Payment Date</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {viewOrder.payment?.paidAt ? new Date(viewOrder.payment?.paidAt).toLocaleDateString() : '-'}
+                        </p>
+                      </div>
+                    )}
+                    {viewOrder.payment?.note && (
+                      <div className="sm:col-span-2 md:col-span-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {viewOrder.payment?.note}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Handle no payment
+                  <p className="text-gray-600 dark:text-gray-300">No payment information available</p>
+                )}
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-3">Product Details</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {viewOrder.items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-700"
+                    >
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {item.productDetails.name}
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-300">
+                          SKU: {item.productDetails.sku}
+                        </p>
+                        <div className="mt-2 flex justify-between text-sm">
+                          <span>Qty: {item.quantity}</span>
+                          <span>AU$ {item.productDetails.price.toFixed(2)}</span>
+                        </div>
+                        <div className="mt-1 text-right font-medium text-gray-800 dark:text-gray-100">
+                          Total: AU${" "}
+                          {(item.productDetails.price * item.quantity).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </CommonDialog>
       </div>
     </>
   );
