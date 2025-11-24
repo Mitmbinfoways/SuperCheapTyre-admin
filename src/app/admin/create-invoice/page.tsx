@@ -931,6 +931,11 @@ const CreateInvoicePage = () => {
         onClose={() => setIsModalOpen(false)}
         title="Select Products"
         size="xl"
+        footer={
+          <Button variant="primary" onClick={() => setIsModalOpen(false)}>
+            Done
+          </Button>
+        }
       >
         <div className="space-y-4">
           <div className="relative">
