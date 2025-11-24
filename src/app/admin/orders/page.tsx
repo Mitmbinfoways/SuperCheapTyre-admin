@@ -40,6 +40,7 @@ const OrdersPage = () => {
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [viewOrder, setViewOrder] = useState<Order | null>(null);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -289,18 +290,16 @@ const OrdersPage = () => {
                               {payment?.currency || 'AU$'} {payment?.amount?.toFixed(2) || '-'}
                             </p>
                           </div>
-                          {payment?.transactionId && (
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
-                              <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
-                                {payment?.transactionId}
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {payment?.transactionId || "-"}
                               </p>
                             </div>
-                          )}
                           {payment?.note && (
                             <div className="mt-2">
                               <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
-                              <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                              <p className="font-medium text-gray-900 dark:text-gray-100 max-h-28 overflow-y-auto">
                                 {payment?.note}
                               </p>
                             </div>
@@ -513,6 +512,7 @@ const OrdersPage = () => {
         </div>
       ),
     },
+
   ];
 
   // Determine which orders to display based on filtering
