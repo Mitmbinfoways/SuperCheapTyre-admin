@@ -103,74 +103,80 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-900">
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg dark:bg-gray-800">
-        <div className="relative mb-6 flex h-24 w-full justify-center">
+      <div className="w-full max-w-md rounded-xl bg-white shadow-lg dark:bg-gray-800">
+        <div className="relative flex h-24 w-full justify-center bg-gray-800 rounded-t-xl">
           <Image
-            src={logo}
+            src={Darklogo}
             alt="Logo"
-            fill
+            width={300}
+            height={80}
             className="object-contain dark:hidden"
+            quality={100}
           />
           <Image
             src={Darklogo}
             alt="Logo"
-            fill
+            width={300}
+            height={80}
             className="hidden object-contain dark:block"
+            quality={100}
           />
         </div>
-        <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Sign in to SuperCheapTyre
-        </h2>
+        <div className="p-8 pt-2">
+          <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Sign in to SuperCheapTyre
+          </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-          <div>
-            <FormLabel label="Email address" required />
-            <TextField
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => handleChange(e, "email")}
-              placeholder="Enter your email"
-              error={fieldErrors.email}
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between">
-              <FormLabel label="Password" required />
-              <div className="mb-2 text-sm">
-                <Link
-                  href="/admin/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            <div>
+              <FormLabel label="Email address" required />
+              <TextField
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => handleChange(e, "email")}
+                placeholder="Enter your email"
+                error={fieldErrors.email}
+              />
             </div>
-            <TextField
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => handleChange(e, "password")}
-              placeholder="Enter your password"
-              error={fieldErrors.password}
-            />
-          </div>
 
-          {errorMessage && (
-            <p className="text-sm text-red-600 dark:text-red-400" role="alert">
-              {errorMessage}
-            </p>
-          )}
+            <div>
+              <div className="flex items-center justify-between">
+                <FormLabel label="Password" required />
+                <div className="mb-2 text-sm">
+                  <Link
+                    href="/admin/forgot-password"
+                    className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+              <TextField
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e) => handleChange(e, "password")}
+                placeholder="Enter your password"
+                error={fieldErrors.password}
+              />
+            </div>
 
-          <Button
-            variant="primary"
-            className="w-full"
-            type="submit"
-          >
-            {isLoading ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
+            {errorMessage && (
+              <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                {errorMessage}
+              </p>
+            )}
+
+            <Button
+              variant="primary"
+              className="w-full"
+              type="submit"
+            >
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -534,7 +534,7 @@ const OrdersPage = () => {
         </div>
 
         <div className="w-full flex justify-end mb-4">
-          <Button variant="primary" onClick={() => router.push('/admin/create-invoice')}>Create Invoice</Button>
+          <Button variant="primary" onClick={() => router.push('/admin/create-invoice')}>Create Order</Button>
         </div>
 
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">
