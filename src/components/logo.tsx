@@ -7,14 +7,14 @@ export function Logo() {
     <div className="relative h-20 flex items-center justify-center">
       <Image
         src={logo}
-        className="w-52 dark:hidden"
+        className="w-44 dark:hidden"
         alt="SuperCheapTyre Admin logo"
         role="presentation"
         quality={100}
       />
       <Image
         src={darkLogo}
-        className="w-56 hidden dark:block"
+        className="w-44 hidden dark:block"
         alt="SuperCheapTyre Admin logo"
         role="presentation"
         quality={100}

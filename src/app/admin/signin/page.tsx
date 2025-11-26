@@ -108,7 +108,7 @@ export default function LoginPage() {
           <Image
             src={Darklogo}
             alt="Logo"
-            width={300}
+            width={200}
             height={80}
             className="object-contain dark:hidden"
             quality={100}
@@ -116,7 +116,7 @@ export default function LoginPage() {
           <Image
             src={Darklogo}
             alt="Logo"
-            width={300}
+            width={200}
             height={80}
             className="hidden object-contain dark:block"
             quality={100}
