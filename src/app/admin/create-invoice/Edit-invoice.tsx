@@ -40,8 +40,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [previousPayments, setPreviousPayments] = useState<any[]>([]);
 
-    console.log(orders)
-
     // Products state
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [loadingStates, setLoadingStates] = useState<LoadingStates>({
@@ -154,7 +152,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                 ]);
             }
         } catch (e: any) {
-            console.log(e)
             Toast({
                 type: "error",
                 message: e?.response?.data?.errorData || "Failed to fetch order details",

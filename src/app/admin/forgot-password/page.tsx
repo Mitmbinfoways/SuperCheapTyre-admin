@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
       setEmail("");
       Toast({ message: "Password reset link sent to mail", type: "success" });
     } catch (err: any) {
-      Toast({ message: err.message || "Something went wrong", type: "error" });
+      Toast({ message: "Something went wrong", type: "error" });
     } finally {
       setIsLoading(false);
     }

@@ -66,7 +66,7 @@ export default function ResetPasswordPage() {
       setConfirmPassword("");
       router.push("/login");
     } catch (err: any) {
-      Toast({ message: err.message || "Something went wrong", type: "error" });
+      Toast({ message: "Something went wrong", type: "error" });
     } finally {
       setIsLoading(false);
     }
