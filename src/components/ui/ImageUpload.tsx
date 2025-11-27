@@ -33,7 +33,7 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   images,
   onChange,
-  maxSizeMB = 5,
+  maxSizeMB,
   maxFiles = 10,
   multiple = true,
   height = "h-32",
@@ -43,7 +43,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   ImageTitle = "Product Image",
   replaceImages = false,
   isMobile = false,
-  video = false,               // ← new prop, default false
+  video = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -60,10 +60,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       // Accept images always, videos only when video={true}
       if (!isImage && !(video && isVideo)) return;
 
-      if (file.size / 1024 / 1024 > maxSizeMB) {
-        alert(`File ${file.name} exceeds ${maxSizeMB}MB`);
-        return;
-      }
+      // if (file.size / 1024 / 1024 > maxSizeMB) {
+      //   alert(`File ${file.name} exceeds ${maxSizeMB}MB`);
+      //   return;
+      // }
 
       const imageItem: ImageItem = {
         id: uuidv4(),

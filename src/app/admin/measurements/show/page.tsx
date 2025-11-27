@@ -267,11 +267,10 @@ const ShowMeasurementsPage = () => {
             <Button
               variant="secondary"
               onClick={handleCloseDeleteDialog}
-              disabled={deleting}
             >
               Cancel
             </Button>
-            <Button variant="danger" onClick={confirmDelete} disabled={deleting}>
+            <Button variant="danger" onClick={confirmDelete}>
               {deleting ? "Deleting..." : "Delete"}
             </Button>
           </div>
