@@ -163,7 +163,7 @@ const ProductListPage: React.FC = () => {
       await deleteProduct(deleteProductId);
       Toast({ type: "success", message: "Product deleted successfully!" });
       handleCloseDeleteDialog();
-      
+
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
@@ -267,21 +267,33 @@ const ProductListPage: React.FC = () => {
   const tableData: ProductWithId[] = products.map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (product: ServiceProduct) => {
-    const updatedStatus = !product.isActive;
+    const productId = product._id;
+    const previousStatus = product.isActive;
+    const updatedStatus = !previousStatus;
+
+    // Optimistic UI update - immediately update the UI
+    setProducts((prev) =>
+      prev.map((p) =>
+        p._id === productId ? { ...p, isActive: updatedStatus } : p,
+      ),
+    );
 
     try {
-      await updateProduct(product._id, { isActive: updatedStatus });
-      setProducts((prev) =>
-        prev.map((p) =>
-          p._id === product._id ? { ...p, isActive: updatedStatus } : p,
-        ),
-      );
-
+      // Make the API call
+      await updateProduct(productId, { isActive: updatedStatus });
+      
       Toast({
         type: "success",
         message: `Product ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
+      // Revert the optimistic update if the API call fails
+      setProducts((prev) =>
+        prev.map((p) =>
+          p._id === productId ? { ...p, isActive: previousStatus } : p,
+        ),
+      );
+      
       Toast({
         type: "error",
         message:
@@ -432,10 +444,13 @@ const ProductListPage: React.FC = () => {
               title="Delete product"
             />
           </Tooltip>
-          <ToggleSwitch
-            checked={item.isActive}
-            onChange={() => handleToggleActive({ ...item } as ServiceProduct)}
-          />
+          <Tooltip
+            content={item.isActive ? "Activate" : "Deactivate"}>
+            <ToggleSwitch
+              checked={item.isActive}
+              onChange={() => handleToggleActive({ ...item } as ServiceProduct)}
+            />
+          </Tooltip>
         </div>
       ),
     },

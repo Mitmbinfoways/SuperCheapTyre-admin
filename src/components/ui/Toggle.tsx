@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 type ToggleSwitchProps = {
   checked: boolean;
@@ -13,6 +13,18 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const [isToggling, setIsToggling] = useState(false);
+  
+  const handleChange = (newChecked: boolean) => {
+    if (disabled) return;
+    
+    setIsToggling(true);
+    onChange(newChecked);
+    
+    // Reset the toggling state after a short delay to ensure smooth animation
+    setTimeout(() => setIsToggling(false), 300);
+  };
+
   return (
     <label
       className={`relative inline-flex items-center ${
@@ -24,11 +36,12 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         className="sr-only"
         checked={checked}
         disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) => handleChange(e.target.checked)}
       />
       <div
         className={`relative h-7 w-12 rounded-full transition-colors duration-300 ease-in-out
           ${checked ? "bg-primary" : "bg-gray-400"}
+          ${isToggling ? "scale-105" : ""}
         `}
       >
         <span

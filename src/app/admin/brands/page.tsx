@@ -148,21 +148,33 @@ const BrandListPage: React.FC = () => {
   const tableData: BrandWithId[] = brands.map((p) => ({ ...p, id: p._id }));
 
   const handleToggleActive = async (brand: Brand) => {
-    const updatedStatus = !brand.isActive;
+    const brandId = brand._id;
+    const previousStatus = brand.isActive;
+    const updatedStatus = !previousStatus;
+
+    // Optimistic UI update - immediately update the UI
+    setBrands((prev) =>
+      prev.map((p) =>
+        p._id === brandId ? { ...p, isActive: updatedStatus } : p,
+      ),
+    );
 
     try {
-      await updateBrand(brand._id, { isActive: updatedStatus });
-      setBrands((prev) =>
-        prev.map((p) =>
-          p._id === brand._id ? { ...p, isActive: updatedStatus } : p,
-        ),
-      );
-
+      // Make the API call
+      await updateBrand(brandId, { isActive: updatedStatus });
+    
       Toast({
         type: "success",
         message: `Brand ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
+      // Revert the optimistic update if the API call fails
+      setBrands((prev) =>
+        prev.map((p) =>
+          p._id === brandId ? { ...p, isActive: previousStatus } : p,
+        ),
+      );
+    
       Toast({
         type: "error",
         message:
@@ -261,10 +273,12 @@ const BrandListPage: React.FC = () => {
               title="Delete brand"
             />
           </Tooltip>
+          <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
           />
+          </Tooltip>
         </div>
       ),
     },

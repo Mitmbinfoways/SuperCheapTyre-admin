@@ -182,21 +182,33 @@ const BannerListPage: React.FC = () => {
       }
     }
 
-    const updatedStatus = !banner.isActive;
+    const bannerId = banner._id;
+    const previousStatus = banner.isActive;
+    const updatedStatus = !previousStatus;
+
+    // Optimistic UI update - immediately update the UI
+    setBanners((prev) =>
+      prev.map((p) =>
+        p._id === bannerId ? { ...p, isActive: updatedStatus } : p,
+      ),
+    );
 
     try {
-      await updateBanner(banner._id, { isActive: updatedStatus });
-      setBanners((prev) =>
-        prev.map((p) =>
-          p._id === banner._id ? { ...p, isActive: updatedStatus } : p,
-        ),
-      );
-
+      // Make the API call
+      await updateBanner(bannerId, { isActive: updatedStatus });
+    
       Toast({
         type: "success",
         message: `Banner ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
+      // Revert the optimistic update if the API call fails
+      setBanners((prev) =>
+        prev.map((p) =>
+          p._id === bannerId ? { ...p, isActive: previousStatus } : p,
+        ),
+      );
+    
       Toast({
         type: "error",
         message:
@@ -320,10 +332,12 @@ const BannerListPage: React.FC = () => {
               title="Delete banner"
             />
           </Tooltip>
+          <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
           />
+          </Tooltip>
         </div>
       ),
     },

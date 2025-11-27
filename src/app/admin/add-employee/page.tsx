@@ -218,19 +218,33 @@ const AddTechnicianPage: React.FC = () => {
   };
 
   const handleToggleActive = async (t: Technician) => {
+    const technicianId = t._id;
+    const previousStatus = t.isActive;
+    const updatedStatus = !previousStatus;
+
+    // Optimistic UI update - immediately update the UI
+    setTechnicians((prev) =>
+      prev.map((tech) =>
+        tech._id === technicianId ? { ...tech, isActive: updatedStatus } : tech,
+      ),
+    );
+
     try {
-      const updatedStatus = !t.isActive;
-      await UpdateTechnician({ id: t._id, isActive: updatedStatus });
-      setTechnicians((prev) =>
-        prev.map((tech) =>
-          tech._id === t._id ? { ...tech, isActive: updatedStatus } : tech,
-        ),
-      );
+      // Make the API call
+      await UpdateTechnician({ id: technicianId, isActive: updatedStatus });
+      
       Toast({
         type: "success",
         message: `Technician ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
+      // Revert the optimistic update if the API call fails
+      setTechnicians((prev) =>
+        prev.map((tech) =>
+          tech._id === technicianId ? { ...tech, isActive: previousStatus } : tech,
+        ),
+      );
+      
       setError({
         apiError: e?.response?.data?.errorData || "Failed to toggle status",
       });
@@ -285,10 +299,12 @@ const AddTechnicianPage: React.FC = () => {
               }}
             />
           </Tooltip>
+          <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
           />
+          </Tooltip>
         </div>
       ),
     },

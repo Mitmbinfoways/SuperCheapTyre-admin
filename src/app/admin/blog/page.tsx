@@ -218,28 +218,37 @@ const BlogListPage: React.FC = () => {
   };
 
   const handleToggleActive = async (blog: Blog) => {
-    updateLoadingState("togglingStatus", true);
+    const blogId = blog._id;
+    const previousStatus = blog.isActive;
+    const updatedStatus = !previousStatus;
+
+    // Optimistic UI update - immediately update the UI
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b._id === blogId ? { ...b, isActive: updatedStatus } : b,
+      ),
+    );
+
     try {
-      const updatedStatus = !blog.isActive;
-      await updateBlog(blog._id, { isActive: updatedStatus });
-
-      setBlogs((prev) =>
-        prev.map((b) =>
-          b._id === blog._id ? { ...b, isActive: updatedStatus } : b,
-        ),
-      );
-
+      // Make the API call
+      await updateBlog(blogId, { isActive: updatedStatus });
+      
       Toast({
         type: "success",
         message: `Blog ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
+      // Revert the optimistic update if the API call fails
+      setBlogs((prev) =>
+        prev.map((b) =>
+          b._id === blogId ? { ...b, isActive: previousStatus } : b,
+        ),
+      );
+      
       Toast({
         type: "error",
         message: e?.response?.data?.errorData || "Failed to update blog status",
       });
-    } finally {
-      updateLoadingState("togglingStatus", false);
     }
   };
 
@@ -364,10 +373,12 @@ const BlogListPage: React.FC = () => {
               title="Delete blog"
             />
           </Tooltip>
+          <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
           <ToggleSwitch
             checked={item.isActive}
             onChange={() => handleToggleActive(item)}
           />
+          </Tooltip>
         </div>
       ),
     },
