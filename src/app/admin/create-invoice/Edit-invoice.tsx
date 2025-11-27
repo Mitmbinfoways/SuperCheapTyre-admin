@@ -177,30 +177,22 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
             }, 0);
     }, [allProducts, selectedProducts, productQuantities]);
 
-    const handleSelectProduct = (product: Product) => {
-        // Check if product is already selected
-        if (!selectedProducts.includes(product._id)) {
-            // Add product to selected products
-            setSelectedProducts((prev) => [...prev, product._id]);
-
-            // Initialize quantity to 1
-            setProductQuantities((prev) => ({
-                ...prev,
-                [product._id]: "1"
-            }));
-
-            // Clear product selection error when a product is added
-            if (errors.products) {
-                setErrors(prev => {
-                    const newErrors = { ...prev };
-                    delete newErrors.products;
-                    return newErrors;
-                });
-            }
-        }
-    };
-
-
+    // Calculate remaining balance
+    const calculateRemainingBalance = useCallback(() => {
+        const subTotal = subtotal();
+        const previousPaymentsTotal = previousPayments.reduce((total, payment) => {
+            const amount = parseFloat(payment.amount) || 0;
+            return total + amount;
+        }, 0);
+        
+        const currentPaymentsTotal = paymentDetails.reduce((total, payment) => {
+            // Only include payments with valid amounts in the total
+            const amount = parseFloat(payment.amount) || 0;
+            return total + amount;
+        }, 0);
+        
+        return subTotal - previousPaymentsTotal - currentPaymentsTotal;
+    }, [subtotal, previousPayments, paymentDetails]);
 
     // Payment details handlers
     const addPaymentDetail = () => {
@@ -221,9 +213,19 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
 
     const updatePaymentDetail = (id: string, field: keyof PaymentDetail, value: string) => {
         setPaymentDetails(prev =>
-            prev.map(payment =>
-                payment.id === id ? { ...payment, [field]: value } : payment
-            )
+            prev.map(payment => {
+                // If status is changed to "full", auto-populate amount with remaining balance
+                if (field === 'status' && value === 'full') {
+                    const remainingBalance = calculateRemainingBalance();
+                    // Add back the current payment's amount to the balance calculation
+                    const currentPayment = prev.find(p => p.id === id);
+                    const currentAmount = currentPayment?.amount ? parseFloat(currentPayment.amount) || 0 : 0;
+                    const adjustedBalance = remainingBalance + currentAmount;
+                    
+                    return payment.id === id ? { ...payment, [field]: value, amount: adjustedBalance.toFixed(2) } : payment;
+                }
+                return payment.id === id ? { ...payment, [field]: value } : payment;
+            })
         );
     };
 
@@ -767,9 +769,34 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                     placeholder="Enter amount"
                                                     value={payment.amount}
                                                     onChange={(e) => {
-                                                        updatePaymentDetail(payment.id, 'amount', e.target.value);
-                                                        // Clear error when user starts typing
-                                                        if (errors[`paymentAmount${index}`]) {
+                                                        const enteredAmount = e.target.value;
+                                                        updatePaymentDetail(payment.id, 'amount', enteredAmount);
+                                                        
+                                                        // Validate amount doesn't exceed remaining balance
+                                                        const amountValue = parseFloat(enteredAmount);
+                                                        if (!isNaN(amountValue) && amountValue > 0) {
+                                                            const remainingBalance = calculateRemainingBalance();
+                                                            // Add back the current payment's amount to the balance calculation
+                                                            const currentAmount = payment.amount ? parseFloat(payment.amount) || 0 : 0;
+                                                            const adjustedBalance = remainingBalance + currentAmount;
+                                                            
+                                                            if (amountValue > adjustedBalance) {
+                                                                setErrors(prev => ({
+                                                                    ...prev,
+                                                                    [`paymentAmount${index}`]: `Payment amount cannot exceed remaining balance of $${adjustedBalance.toFixed(2)}`
+                                                                }));
+                                                            } else if (errors[`paymentAmount${index}`]?.includes("Payment amount cannot exceed")) {
+                                                                // Clear the specific error if amount is now valid
+                                                                setErrors(prev => {
+                                                                    const newErrors = { ...prev };
+                                                                    delete newErrors[`paymentAmount${index}`];
+                                                                    return newErrors;
+                                                                });
+                                                            }
+                                                        }
+                                                        
+                                                        // Clear general error when user starts typing
+                                                        if (errors[`paymentAmount${index}`] && !errors[`paymentAmount${index}`]?.includes("Payment amount cannot exceed")) {
                                                             setErrors(prev => {
                                                                 const newErrors = { ...prev };
                                                                 delete newErrors[`paymentAmount${index}`];
