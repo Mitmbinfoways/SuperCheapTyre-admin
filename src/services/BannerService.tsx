@@ -1,4 +1,4 @@
-import { deleteMethod, getMethod, patchMethod, postMethod } from "./methods";
+import { deleteMethod, getMethod, patchMethod, postMethod, putMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -114,5 +114,13 @@ export const updateBanner = async (
 export const deleteBanner = async (id: string): Promise<ApiResponse<null>> => {
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/banner/${id}`;
   const response = await deleteMethod<ApiResponse<null>>(url);
+  return response.data;
+};
+
+export const updateBannerSequence = async (
+  banners: { _id: string }[],
+): Promise<ApiResponse<null>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/banner/sequence`;
+  const response = await putMethod<ApiResponse<null>>(url, { banners });
   return response.data;
 };
