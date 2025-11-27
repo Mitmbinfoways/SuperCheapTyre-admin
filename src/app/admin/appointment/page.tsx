@@ -447,7 +447,6 @@ const AppointmentsPage = () => {
         )}
       </div>
 
-      {/* Added View Appointment Modal */}
       <CommonDialog
         isOpen={!!viewAppointment}
         onClose={handleCloseViewModal}
@@ -455,57 +454,57 @@ const AppointmentsPage = () => {
         size="lg"
       >
         {viewAppointment && (
-          <div className="space-y-4">
+          <div className="space-y-4 text-base">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Name</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {`${viewAppointment.firstname ?? ""} ${viewAppointment.lastname ?? ""}`.trim() || "-"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Email</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.email || "-"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Phone</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.phone || "-"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Date</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Date</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.date ? new Date(viewAppointment.date).toLocaleDateString() : "-"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Time Slot</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Time Slot</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.slotDetails ?
                     `${viewAppointment.slotDetails.startTime} - ${viewAppointment.slotDetails.endTime}` :
                     "-"}
                 </p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   <Badge label={viewAppointment.status || "-"} color="green" />
                 </p>
               </div>
               <div className="md:col-span-2">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Assigned Technician</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Assigned Technician</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.technicianDetails ?
                     `${viewAppointment.technicianDetails.firstName} ${viewAppointment.technicianDetails.lastName}` :
                     "-"}
                 </p>
               </div>
               <div className="md:col-span-2 max-h-56 overflow-y-auto">
-                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Notes</h3>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Notes</h3>
+                <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                   {viewAppointment.notes || "-"}
                 </p>
               </div>
