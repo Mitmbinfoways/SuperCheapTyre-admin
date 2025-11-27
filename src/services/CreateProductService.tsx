@@ -25,6 +25,7 @@ export interface Product {
   category: string;
   brand: string;
   description?: string;
+  pricetext?: string;  
   images: string[];
   sku: string;
   price: number;

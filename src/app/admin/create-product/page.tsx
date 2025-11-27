@@ -38,6 +38,7 @@ const Page = () => {
     price: "",
     stock: "",
     images: [],
+    pricetext: "",    
     description: "",
     isPopular: false,
     tyreSpecifications: {
@@ -148,6 +149,7 @@ const Page = () => {
           name: product.name || "",
           brand: product.brand || "",
           price: product.price ?? "",
+          pricetext: product.pricetext || "",
           stock: product.stock ?? "",
           images: (product.images || []).map((img: string) => {
             const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -262,6 +264,7 @@ const Page = () => {
         category: category as string,
         description: formData.description || undefined,
         images: imageFiles,
+        pricetext: formData.pricetext || "",
         sku,
         price: Number(formData.price || 0),
         stock: Number(formData.stock || 0),
@@ -294,6 +297,7 @@ const Page = () => {
           brand: "",
           price: "",
           stock: "",
+          pricetext: "",
           images: [],
           description: "",
           tyreSpecifications: {
@@ -515,6 +519,15 @@ const Page = () => {
                         error={errors.stock}
                       />
                     </div>
+                  </div>
+                  <div>
+                    <FormLabel label="Text" />
+                    <TextField
+                      name="pricetext"
+                      value={formData.pricetext}
+                      onChange={handleChange}
+                      placeholder="Enter text"
+                    />
                   </div>
                   <div>
                     <FormLabel label="Description" />
