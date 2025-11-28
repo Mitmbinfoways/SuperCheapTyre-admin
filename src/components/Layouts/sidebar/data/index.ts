@@ -31,9 +31,9 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Orders",
-        url: "/admin/orders",
-        icon: Icons.OrdersIcon,
+        title: "Customer",
+        url: "/admin/customer",
+        icon: Icons.User,
         items: [],
       },
       {

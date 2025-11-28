@@ -5,11 +5,11 @@ import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
 import { getAllProducts, Product } from "@/services/CreateProductService";
 import Pagination from "@/components/ui/Pagination";
 import Image from "next/image";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+
 import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiEye } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
@@ -30,7 +30,6 @@ const OrdersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [formatFilter, setFormatFilter] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -178,204 +177,6 @@ const OrdersPage = () => {
   const getTotalItems = (items: OrderItem[]) =>
     items.reduce((total, item) => total + item.quantity, 0);
 
-  const toggleExpandedOrder = (orderId: string) => {
-    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
-  };
-
-  const renderProductImage = (item: OrderItem) => {
-    const imageUrl = item.productDetails.images?.[0]
-      ? `${process.env.NEXT_PUBLIC_API_URL}/Product/${item.productDetails.images[0]}`
-      : null;
-
-    return imageUrl ? (
-      <div className="h-12 w-12 overflow-hidden rounded">
-        <Image
-          src={imageUrl}
-          alt={item.productDetails.name}
-          width={48}
-          height={48}
-          className="h-full w-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = "none";
-            const parent = target.parentElement;
-            if (parent) {
-              const fallback = document.createElement("div");
-              fallback.className =
-                "h-full w-full bg-gray-200 flex items-center justify-center dark:bg-gray-700";
-              fallback.innerHTML =
-                '<span class="text-xs text-gray-500 dark:text-gray-400">No Image</span>';
-              parent.appendChild(fallback);
-            }
-          }}
-        />
-      </div>
-    ) : (
-      <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          No Image
-        </span>
-      </div>
-    );
-  };
-
-  const renderProductDetails = (items: OrderItem[], orderId: string, order: Order) => {
-    const isExpanded = expandedOrderId === orderId;
-
-    return (
-      <tr>
-        <td colSpan={9} className="p-0">
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-              }`}
-          >
-            <div className="bg-gray-50 p-4 dark:bg-gray-800">
-              <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-200">
-                Product Details
-              </h3>
-
-              {/* Payment Information Section */}
-              <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-700">
-                <h4 className="mb-3 text-md font-semibold text-gray-900 dark:text-gray-100">
-                  Payment Information
-                </h4>
-
-                {Array.isArray(order.payment) ? (
-                  <div className="space-y-4">
-                    {order.payment.map((payment, index) => (
-                      <div key={index} className="rounded-md border border-gray-300 p-3 dark:border-gray-600">
-                        <h5 className="mb-2 font-medium text-gray-800 dark:text-gray-200">
-                          Payment #{index + 1}
-                        </h5>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Method</p>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                              {payment?.method || 'Online'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Status</p>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                              {payment?.status.toLowerCase() || '-'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                              {payment?.currency || 'AU$'} {payment?.amount?.toFixed(2) || '-'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                              {payment?.transactionId || "-"}
-                            </p>
-                          </div>
-                          {payment?.note && (
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
-                              <p className="font-medium text-gray-900 dark:text-gray-100 max-h-28 overflow-y-auto">
-                                {payment?.note}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : order.payment ? (
-                  // Handle single payment object
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Method</p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {order.payment?.method || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Payment Status</p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {order.payment?.status.toLowerCase() || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Amount</p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
-                        AU$ {order.total.toFixed(2)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Currency</p>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">
-                        {order.payment?.currency || 'AU$'}
-                      </p>
-                    </div>
-                    {(order.payment as any)?.transactionId && (
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Transaction ID</p>
-                        <p className="font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
-                          {order.payment?.transactionId}
-                        </p>
-                      </div>
-                    )}
-                    {order.payment?.paidAt && (
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Payment Date</p>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {order.payment?.paidAt ? new Date(order.payment?.paidAt).toLocaleDateString() : '-'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // Handle no payment
-                  <p className="text-gray-600 dark:text-gray-300">No payment information available</p>
-                )}
-
-                {order.payment && !Array.isArray(order.payment) && order.payment?.note && (
-                  <div className="mt-3">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Notes</p>
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
-                      {order.payment?.note}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex items-center gap-4 rounded-lg border bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-700"
-                  >
-                    {renderProductImage(item)}
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {item.productDetails.name}
-                      </h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-300">
-                        SKU: {item.productDetails.sku}
-                      </p>
-                      <div className="mt-2 flex justify-between text-sm">
-                        <span>Qty: {item.quantity}</span>
-                        <span>AU$ {item.productDetails.price.toFixed(2)}</span>
-                      </div>
-                      <div className="mt-1 text-right font-medium text-gray-800 dark:text-gray-100">
-                        Total: AU${" "}
-                        {(item.productDetails.price * item.quantity).toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </td>
-      </tr>
-    );
-  };
-
   const downloadInvoice = (orderId: string) => {
     const link = document.createElement("a");
     link.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/order/download/${orderId}`;
@@ -387,19 +188,11 @@ const OrdersPage = () => {
 
   const columns = [
     {
-      title: "Sr.No",
       key: "index",
       width: "80px",
       render: (_: Order, i: number) => (
         <div className="flex items-center">
           {(currentPage - 1) * pageSize + i + 1}
-          <span className="ml-2 transition-transform duration-300">
-            {expandedOrderId === displayOrders[i]?._id ? (
-              <IoIosArrowUp className="text-gray-500 dark:text-gray-400" />
-            ) : (
-              <IoIosArrowDown className="text-gray-500 dark:text-gray-400" />
-            )}
-          </span>
         </div>
       ),
     },
@@ -438,7 +231,7 @@ const OrdersPage = () => {
     },
     {
       title: "Payment Status",
-      key: "total",
+      key: "paymentStatus",
       render: (order: Order) => {
         // Helper to resolve status safely
         const getPaymentStatus = (): string => {
@@ -474,6 +267,17 @@ const OrdersPage = () => {
       key: "actions",
       render: (order: Order) => (
         <div className="flex items-center justify-center space-x-2">
+          <Tooltip content="View Details">
+            <FiEye
+              size={18}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              title="View Details"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/admin/orders/${order._id}`);
+              }}
+            />
+          </Tooltip>
           <Tooltip content="Download Invoice">
             <FiDownload
               size={18}
@@ -643,11 +447,7 @@ const OrdersPage = () => {
                   {displayOrders.map((order, index) => (
                     <React.Fragment key={order._id}>
                       <tr
-                        className={`cursor-pointer border-b border-gray-200 transition-all duration-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 ${expandedOrderId === order._id
-                          ? "bg-gray-50 dark:bg-gray-800"
-                          : ""
-                          }`}
-                        onClick={() => toggleExpandedOrder(order._id)}
+                        className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800`}
                       >
                         {columns.map((col) => (
                           <td
@@ -661,7 +461,7 @@ const OrdersPage = () => {
                           </td>
                         ))}
                       </tr>
-                      {renderProductDetails(order.items, order._id, order)}
+                      {/* Product details are now only shown on the dedicated order details page */}
                     </React.Fragment>
                   ))}
                 </tbody>
