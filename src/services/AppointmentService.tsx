@@ -22,6 +22,7 @@ export interface Appointment {
   };
   timeSlotId: string;
   notes: string;
+  Employee?: string;
 }
 
 type Pagination = {
@@ -105,5 +106,27 @@ export const updateAppointment = async (
     ApiResponse<Appointment>,
     UpdateAppointmentPayload
   >(url, payload);
+  return response.data;
+};
+
+export const getAppointmentById = async (
+  id: string
+): Promise<ApiResponse<Appointment>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/appointment/${id}`;
+  const response = await getMethod<ApiResponse<Appointment>>(url);
+  return response.data;
+};
+
+export const getAvailableSlots = async (
+  date: string,
+  timeSlotId?: string
+): Promise<ApiResponse<{ date: string; slots: any[] }>> => {
+  let url = `${AUTH_SERVICE_BASE_URL}/api/v1/appointment/slots?date=${date}`;
+  if (timeSlotId) {
+    url += `&timeSlotId=${timeSlotId}`;
+  }
+  const response = await getMethod<ApiResponse<{ date: string; slots: any[] }>>(
+    url
+  );
   return response.data;
 };

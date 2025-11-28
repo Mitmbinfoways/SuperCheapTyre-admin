@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import useDebounce from "@/hooks/useDebounce";
 import {
   GetAllAppointments,
@@ -8,18 +9,17 @@ import {
   updateAppointment,
 } from "@/services/AppointmentService";
 import Pagination from "@/components/ui/Pagination";
-import { RxCross2 } from "react-icons/rx";
 import TextField from "@/components/ui/TextField";
 import { Toast } from "@/components/ui/Toast";
 import Table, { Column } from "@/components/ui/table";
 import { MdModeEdit } from "react-icons/md";
-import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
+import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 import Select from "@/components/ui/Select";
 import EmptyState from "@/components/EmptyState";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
-import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
+import CommonDialog from "@/components/ui/Dialogbox";
 import Tooltip from "@/components/ui/Tooltip";
 import DatePicker from "@/components/ui/DatePicker";
 
@@ -37,6 +37,7 @@ interface ExtendedAppointment extends Appointment {
 }
 
 const AppointmentsPage = () => {
+  const router = useRouter();
   const [appointments, setAppointments] = useState<ExtendedAppointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,14 +48,13 @@ const AppointmentsPage = () => {
   const [technicianOptions, setTechnicianOptions] = useState<
     { label: string; value: string }[]
   >([]);
-  const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null); // Added state for view appointment
-  const [dateFilter, setDateFilter] = useState("all"); // Date filter state
-  const [customStartDate, setCustomStartDate] = useState(""); // Custom start date
-  const [customEndDate, setCustomEndDate] = useState(""); // Custom end date
+  const [viewAppointment, setViewAppointment] = useState<ExtendedAppointment | null>(null);
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const itemsPerPage = 10;
   const [totalAppointments, setTotalAppointments] = useState<number>(0);
 
-  // Function to format date for input without timezone issues
   const formatDateForInput = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -64,13 +64,11 @@ const AppointmentsPage = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
 
-  // Filter appointments based on date filter
   const filteredAppointments = useMemo(() => {
     if (!appointments) return [];
 
     let filtered = [...appointments];
 
-    // Apply date filter
     if (dateFilter !== "all") {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -94,9 +92,9 @@ const AppointmentsPage = () => {
             return appointmentDate.getTime() === tomorrow.getTime();
           case "thisWeek":
             const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+            weekStart.setDate(today.getDate() - today.getDay());
             const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6); // Saturday
+            weekEnd.setDate(weekStart.getDate() + 6);
             return appointmentDate >= weekStart && appointmentDate <= weekEnd;
           case "thisMonth":
             return appointmentDate.getMonth() === today.getMonth() &&
@@ -109,14 +107,13 @@ const AppointmentsPage = () => {
               endDate.setHours(23, 59, 59, 999);
               return appointmentDate >= startDate && appointmentDate <= endDate;
             }
-            return true; // If no custom dates selected, show all
+            return true;
           default:
             return true;
         }
       });
     }
 
-    // Apply search filter
     if (debounceSearch) {
       const searchLower = debounceSearch.toLowerCase();
       filtered = filtered.filter(appointment =>
@@ -130,13 +127,11 @@ const AppointmentsPage = () => {
     return filtered;
   }, [appointments, dateFilter, customStartDate, customEndDate, debounceSearch]);
 
-  // Paginate filtered appointments
   const paginatedAppointments = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredAppointments.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredAppointments, currentPage, itemsPerPage]);
 
-  // Update total pages based on filtered appointments
   const filteredTotalPages = useMemo(() => {
     return Math.ceil(filteredAppointments.length / itemsPerPage);
   }, [filteredAppointments.length, itemsPerPage]);
@@ -146,13 +141,12 @@ const AppointmentsPage = () => {
       const data = await GetTechnicians();
       const { items } = data.data;
 
-      // Create a unified list for all technicians
       const allOptions = items.map((tech: any) => ({
         label: `${tech.firstName} ${tech.lastName}`,
         value: tech._id,
         isActive: tech.isActive,
       }));
-      const activeOptions = allOptions.filter((tech) => tech.isActive);
+      const activeOptions = allOptions.filter((tech: any) => tech.isActive);
       setTechnicianOptions(activeOptions);
     } catch (e: any) {
       const errorMessage =
@@ -218,12 +212,10 @@ const AppointmentsPage = () => {
     [appointments, fetchAppointments],
   );
 
-  // Added function to handle view appointment
   const handleViewAppointment = (appointment: ExtendedAppointment) => {
     setViewAppointment(appointment);
   };
 
-  // Added function to close view modal
   const handleCloseViewModal = () => {
     setViewAppointment(null);
   };
@@ -268,11 +260,6 @@ const AppointmentsPage = () => {
           "-"
         ),
     },
-    // {
-    //   title: "Status",
-    //   key: "status",
-    //   render: (item) => <Badge label={item.status || "-"} color="green" />,
-    // },
     {
       title: "Notes",
       key: "notes",
@@ -304,7 +291,6 @@ const AppointmentsPage = () => {
       align: "right",
       render: (item) => (
         <div className="flex items-center justify-end space-x-3">
-          {/* Added View Icon */}
           <Tooltip
             content="View appointment">
             <button
@@ -315,31 +301,16 @@ const AppointmentsPage = () => {
               <EyeIcon className="h-5 w-5" />
             </button>
           </Tooltip>
-          {editingId === item._id ? (
-            <>
-              <Tooltip
-                content="Close">
-                <button
-                  onClick={() => setEditingId(null)}
-                  className="cursor-pointer text-red-600"
-                  aria-label="Cancel edit"
-                >
-                  <RxCross2 size={22} />
-                </button>
-              </Tooltip>
-            </>
-          ) : (
-            <Tooltip
-              content="Edit Appointment">
-              <button
-                onClick={() => setEditingId(item._id)}
-                className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                aria-label="Edit appointment"
-              >
-                <MdModeEdit size={16} />
-              </button>
-            </Tooltip>
-          )}
+          <Tooltip
+            content="Edit Appointment">
+            <button
+              onClick={() => router.push(`/admin/appointment/edit/${item._id}`)}
+              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              aria-label="Edit appointment"
+            >
+              <MdModeEdit size={16} />
+            </button>
+          </Tooltip>
         </div>
       ),
     },
@@ -364,8 +335,6 @@ const AppointmentsPage = () => {
       </h1>
 
       <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-
-        {/* Search */}
         <div className="flex flex-col gap-1">
           <TextField
             type="text"
@@ -375,7 +344,6 @@ const AppointmentsPage = () => {
           />
         </div>
 
-        {/* Date Filter Dropdown */}
         <div className="flex flex-col gap-1">
           <Select
             value={dateFilter}
@@ -393,7 +361,6 @@ const AppointmentsPage = () => {
           />
         </div>
 
-        {/* Start Date */}
         {dateFilter === "custom" && (
           <div className="flex gap-2 w-full">
             <DatePicker
@@ -416,9 +383,7 @@ const AppointmentsPage = () => {
             />
           </div>
         )}
-
       </div>
-
 
       <div>
         {loading ? (
