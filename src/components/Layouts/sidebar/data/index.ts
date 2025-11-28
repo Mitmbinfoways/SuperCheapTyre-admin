@@ -25,6 +25,20 @@ export const NAV_DATA = [
         ],
       },
       {
+        title: "Services",
+        icon: Icons.PackageIcon,
+        items: [
+          {
+            title: "Manage Services",
+            url: "/admin/services",
+          },
+          {
+            title: "Create Service",
+            url: "/admin/create-service",
+          },
+        ],
+      },
+      {
         title: "Appointments",
         url: "/admin/appointment",
         icon: Icons.CalendarDaysIcon,
