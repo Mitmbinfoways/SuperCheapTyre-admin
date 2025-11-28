@@ -38,7 +38,7 @@ const Page = () => {
     price: "",
     stock: "",
     images: [],
-    pricetext: "",    
+    pricetext: "",
     description: "",
     isPopular: false,
     tyreSpecifications: {
@@ -521,7 +521,7 @@ const Page = () => {
                     </div>
                   </div>
                   <div>
-                    <FormLabel label="Text" />
+                    <FormLabel label="Price Note" />
                     <TextField
                       name="pricetext"
                       value={formData.pricetext}

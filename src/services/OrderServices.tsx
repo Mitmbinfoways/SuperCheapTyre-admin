@@ -21,6 +21,7 @@ export interface Appointment {
   date: string;
   slotId: string;
   timeSlotId: string;
+  time: string;
   _id: string;
 }
 
@@ -92,6 +93,12 @@ export const getAllOrders = async (
     }`;
 
   const response = await getMethod<ApiResponse<OrderRes>>(url);
+  return response.data;
+};
+
+export const getOrderById = async (orderId: string): Promise<ApiResponse<{ order: Order }>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order/${orderId}`;
+  const response = await getMethod<ApiResponse<{ order: Order }>>(url);
   return response.data;
 };
 
