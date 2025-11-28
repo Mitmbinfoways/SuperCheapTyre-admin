@@ -4,13 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import EditInvoice from "@/app/admin/create-invoice/Edit-invoice";
 
-interface EditOrderPageProps {
-    params: {
-        id: string;
-    };
-}
-
-const EditOrderPage: React.FC<EditOrderPageProps> = ({ params }) => {
+const EditOrderPage: React.FC<any> = ({ params }) => {
     const router = useRouter();
     const { id } = params;
 
