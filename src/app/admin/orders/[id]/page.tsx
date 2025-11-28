@@ -131,7 +131,7 @@ const OrderDetailsPage = () => {
                 <div className="flex items-center gap-4">
                     <Button
                         variant="secondary"
-                        className="p-2 rounded-full h-10 w-10 flex items-center justify-center"
+                        className="p-2 rounded-full flex items-center justify-center"
                         onClick={() => router.back()}
                     >
                         <IoArrowBack size={20} />
@@ -146,14 +146,14 @@ const OrderDetailsPage = () => {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button
+                    {/* <Button
                         variant="secondary"
                         onClick={() => downloadInvoice(order._id)}
                         className="flex items-center gap-2"
                     >
                         <FiDownload size={16} />
                         <span className="hidden sm:inline">Download Invoice</span>
-                    </Button>
+                    </Button> */}
                     {!isFullPayment && (
                         <Button
                             variant="primary"
@@ -216,14 +216,13 @@ const OrderDetailsPage = () => {
                                                     <h5 className="font-medium text-gray-900 dark:text-white">
                                                         Payment #{index + 1}
                                                     </h5>
-                                                    <Button
-                                                        variant="secondary"
-                                                        className="h-6 w-6 p-0 flex items-center justify-center rounded-full"
+                                                    <button
                                                         onClick={() => downloadInvoice(order._id, payment._id)}
+                                                        className="ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
                                                         title="Download Receipt"
                                                     >
-                                                        <FiDownload size={12} />
-                                                    </Button>
+                                                        <FiDownload size={16} />&nbsp; Download Invoice
+                                                    </button>
                                                 </div>
                                                 <span className={`px-2 py-1 rounded text-xs font-medium ${payment.status === 'full' || payment.status === 'completed'
                                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'

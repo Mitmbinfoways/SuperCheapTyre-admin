@@ -30,7 +30,7 @@ import { SearchIcon } from "@/components/ui/icons";
 // Stepper Component
 const Stepper = ({ currentStep }: { currentStep: number }) => {
     return (
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-start justify-start mb-8">
             <div className="flex items-center">
                 <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep >= 1
@@ -569,7 +569,7 @@ const OfflineCustomerPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-4 border-t">
+                        <div className="flex justify-end pt-4">
                             <Button variant="primary" type="submit">
                                 Next Step
                             </Button>

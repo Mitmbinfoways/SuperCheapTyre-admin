@@ -52,7 +52,16 @@ const CustomerPage = () => {
                 itemsPerPage,
                 search: debounceSearch,
             });
-            setAppointments(res.data.items);
+
+            // Filter for unique emails
+            const uniqueAppointments = res.data.items.filter((item, index, self) => {
+                if (!item.email) return true;
+                return index === self.findIndex((t) => (
+                    t.email === item.email
+                ));
+            });
+
+            setAppointments(uniqueAppointments);
             setTotalPages(res.data.pagination.totalPages || 1);
             setTotalCustomers(res.data.pagination.totalItems || 0);
         } catch (err: any) {
@@ -221,7 +230,7 @@ const CustomerPage = () => {
                                     {viewCustomer.phone || "-"}
                                 </p>
                             </div>
-                             {/* <div>
+                            {/* <div>
                                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Appointment Date</h3>
                                 <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
                                     {viewCustomer.date ? new Date(viewCustomer.date).toLocaleDateString() : "-"}
