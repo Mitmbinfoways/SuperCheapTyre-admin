@@ -102,7 +102,7 @@ export const getOrderById = async (orderId: string): Promise<ApiResponse<{ order
   return response.data;
 };
 
-export interface CreateLocalOrderPayload {
+export interface CreateOrderPayload {
   items: Array<{
     id: string;
     quantity: number;
@@ -110,8 +110,7 @@ export interface CreateLocalOrderPayload {
   subtotal: number;
   total: number;
   customer: {
-    firstName: string;
-    lastName: string;
+    name: string;
     phone: string;
     email?: string;
   };
@@ -122,13 +121,14 @@ export interface CreateLocalOrderPayload {
     currency: string;
     note: string;
   };
+  appointmentId?: string;
 }
 
-export const CreateLocalOrder = async (
-  payload: CreateLocalOrderPayload,
+export const createOrder = async (
+  payload: CreateOrderPayload,
 ): Promise<ApiResponse<Order>> => {
-  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order/local`;
-  const response = await postMethod<ApiResponse<Order>, CreateLocalOrderPayload>(url, payload);
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/order`;
+  const response = await postMethod<ApiResponse<Order>, CreateOrderPayload>(url, payload);
   return response.data;
 };
 

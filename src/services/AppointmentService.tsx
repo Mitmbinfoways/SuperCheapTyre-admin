@@ -1,4 +1,4 @@
-import { getMethod, patchMethod } from "./methods";
+import { getMethod, patchMethod, postMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -106,6 +106,17 @@ export const updateAppointment = async (
     ApiResponse<Appointment>,
     UpdateAppointmentPayload
   >(url, payload);
+  return response.data;
+};
+
+export const createAppointment = async (
+  payload: AppointmentPayload
+): Promise<ApiResponse<Appointment>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/appointment`;
+  const response = await postMethod<ApiResponse<Appointment>, AppointmentPayload>(
+    url,
+    payload
+  );
   return response.data;
 };
 

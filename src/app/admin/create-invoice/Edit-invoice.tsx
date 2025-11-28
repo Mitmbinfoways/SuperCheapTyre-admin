@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getAllOrders, Order, updateOrder } from "@/services/OrderServices";
+import { getAllOrders, Order, updateOrder, getOrderById } from "@/services/OrderServices";
 import { getAllProducts, Product } from "@/services/CreateProductService";
 import TextField from "@/components/ui/TextField";
 import Select from "@/components/ui/Select";
@@ -20,6 +20,8 @@ type LoadingStates = {
 
 interface EditInvoiceProps {
     onBack: () => void;
+    initialOrderId?: string | null;
+    disableOrderSelect?: boolean;
 }
 
 // Define payment interface
@@ -31,12 +33,12 @@ interface PaymentDetail {
     note: string;
 }
 
-const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
+const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disableOrderSelect = false }) => {
     const router = useRouter();
 
     // Orders state
     const [orders, setOrders] = useState<Order[]>([]);
-    const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+    const [selectedOrderId, setSelectedOrderId] = useState<string>(initialOrderId || '');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [previousPayments, setPreviousPayments] = useState<any[]>([]);
 
@@ -65,6 +67,8 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
 
     // Fetch orders for the dropdown
     const fetchOrders = useCallback(async () => {
+        if (disableOrderSelect) return;
+
         setLoadingStates(prev => ({ ...prev, fetchingOrders: true }));
         try {
             const response = await getAllOrders({
@@ -89,7 +93,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
         } finally {
             setLoadingStates(prev => ({ ...prev, fetchingOrders: false }));
         }
-    }, []);
+    }, [disableOrderSelect]);
 
     // Fetch all products
     const fetchAllProducts = useCallback(async () => {
@@ -114,8 +118,18 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
         if (!orderId) return;
 
         try {
-            // Find order in existing orders
-            const order = orders.find(o => o._id === orderId);
+            let order = orders.find(o => o._id === orderId);
+
+            // If order not found in the list (e.g. passed via props but not in partial list), fetch it directly
+            if (!order) {
+                try {
+                    const response = await getOrderById(orderId);
+                    order = response.data.order;
+                } catch (err) {
+                    console.error("Failed to fetch specific order", err);
+                }
+            }
+
             if (order) {
                 setSelectedOrder(order);
                 // Populate form fields with order data
@@ -144,8 +158,8 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                 setPaymentDetails([
                     {
                         id: Date.now().toString(),
-                        method: order.payment.method || 'cash',
-                        status: order.payment.status,
+                        method: order.payment && !Array.isArray(order.payment) ? order.payment.method : 'cash',
+                        status: 'full', // Default to full for new payment
                         amount: '',
                         note: ''
                     }
@@ -164,6 +178,14 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
         setSelectedOrderId(orderId);
         fetchOrderDetails(orderId);
     };
+
+    // Effect to handle initialOrderId
+    useEffect(() => {
+        if (initialOrderId) {
+            setSelectedOrderId(initialOrderId);
+            fetchOrderDetails(initialOrderId);
+        }
+    }, [initialOrderId, fetchOrderDetails]);
 
     // Calculate subtotal based on selected products and quantities
     const subtotal = useCallback(() => {
@@ -184,13 +206,13 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
             const amount = parseFloat(payment.amount) || 0;
             return total + amount;
         }, 0);
-        
+
         const currentPaymentsTotal = paymentDetails.reduce((total, payment) => {
             // Only include payments with valid amounts in the total
             const amount = parseFloat(payment.amount) || 0;
             return total + amount;
         }, 0);
-        
+
         return subTotal - previousPaymentsTotal - currentPaymentsTotal;
     }, [subtotal, previousPayments, paymentDetails]);
 
@@ -221,7 +243,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                     const currentPayment = prev.find(p => p.id === id);
                     const currentAmount = currentPayment?.amount ? parseFloat(currentPayment.amount) || 0 : 0;
                     const adjustedBalance = remainingBalance + currentAmount;
-                    
+
                     return payment.id === id ? { ...payment, [field]: value, amount: adjustedBalance.toFixed(2) } : payment;
                 }
                 return payment.id === id ? { ...payment, [field]: value } : payment;
@@ -414,30 +436,32 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
             </div>
 
             <div className="space-y-6">
-                <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Select Order to Edit</h3>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Select Order
-                            </label>
-                            <Select
-                                value={selectedOrderId}
-                                onChange={(value) => handleOrderSelect(value)}
-                                options={orders.map(order => ({
-                                    label: `Order #${order._id.substring(0, 8)} - ${order.customer.name} - ${order.customer.phone} (${new Date(order.createdAt).toLocaleDateString()})`,
-                                    value: order._id
-                                }))}
-                                placeholder="Select an order to edit"
-                                className="w-full"
-                                disabled={loadingStates.fetchingOrders}
-                            />
-                            {loadingStates.fetchingOrders && (
-                                <p className="text-sm text-gray-500 mt-1">Loading orders...</p>
-                            )}
+                {!disableOrderSelect && (
+                    <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+                        <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Select Order to Edit</h3>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Select Order
+                                </label>
+                                <Select
+                                    value={selectedOrderId}
+                                    onChange={(value) => handleOrderSelect(value)}
+                                    options={orders.map(order => ({
+                                        label: `Order #${order._id.substring(0, 8)} - ${order.customer.name} - ${order.customer.phone} (${new Date(order.createdAt).toLocaleDateString()})`,
+                                        value: order._id
+                                    }))}
+                                    placeholder="Select an order to edit"
+                                    className="w-full"
+                                    disabled={loadingStates.fetchingOrders}
+                                />
+                                {loadingStates.fetchingOrders && (
+                                    <p className="text-sm text-gray-500 mt-1">Loading orders...</p>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {selectedOrder && (
                     <form className="space-y-6" onSubmit={handleUpdateInvoice}>
@@ -771,7 +795,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                     onChange={(e) => {
                                                         const enteredAmount = e.target.value;
                                                         updatePaymentDetail(payment.id, 'amount', enteredAmount);
-                                                        
+
                                                         // Validate amount doesn't exceed remaining balance
                                                         const amountValue = parseFloat(enteredAmount);
                                                         if (!isNaN(amountValue) && amountValue > 0) {
@@ -779,7 +803,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                             // Add back the current payment's amount to the balance calculation
                                                             const currentAmount = payment.amount ? parseFloat(payment.amount) || 0 : 0;
                                                             const adjustedBalance = remainingBalance + currentAmount;
-                                                            
+
                                                             if (amountValue > adjustedBalance) {
                                                                 setErrors(prev => ({
                                                                     ...prev,
@@ -794,7 +818,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                                 });
                                                             }
                                                         }
-                                                        
+
                                                         // Clear general error when user starts typing
                                                         if (errors[`paymentAmount${index}`] && !errors[`paymentAmount${index}`]?.includes("Payment amount cannot exceed")) {
                                                             setErrors(prev => {
@@ -808,12 +832,12 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                                 />
                                                 {errors[`paymentAmount${index}`] && <p className="text-red-500 text-sm mt-1">{errors[`paymentAmount${index}`]}</p>}
                                             </div>
-                                            <div>
+                                            <div className="sm:col-span-2">
                                                 <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Notes
                                                 </label>
                                                 <textarea
-                                                    rows={2}
+                                                    rows={3}
                                                     placeholder="Enter payment notes"
                                                     value={payment.note}
                                                     onChange={(e) => updatePaymentDetail(payment.id, 'note', e.target.value)}
@@ -823,19 +847,19 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack }) => {
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                        </div>
 
-                        <div className="flex justify-end space-x-3 pt-4">
-                            <Button variant="secondary" onClick={handleCancel}>
-                                Back
-                            </Button>
-                            <Button
-                                variant="primary"
-                                type="submit"
-                            >
-                                Update Invoice
-                            </Button>
+                                <div className="flex justify-end space-x-3 pt-4">
+                                    <Button variant="secondary" onClick={handleCancel}>
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        type="submit"
+                                    >
+                                        Update Invoice
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 )}

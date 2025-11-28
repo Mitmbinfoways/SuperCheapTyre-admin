@@ -24,6 +24,7 @@ export const NAV_DATA = [
           },
         ],
       },
+
       {
         title: "Services",
         icon: Icons.PackageIcon,
@@ -45,9 +46,21 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Customer",
+        title: "Customer List",
         url: "/admin/customer",
         icon: Icons.User,
+        items: []
+      },
+      {
+        title: "Offline Customer",
+        url: "/admin/offline-customer",
+        icon: Icons.User,
+        items: [],
+      },
+      {
+        title: "Orders",
+        url: "/admin/orders",
+        icon: Icons.OrdersIcon,
         items: [],
       },
       {

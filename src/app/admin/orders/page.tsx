@@ -2,14 +2,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
-import { getAllProducts, Product } from "@/services/CreateProductService";
 import Pagination from "@/components/ui/Pagination";
-import Image from "next/image";
 
 import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { FiDownload, FiEye } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
@@ -177,15 +175,6 @@ const OrdersPage = () => {
   const getTotalItems = (items: OrderItem[]) =>
     items.reduce((total, item) => total + item.quantity, 0);
 
-  const downloadInvoice = (orderId: string) => {
-    const link = document.createElement("a");
-    link.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/order/download/${orderId}`;
-    link.setAttribute("download", `invoice-${orderId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
-
   const columns = [
     {
       key: "index",
@@ -278,21 +267,9 @@ const OrdersPage = () => {
               }}
             />
           </Tooltip>
-          <Tooltip content="Download Invoice">
-            <FiDownload
-              size={18}
-              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              title="Download"
-              onClick={(e) => {
-                e.stopPropagation();
-                downloadInvoice(order._id);
-              }}
-            />
-          </Tooltip>
         </div>
       ),
     },
-
   ];
 
   // Determine which orders to display based on filtering
@@ -335,10 +312,6 @@ const OrdersPage = () => {
                 .toFixed(2)}
             </span>
           </h2>
-        </div>
-
-        <div className="w-full flex justify-end mb-4">
-          <Button variant="primary" onClick={() => router.push('/admin/create-invoice')}>Create Order</Button>
         </div>
 
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">

@@ -7,6 +7,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import { IoArrowBack } from "react-icons/io5";
+import { FiDownload } from "react-icons/fi";
 
 const OrderDetailsPage = () => {
     const params = useParams();
@@ -34,6 +35,19 @@ const OrderDetailsPage = () => {
 
         fetchOrder();
     }, [id]);
+
+    const downloadInvoice = (orderId: string, paymentId?: string) => {
+        const link = document.createElement("a");
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/order/download/${orderId}`;
+        if (paymentId) {
+            url += `?paymentId=${paymentId}`;
+        }
+        link.href = url;
+        link.setAttribute("download", `invoice-${orderId}${paymentId ? `-${paymentId}` : ''}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
 
     if (loading) {
         return (
@@ -105,23 +119,49 @@ const OrderDetailsPage = () => {
 
     const isPartial = order ? paidAmount < order.total - 0.01 : false;
 
+    const isFullPayment = order ? (
+        Array.isArray(order.payment)
+            ? order.payment.some(p => p.status?.toLowerCase() === 'full')
+            : order.payment?.status?.toLowerCase() === 'full'
+    ) : false;
+
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-            <div className="mb-6 flex items-center gap-4">
-                <Button
-                    variant="secondary"
-                    className="p-2 rounded-full h-10 w-10 flex items-center justify-center"
-                    onClick={() => router.back()}
-                >
-                    <IoArrowBack size={20} />
-                </Button>
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Order Details
-                    </h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        ID: {order._id}
-                    </p>
+            <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <Button
+                        variant="secondary"
+                        className="p-2 rounded-full h-10 w-10 flex items-center justify-center"
+                        onClick={() => router.back()}
+                    >
+                        <IoArrowBack size={20} />
+                    </Button>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Order Details
+                        </h1>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            ID: {order._id}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="secondary"
+                        onClick={() => downloadInvoice(order._id)}
+                        className="flex items-center gap-2"
+                    >
+                        <FiDownload size={16} />
+                        <span className="hidden sm:inline">Download Invoice</span>
+                    </Button>
+                    {!isFullPayment && (
+                        <Button
+                            variant="primary"
+                            onClick={() => router.push(`/admin/orders/${order._id}/edit`)}
+                        >
+                            Edit Invoice
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -172,9 +212,19 @@ const OrderDetailsPage = () => {
                                     {order.payment.map((payment, index) => (
                                         <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                                             <div className="flex justify-between items-start mb-2">
-                                                <h5 className="font-medium text-gray-900 dark:text-white">
-                                                    Payment #{index + 1}
-                                                </h5>
+                                                <div className="flex items-center gap-2">
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">
+                                                        Payment #{index + 1}
+                                                    </h5>
+                                                    <Button
+                                                        variant="secondary"
+                                                        className="h-6 w-6 p-0 flex items-center justify-center rounded-full"
+                                                        onClick={() => downloadInvoice(order._id, payment._id)}
+                                                        title="Download Receipt"
+                                                    >
+                                                        <FiDownload size={12} />
+                                                    </Button>
+                                                </div>
                                                 <span className={`px-2 py-1 rounded text-xs font-medium ${payment.status === 'full' || payment.status === 'completed'
                                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                                                     : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'

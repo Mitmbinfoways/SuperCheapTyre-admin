@@ -44,12 +44,13 @@ export interface ApiResponse<T> {
 
 // API functions
 export const getAllTimeSlots = async (
-  filter: { page?: number; limit?: number; search?: string } = {}
+  filter: { page?: number; limit?: number; search?: string; isActive?: boolean } = {}
 ): Promise<ApiResponse<TimeSlot[]>> => {
   const params: string[] = [];
   if (filter.page !== undefined) params.push(`page=${filter.page}`);
   if (filter.limit !== undefined) params.push(`limit=${filter.limit}`);
   if (filter.search) params.push(`search=${encodeURIComponent(filter.search)}`);
+  if (filter.isActive !== undefined) params.push(`isActive=${filter.isActive}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/timeslot${params.length ? `?${params.join("&")}` : ""}`;
   const response = await getMethod<ApiResponse<TimeSlot[]>>(url);
