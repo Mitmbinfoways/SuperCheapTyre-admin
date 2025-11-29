@@ -73,6 +73,20 @@ const EditAppointmentPage = () => {
     }
   }, []);
 
+  const fetchSlots = useCallback(async (selectedDate: Date, tSlotId?: string) => {
+    try {
+      setLoadingSlots(true);
+      const dateStr = formatDateForInput(selectedDate);
+      const res = await getAvailableSlots(dateStr, tSlotId);
+      setAvailableSlots(res.data.slots || []);
+    } catch (error) {
+      console.error("Failed to load slots", error);
+      Toast({ message: "Failed to load time slots", type: "error" });
+    } finally {
+      setLoadingSlots(false);
+    }
+  }, []);
+
   const fetchAppointment = useCallback(async () => {
     try {
       setLoading(true);
@@ -105,21 +119,9 @@ const EditAppointmentPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, router]);
+  }, [id, router, fetchSlots]);
 
-  const fetchSlots = async (selectedDate: Date, tSlotId?: string) => {
-    try {
-      setLoadingSlots(true);
-      const dateStr = formatDateForInput(selectedDate);
-      const res = await getAvailableSlots(dateStr, tSlotId);
-      setAvailableSlots(res.data.slots || []);
-    } catch (error) {
-      console.error("Failed to load slots", error);
-      Toast({ message: "Failed to load time slots", type: "error" });
-    } finally {
-      setLoadingSlots(false);
-    }
-  };
+
 
   useEffect(() => {
     fetchTechnicians();

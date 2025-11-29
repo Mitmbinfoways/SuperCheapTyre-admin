@@ -156,11 +156,7 @@ const OrderDetailsPage = () => {
 
     const isPartial = order ? paidAmount < order.total - 0.01 : false;
 
-    const isFullPayment = order ? (
-        Array.isArray(order.payment)
-            ? order.payment.some(p => p.status?.toLowerCase() === 'full')
-            : order.payment?.status?.toLowerCase() === 'full'
-    ) : false;
+    const isFullPayment = order ? (paidAmount >= effectiveTotal - 0.01) : false;
 
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
@@ -270,54 +266,62 @@ const OrderDetailsPage = () => {
                         <div className="p-4">
                             {Array.isArray(order.payment) ? (
                                 <div className="space-y-4">
-                                    {order.payment.map((payment, index) => (
-                                        <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <h5 className="font-medium text-gray-900 dark:text-white">
-                                                        Payment #{index + 1}
-                                                    </h5>
-                                                    <button
-                                                        onClick={() => downloadInvoice(order._id, payment._id)}
-                                                        className="ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
-                                                        title="Download Receipt"
-                                                    >
-                                                        <FiDownload size={16} />&nbsp; Download Invoice
-                                                    </button>
+                                    {order.payment.map((payment, index) => {
+                                        // Determine display status: if order is fully paid and this is the only payment (or a significant one), show FULL
+                                        // But to be safe, if order is fully paid and this payment amount >= total, it's definitely FULL
+                                        const payments = order.payment as unknown as any[];
+                                        const isEffectiveFull = isFullPayment && (payments.length === 1 || payment.amount >= order.total - 0.01);
+                                        const displayStatus = isEffectiveFull ? 'FULL' : payment.status.toUpperCase();
+                                        const statusColorClass = (displayStatus === 'FULL' || displayStatus === 'COMPLETED')
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+
+                                        return (
+                                            <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <h5 className="font-medium text-gray-900 dark:text-white">
+                                                            Payment #{index + 1}
+                                                        </h5>
+                                                        <button
+                                                            onClick={() => downloadInvoice(order._id, payment._id)}
+                                                            className="ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
+                                                            title="Download Receipt"
+                                                        >
+                                                            <FiDownload size={16} />&nbsp; Download Invoice
+                                                        </button>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${statusColorClass}`}>
+                                                        {displayStatus}
+                                                    </span>
                                                 </div>
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${payment.status === 'full' || payment.status === 'completed'
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                                    }`}>
-                                                    {payment.status.toUpperCase()}
-                                                </span>
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-500 dark:text-gray-400">Method</p>
+                                                        <p className="font-medium text-gray-900 dark:text-white">{payment.method || 'Online'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-500 dark:text-gray-400">Amount</p>
+                                                        <p className="font-medium text-gray-900 dark:text-white">
+                                                            {payment.currency || 'AU$'} {payment.amount?.toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                        <p className="text-gray-500 dark:text-gray-400">Transaction ID</p>
+                                                        <p className="font-medium text-gray-900 dark:text-white break-all">
+                                                            {payment.transactionId || '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {payment.note && (
+                                                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                                        <p className="text-gray-500 dark:text-gray-400 text-xs">Notes</p>
+                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{payment.note}</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                                                <div>
-                                                    <p className="text-gray-500 dark:text-gray-400">Method</p>
-                                                    <p className="font-medium text-gray-900 dark:text-white">{payment.method || 'Online'}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-500 dark:text-gray-400">Amount</p>
-                                                    <p className="font-medium text-gray-900 dark:text-white">
-                                                        {payment.currency || 'AU$'} {payment.amount?.toFixed(2)}
-                                                    </p>
-                                                </div>
-                                                <div className="col-span-2">
-                                                    <p className="text-gray-500 dark:text-gray-400">Transaction ID</p>
-                                                    <p className="font-medium text-gray-900 dark:text-white break-all">
-                                                        {payment.transactionId || '-'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {payment.note && (
-                                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                                                    <p className="text-gray-500 dark:text-gray-400 text-xs">Notes</p>
-                                                    <p className="text-sm text-gray-700 dark:text-gray-300">{payment.note}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

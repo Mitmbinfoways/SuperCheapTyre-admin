@@ -433,7 +433,7 @@ const OrdersPage = () => {
                         {columns.map((col) => (
                           <td
                             key={col.key as string}
-                            className="whitespace-nowrap px-3 py-3 text-sm text-gray-900 dark:text-gray-200"
+                            className="whitespace-nowrap py-3 px-1 text-sm text-gray-900 dark:text-gray-200"
                             style={col.width ? { width: col.width } : undefined}
                           >
                             {col.render

@@ -152,6 +152,20 @@ export interface UpdateOrderPayload {
   amount: number;
   status: string;
   note?: string;
+  items?: Array<{
+    id: string;
+    quantity: number;
+  }>;
+  serviceItems?: Array<{
+    id: string;
+    quantity: number;
+    name: string;
+    description: string;
+    price: number;
+    image: string;
+  }>;
+  subtotal?: number;
+  total?: number;
 }
 
 export const updateOrder = async (

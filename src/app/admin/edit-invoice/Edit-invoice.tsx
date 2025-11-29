@@ -189,7 +189,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
 
     // Calculate subtotal based on selected products and quantities
     const subtotal = useCallback(() => {
-        return allProducts
+        const productsTotal = allProducts
             .filter(product => selectedProducts.includes(product._id))
             .reduce((total, product) => {
                 const quantity = productQuantities[product._id];
@@ -197,7 +197,13 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 const validQuantity = (isNaN(numericQuantity) || numericQuantity < 1) ? 1 : numericQuantity;
                 return total + (product.price * validQuantity);
             }, 0);
-    }, [allProducts, selectedProducts, productQuantities]);
+
+        const servicesTotal = selectedOrder?.serviceItems?.reduce((total, item) => {
+            return total + (item.price * (item.quantity || 1));
+        }, 0) || 0;
+
+        return productsTotal + servicesTotal;
+    }, [allProducts, selectedProducts, productQuantities, selectedOrder]);
 
     // Calculate remaining balance
     const calculateRemainingBalance = useCallback(() => {
@@ -246,6 +252,10 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
 
                     return payment.id === id ? { ...payment, [field]: value, amount: adjustedBalance.toFixed(2) } : payment;
                 }
+                // If status is changed to "partial", auto-set amount to 0
+                if (field === 'status' && value === 'partial') {
+                    return payment.id === id ? { ...payment, [field]: value, amount: "0" } : payment;
+                }
                 return payment.id === id ? { ...payment, [field]: value } : payment;
             })
         );
@@ -259,32 +269,29 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
     const handleUpdateInvoice = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (!selectedOrder) {
+            Toast({ type: "error", message: "No order selected" });
+            return;
+        }
+
         // Reset errors
         setErrors({});
 
         // Validate required fields
         const newErrors: Record<string, string> = {};
 
-        if (!firstName.trim()) {
-            newErrors.firstName = "First name is required";
-        }
-
-        if (!lastName.trim()) {
-            newErrors.lastName = "Last name is required";
-        }
-
-        if (!phone.trim()) {
-            newErrors.phone = "Phone number is required";
-        }
-
+        if (!firstName.trim()) newErrors.firstName = "First name is required";
+        if (!lastName.trim()) newErrors.lastName = "Last name is required";
+        if (!phone.trim()) newErrors.phone = "Phone number is required";
         if (!email.trim()) {
             newErrors.email = "Email is required";
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             newErrors.email = "Please enter a valid email address";
         }
 
-        if (selectedProducts.length === 0) {
-            newErrors.products = "Please select at least one product";
+        const hasServiceItems = selectedOrder?.serviceItems && selectedOrder.serviceItems.length > 0;
+        if (selectedProducts.length === 0 && !hasServiceItems) {
+            newErrors.products = "Please select at least one product or service item";
         }
 
         // Validate product quantities
@@ -297,7 +304,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 break;
             }
 
-            // If quantity is not set or is invalid, treat as 1
             const numericQuantity = quantity ? parseInt(quantity, 10) : NaN;
             const validQuantity = (isNaN(numericQuantity) || numericQuantity < 1) ? 1 : numericQuantity;
 
@@ -306,24 +312,44 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 break;
             }
 
-            if (validQuantity > product.stock) {
-                newErrors.products = `Quantity for ${product.name} exceeds available stock`;
+            const originalItem = selectedOrder?.items.find(item => item.id === productId);
+            const originalQuantity = originalItem ? Number(originalItem.quantity || 0) : 0;
+            const maxQuantity = product.stock + originalQuantity;
+
+            if (validQuantity > maxQuantity) {
+                newErrors.products = `Quantity for ${product.name} exceeds available stock (Max: ${maxQuantity})`;
                 break;
             }
         }
 
-        // Validate payment details
+        // Pre-process payments: Auto-adjust 'Full' payments to match the current remaining balance
+        // This prevents validation errors if the subtotal decreased (e.g. removed service item)
+        const currentSubtotal = subtotal();
+        const previousPaymentsTotal = previousPayments.reduce((total, payment) => total + (parseFloat(payment.amount) || 0), 0);
+        let runningTotalPayment = 0;
+
+        const processedPaymentDetails = paymentDetails.map(payment => {
+            if (payment.status === 'full') {
+                // Calculate what the amount *should* be for a full payment
+                // We subtract previous payments and any *other* current payments that came before this one (if any)
+                // For simplicity, if we have multiple payments, "Full" usually implies "the rest".
+                const remaining = Math.max(0, currentSubtotal - previousPaymentsTotal - runningTotalPayment);
+                return { ...payment, amount: remaining.toFixed(2) };
+            }
+            runningTotalPayment += parseFloat(payment.amount) || 0;
+            return payment;
+        });
+
+        // Validate payment details using the processed (auto-adjusted) values
         let totalPaymentAmount = 0;
-        for (let i = 0; i < paymentDetails.length; i++) {
-            const payment = paymentDetails[i];
+        for (let i = 0; i < processedPaymentDetails.length; i++) {
+            const payment = processedPaymentDetails[i];
 
             if (!payment.status) {
                 newErrors[`paymentStatus${i}`] = `Payment status is required for payment `;
             }
 
-            if (!payment.amount) {
-                newErrors[`paymentAmount${i}`] = `Amount is required for payment #${i + 1}`;
-            } else {
+            if (payment.amount) {
                 const amountValue = parseFloat(payment.amount);
                 if (isNaN(amountValue) || amountValue < 0) {
                     newErrors[`paymentAmount${i}`] = `Please enter a valid amount for payment #${i + 1}`;
@@ -333,18 +359,34 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
             }
         }
 
-        // Check if total payment amount exceeds subtotal
-        if (totalPaymentAmount > subtotal()) {
-            newErrors.paymentTotal = "Total payment amount cannot exceed subtotal";
+        // Check if total payment amount exceeds subtotal (allow a small epsilon for float precision)
+        if (totalPaymentAmount > currentSubtotal + 0.01) {
+            newErrors.paymentTotal = `Total payment ($${totalPaymentAmount.toFixed(2)}) cannot exceed subtotal ($${currentSubtotal.toFixed(2)})`;
         }
 
         // Set errors if any
         if (Object.keys(newErrors).length > 0) {
+            console.log("Validation Errors:", newErrors); // Log errors for debugging
             setErrors(newErrors);
             return;
         }
 
-        // Implement update order functionality
+        // Check if items have changed
+        const originalItemIds = selectedOrder?.items.map(i => i.id).sort().join(',') || '';
+        const currentItemIds = [...selectedProducts].sort().join(',');
+        let itemsChanged = originalItemIds !== currentItemIds;
+
+        if (!itemsChanged && selectedOrder) {
+            for (const item of selectedOrder.items) {
+                const currentQty = productQuantities[item.id];
+                const originalQty = typeof item.quantity === 'number' ? item.quantity.toString() : item.quantity;
+                if (currentQty !== originalQty) {
+                    itemsChanged = true;
+                    break;
+                }
+            }
+        }
+
         try {
             if (!selectedOrderId) {
                 Toast({
@@ -353,14 +395,27 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 });
                 return;
             }
-            const primaryPayment = paymentDetails[0];
+            const primaryPayment = processedPaymentDetails[0];
 
-            const updatePayload = {
+            const updatePayload: any = {
                 method: primaryPayment.method,
-                amount: parseFloat(primaryPayment.amount),
+                amount: primaryPayment.amount ? parseFloat(primaryPayment.amount) : 0,
                 status: primaryPayment.status,
                 note: primaryPayment.note,
+                serviceItems: selectedOrder?.serviceItems || [],
+                subtotal: currentSubtotal,
+                total: currentSubtotal
             };
+
+            // Only include items if they have changed. 
+            if (itemsChanged) {
+                updatePayload.items = selectedProducts.map(id => ({
+                    id,
+                    quantity: parseInt(productQuantities[id] || '1', 10)
+                }));
+            }
+
+            console.log("Sending Update Payload:", updatePayload); // Log payload
 
             const response = await updateOrder(selectedOrderId, updatePayload);
 
@@ -369,7 +424,6 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                     type: "success",
                     message: "Invoice updated successfully",
                 });
-                // Optionally refresh the orders list or reset the form
                 onBack();
             } else {
                 Toast({
@@ -579,13 +633,13 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                             </div>
                         </div>
 
-                        {/* Product Selection Section */}
+                        {/* Product Selection Section - Read Only */}
                         <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                             <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Products</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Products (Read Only)</h3>
                             </div>
 
-                            {selectedProducts.length === 0 ? (
+                            {selectedProducts.length === 0 && (!selectedOrder.serviceItems || selectedOrder.serviceItems.length === 0) ? (
                                 <div className="py-8 text-center">
                                     <p className="text-gray-500 dark:text-gray-400">
                                         No products selected for this order.
@@ -593,20 +647,20 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                                    {selectedOrder.items.map((item) => {
-                                        // Create a Product-like object from the OrderItem data
-                                        const product = {
-                                            name: item.productDetails?.name,
-                                            images: item.productDetails?.images,
-                                            sku: item.productDetails?.sku,
-                                            price: item.productDetails?.price,
-                                        };
+                                    {selectedProducts.map((productId) => {
+                                        const product = allProducts.find(p => p._id === productId);
+                                        if (!product) return null;
 
-                                        const quantity = item.quantity?.toString() || "1";
+                                        const quantity = productQuantities[productId] || "1";
+
+                                        // Calculate max quantity: available stock + quantity already in this order
+                                        const originalItem = selectedOrder?.items.find(item => item.id === productId);
+                                        const originalQuantity = originalItem ? Number(originalItem.quantity || 0) : 0;
+                                        const maxQuantity = product.stock + originalQuantity;
 
                                         return (
                                             <div
-                                                key={item._id}
+                                                key={productId}
                                                 className="flex flex-col rounded-lg border border-blue-500 bg-blue-50 p-3 dark:bg-blue-900/20"
                                             >
                                                 <div className="flex items-start gap-3">
@@ -618,19 +672,78 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                                         <p className="text-xs text-gray-600 dark:text-gray-400">
                                                             SKU: {product.sku}
                                                         </p>
-                                                        <div className="mt-1 flex items-center justify-between">
-                                                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                AU$ {product.price?.toFixed(2)}
-                                                            </span>
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                Qty: {quantity}
-                                                            </span>
+                                                        <div className="mt-2 flex items-center justify-between gap-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                    AU$ {product.price?.toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <label className="text-xs text-gray-500">Qty:</label>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max={maxQuantity}
+                                                                    value={quantity}
+                                                                    disabled={true} // Read-only
+                                                                    className="w-16 rounded border border-gray-300 px-2 py-1 text-sm bg-gray-100 text-gray-500 cursor-not-allowed dark:border-gray-600 dark:bg-gray-800"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         );
                                     })}
+                                    {selectedOrder.serviceItems?.map((item, index) => (
+                                        <div
+                                            key={item.id || index}
+                                            className="flex flex-col rounded-lg border border-green-500 bg-green-50 p-3 dark:bg-green-900/20"
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                {item.image && (
+                                                    <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                                                        <img
+                                                            src={item.image.startsWith('http') ? item.image : `${process.env.NEXT_PUBLIC_API_URL}${item.image}`}
+                                                            alt={item.name}
+                                                            className="h-full w-full object-cover object-center"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1">
+                                                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                                                        {item.name}
+                                                    </h4>
+                                                    <div
+                                                        className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2"
+                                                        dangerouslySetInnerHTML={{ __html: item.description }}
+                                                    />
+                                                    <div className="mt-1 flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                            AU$ {item.price?.toFixed(2)}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            Qty: {item.quantity || 1}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-2 flex justify-end">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (selectedOrder) {
+                                                                    const updatedServiceItems = selectedOrder.serviceItems?.filter((_, i) => i !== index);
+                                                                    setSelectedOrder({ ...selectedOrder, serviceItems: updatedServiceItems });
+                                                                }
+                                                            }}
+                                                            className="text-xs text-red-500 hover:text-red-700"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
