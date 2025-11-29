@@ -118,6 +118,10 @@ export interface CreateOrderPayload {
     id: string;
     quantity: number;
   }>;
+  serviceItems?: Array<{
+    id: string;
+    quantity: number;
+  }>;
   subtotal: number;
   total: number;
   customer: {

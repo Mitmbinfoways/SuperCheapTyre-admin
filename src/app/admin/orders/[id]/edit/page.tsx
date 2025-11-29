@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import EditInvoice from "@/app/admin/create-invoice/Edit-invoice";
+import EditInvoice from "@/app/admin/edit-invoice/Edit-invoice";
 
 const EditOrderPage: React.FC<any> = ({ params }) => {
     const router = useRouter();

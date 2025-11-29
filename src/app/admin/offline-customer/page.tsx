@@ -15,6 +15,7 @@ import {
 import { getAllProducts, Product } from "@/services/CreateProductService";
 import { GetTechnicians } from "@/services/TechnicianService";
 import { getAllTimeSlots } from "@/services/TimeSlotService";
+import { getAllServices, Service } from "@/services/ServiceService";
 import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
@@ -93,6 +94,14 @@ const OfflineCustomerPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [loadingProducts, setLoadingProducts] = useState(false);
+
+    // --- Services State ---
+    const [allServices, setAllServices] = useState<Service[]>([]);
+    const [filteredServices, setFilteredServices] = useState<Service[]>([]);
+    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const [serviceQuantities, setServiceQuantities] = useState<Record<string, string>>({});
+    const [loadingServices, setLoadingServices] = useState(false);
+    const [activeTab, setActiveTab] = useState<"products" | "services">("products");
 
     // --- Shared Logic ---
 
@@ -202,6 +211,28 @@ const OfflineCustomerPage = () => {
         }
     }, []);
 
+    const fetchAllServicesData = useCallback(async () => {
+        setLoadingServices(true);
+        try {
+            const response = await getAllServices({ isActive: true });
+            setAllServices(response.data);
+            setFilteredServices(response.data);
+        } catch (e: any) {
+            Toast({
+                type: "error",
+                message: e?.response?.data?.message || "Failed to fetch services",
+            });
+        } finally {
+            setLoadingServices(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeTab === "services" && allServices.length === 0) {
+            fetchAllServicesData();
+        }
+    }, [activeTab, allServices.length, fetchAllServicesData]);
+
     const handleOpenModal = async () => {
         setIsModalOpen(true);
         if (allProducts.length === 0) {
@@ -211,15 +242,27 @@ const OfflineCustomerPage = () => {
 
     const handleSearch = (query: string) => {
         setSearchQuery(query);
-        if (query.trim() === "") {
-            setFilteredProducts(allProducts);
+        if (activeTab === "products") {
+            if (query.trim() === "") {
+                setFilteredProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(
+                    (product) =>
+                        product.name.toLowerCase().includes(query.toLowerCase()) ||
+                        product.sku.toLowerCase().includes(query.toLowerCase())
+                );
+                setFilteredProducts(filtered);
+            }
         } else {
-            const filtered = allProducts.filter(
-                (product) =>
-                    product.name.toLowerCase().includes(query.toLowerCase()) ||
-                    product.sku.toLowerCase().includes(query.toLowerCase())
-            );
-            setFilteredProducts(filtered);
+            if (query.trim() === "") {
+                setFilteredServices(allServices);
+            } else {
+                const filtered = allServices.filter(
+                    (service) =>
+                        service.name.toLowerCase().includes(query.toLowerCase())
+                );
+                setFilteredServices(filtered);
+            }
         }
     };
 
@@ -246,8 +289,24 @@ const OfflineCustomerPage = () => {
         });
     };
 
+    const handleSelectService = (service: Service) => {
+        if (!selectedServices.includes(service._id)) {
+            setSelectedServices((prev) => [...prev, service._id]);
+            setServiceQuantities((prev) => ({ ...prev, [service._id]: "1" }));
+        }
+    };
+
+    const handleRemoveService = (serviceId: string) => {
+        setSelectedServices((prev) => prev.filter(id => id !== serviceId));
+        setServiceQuantities((prev) => {
+            const newQuantities = { ...prev };
+            delete newQuantities[serviceId];
+            return newQuantities;
+        });
+    };
+
     const subtotal = useMemo(() => {
-        return allProducts
+        const productsTotal = allProducts
             .filter(product => selectedProducts.includes(product._id))
             .reduce((total, product) => {
                 const quantity = productQuantities[product._id];
@@ -255,14 +314,25 @@ const OfflineCustomerPage = () => {
                 const validQuantity = (isNaN(numericQuantity) || numericQuantity < 1) ? 1 : numericQuantity;
                 return total + (product.price * validQuantity);
             }, 0);
-    }, [allProducts, selectedProducts, productQuantities]);
+
+        const servicesTotal = allServices
+            .filter(service => selectedServices.includes(service._id))
+            .reduce((total, service) => {
+                const quantity = serviceQuantities[service._id];
+                const numericQuantity = quantity ? parseInt(quantity, 10) : NaN;
+                const validQuantity = (isNaN(numericQuantity) || numericQuantity < 1) ? 1 : numericQuantity;
+                return total + (service.price * validQuantity);
+            }, 0);
+
+        return productsTotal + servicesTotal;
+    }, [allProducts, selectedProducts, productQuantities, allServices, selectedServices, serviceQuantities]);
 
     // --- Final Submit ---
     const handleSubmit = async () => {
         // Validate Step 2
         const newErrors: Record<string, string> = {};
-        if (selectedProducts.length === 0) {
-            newErrors.products = "Please select at least one product";
+        if (selectedProducts.length === 0 && selectedServices.length === 0) {
+            newErrors.products = "Please select at least one product or service";
         }
         // Validate quantities
         for (const productId of selectedProducts) {
@@ -292,22 +362,8 @@ const OfflineCustomerPage = () => {
             setLoading(true);
 
             // 1. Create Appointment
-            // Find timeSlotId from availableSlots if needed, or backend handles it?
-            // The backend expects timeSlotId. In Edit page, it was state.
-            // In getAvailableSlots response, slots have `timeSlotId`?
-            // Let's check getAvailableSlots response structure in Edit page.
-            // It seems `slotId` is what we select.
-            // In EditPage: `setTimeSlotId(appt.timeSlotId)`
-            // In `fetchSlots`: `const res = await getAvailableSlots(dateStr, tSlotId);`
-            // The slot object has `slotId`.
-            // The backend `createOrder` uses `appointment.timeSlotId`.
-            // We need to send `timeSlotId` when creating appointment.
-            // Where do we get it?
-            // `getAvailableSlots` returns `{ date: string; slots: any[] }`.
-            // Each slot in `slots` likely has `timeSlotId`?
-            // Let's assume the selected slot object has it.
             const selectedSlotObj = availableSlots.find(s => s.slotId === slotId);
-            const tSlotId = selectedSlotObj?.timeSlotId || ""; // We might need this.
+            const tSlotId = selectedSlotObj?.timeSlotId || "";
 
             const apptPayload: AppointmentPayload = {
                 firstname,
@@ -316,10 +372,10 @@ const OfflineCustomerPage = () => {
                 phone,
                 date: formatDateForInput(date!),
                 slotId,
-                timeSlotId: tSlotId, // Use the one from the selected slot
+                timeSlotId: tSlotId,
                 notes,
                 Employee: employee || undefined,
-                status: "confirmed", // Set to confirmed so it blocks the slot
+                status: "confirmed",
             };
 
             const apptRes = await createAppointment(apptPayload);
@@ -335,10 +391,20 @@ const OfflineCustomerPage = () => {
                 };
             });
 
+            const serviceItems = selectedServices.map(serviceId => {
+                const quantity = serviceQuantities[serviceId];
+                const numericQuantity = quantity ? parseInt(quantity, 10) : 1;
+                return {
+                    id: serviceId,
+                    quantity: numericQuantity
+                };
+            });
+
             const total = parseFloat(amount);
 
             const orderPayload: CreateOrderPayload = {
                 items,
+                serviceItems,
                 subtotal,
                 total,
                 customer: {
@@ -356,21 +422,10 @@ const OfflineCustomerPage = () => {
                 appointmentId,
             };
 
-            // We need to pass appointmentId to createOrder.
-            // But CreateLocalOrderPayload interface in frontend doesn't have appointmentId?
-            // I checked OrderServices.tsx, it DOES NOT have appointmentId in CreateLocalOrderPayload.
-            // But the backend `createOrder` controller EXPECTS `appointmentId`.
-            // This means the frontend service definition might be incomplete or I need to cast it/update it.
-            // I should update the payload to include appointmentId.
-
-            // I will cast it to any for now to avoid TS errors if I don't update the interface, 
-            // or better, I'll update the interface in the service file later if needed.
-            // For now, I'll pass it in the object.
-
             await createOrder(orderPayload);
 
             Toast({ message: "Offline customer added successfully!", type: "success" });
-            router.push("/admin/appointment"); // Or orders?
+            router.push("/admin/appointment");
         } catch (error: any) {
             console.error(error);
             Toast({
@@ -599,9 +654,9 @@ const OfflineCustomerPage = () => {
                                 </div>
                             )}
 
-                            {selectedProducts.length === 0 ? (
+                            {selectedProducts.length === 0 && selectedServices.length === 0 ? (
                                 <div className="py-8 text-center text-gray-500">
-                                    No products selected.
+                                    No products or services selected.
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -671,6 +726,75 @@ const OfflineCustomerPage = () => {
 
                                                 <div className="mt-2 flex justify-end">
                                                     <Button variant="danger" onClick={() => handleRemoveProduct(product._id)} className="text-xs">
+                                                        <FiTrash2 size={16} />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    {allServices
+                                        .filter(service => selectedServices.includes(service._id))
+                                        .map((service) => (
+                                            <div key={service._id} className="flex flex-col rounded-lg border border-green-500 bg-green-50 p-3 dark:bg-green-900/20">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="h-16 w-16 overflow-hidden rounded">
+                                                        {service.images?.[0] ? (
+                                                            <Image
+                                                                src={`${process.env.NEXT_PUBLIC_API_URL}${service.images[0]}`}
+                                                                alt={service.name}
+                                                                width={64}
+                                                                height={64}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-200 dark:bg-gray-700">
+                                                                <span className="text-xs text-gray-500">No Image</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1">
+                                                            {service.name}
+                                                        </h4>
+                                                        <div className="mt-1 flex items-center justify-between">
+                                                            <span className="text-sm font-medium">
+                                                                AU$ {service.price.toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-3 flex items-center gap-2">
+                                                    <label className="text-sm text-gray-700 dark:text-gray-300">Qty:</label>
+                                                    <div className="flex items-center">
+                                                        <button
+                                                            type="button"
+                                                            className="flex h-8 w-8 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                            onClick={() => {
+                                                                const curr = parseInt(serviceQuantities[service._id] || "1", 10);
+                                                                setServiceQuantities(prev => ({ ...prev, [service._id]: Math.max(1, curr - 1).toString() }));
+                                                            }}
+                                                            disabled={parseInt(serviceQuantities[service._id] || "1", 10) <= 1}
+                                                        >
+                                                            <span className="text-lg">-</span>
+                                                        </button>
+                                                        <div className="flex h-8 w-12 items-center justify-center border-y border-gray-300 bg-white text-sm dark:border-gray-600 dark:bg-gray-800">
+                                                            {serviceQuantities[service._id] || "1"}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="flex h-8 w-8 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                            onClick={() => {
+                                                                const curr = parseInt(serviceQuantities[service._id] || "1", 10);
+                                                                setServiceQuantities(prev => ({ ...prev, [service._id]: (curr + 1).toString() }));
+                                                            }}
+                                                        >
+                                                            <span className="text-lg">+</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-2 flex justify-end">
+                                                    <Button variant="danger" onClick={() => handleRemoveService(service._id)} className="text-xs">
                                                         <FiTrash2 size={16} />
                                                     </Button>
                                                 </div>
@@ -765,7 +889,7 @@ const OfflineCustomerPage = () => {
             <CommonDialog
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Select Products"
+                title="Select Items"
                 size="xl"
                 footer={
                     <Button variant="primary" onClick={() => setIsModalOpen(false)}>
@@ -774,126 +898,272 @@ const OfflineCustomerPage = () => {
                 }
             >
                 <div className="space-y-4">
+                    <div className="flex border-b border-gray-200 dark:border-gray-700">
+                        <button
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "products"
+                                ? "border-primary text-primary"
+                                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                }`}
+                            onClick={() => setActiveTab("products")}
+                        >
+                            Products
+                        </button>
+                        <button
+                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "services"
+                                ? "border-primary text-primary"
+                                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                }`}
+                            onClick={() => setActiveTab("services")}
+                        >
+                            Services
+                        </button>
+                    </div>
+
                     <div className="relative">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <SearchIcon className="h-5 w-5 text-gray-400" />
                         </div>
                         <TextField
                             type="text"
-                            placeholder="Search products by name or SKU..."
+                            placeholder={activeTab === "products" ? "Search products..." : "Search services..."}
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
                             className="w-full pl-10"
                         />
                     </div>
 
-                    {loadingProducts ? (
-                        <div className="py-4 text-center">Loading products...</div>
-                    ) : (
-                        <div className="max-h-[60vh] overflow-y-auto">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                {filteredProducts.map((product) => (
-                                    <div
-                                        key={product._id}
-                                        className={`flex items-center gap-3 rounded-lg border p-3 ${selectedProducts.includes(product._id)
-                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                            : 'border-gray-200 dark:border-gray-700'
-                                            }`}
-                                    >
-                                        {renderProductImage(product)}
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                                                {product.name}
-                                            </h4>
-                                            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                                                SKU: {product.sku}
-                                            </p>
-                                            <div className="mt-1 flex items-center justify-between">
-                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    AU$ {product.price.toFixed(2)}
-                                                </span>
-                                                <span className={`text-xs ${product.stock > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400'}`}>
-                                                    Stock: {product.stock}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                            {product.stock <= 0 ? (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                                        Out of Stock
+                    {activeTab === "products" ? (
+                        loadingProducts ? (
+                            <div className="py-4 text-center">Loading products...</div>
+                        ) : (
+                            <div className="max-h-[60vh] overflow-y-auto">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {filteredProducts.map((product) => (
+                                        <div
+                                            key={product._id}
+                                            className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${selectedProducts.includes(product._id)
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                                                }`}
+                                            onClick={() => {
+                                                if (selectedProducts.includes(product._id)) {
+                                                    handleRemoveProduct(product._id);
+                                                } else {
+                                                    handleSelectProduct(product);
+                                                }
+                                            }}
+                                        >
+                                            {renderProductImage(product)}
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                    {product.name}
+                                                </h4>
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                                                    SKU: {product.sku}
+                                                </p>
+                                                <div className="mt-1 flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        AU$ {product.price.toFixed(2)}
+                                                    </span>
+                                                    <span className={`text-xs ${product.stock > 0 ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400'}`}>
+                                                        Stock: {product.stock}
                                                     </span>
                                                 </div>
-                                            ) : selectedProducts.includes(product._id) ? (
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex items-center">
-                                                        <button
-                                                            type="button"
-                                                            className="flex h-6 w-6 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                                            onClick={() => {
-                                                                const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
-                                                                const newQuantity = Math.max(1, currentQuantity - 1);
-                                                                setProductQuantities(prev => ({
-                                                                    ...prev,
-                                                                    [product._id]: newQuantity.toString()
-                                                                }));
-                                                            }}
-                                                            disabled={parseInt(productQuantities[product._id] || "1", 10) <= 1}
-                                                        >
-                                                            <span className="text-sm">-</span>
-                                                        </button>
-                                                        <div className="flex h-6 w-8 items-center justify-center border-y border-gray-300 bg-white text-xs dark:border-gray-600 dark:bg-gray-800">
-                                                            {productQuantities[product._id] || "1"}
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="flex h-6 w-6 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                                            onClick={() => {
-                                                                const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
-                                                                const newQuantity = Math.min(product.stock, currentQuantity + 1);
-                                                                setProductQuantities(prev => ({
-                                                                    ...prev,
-                                                                    [product._id]: newQuantity.toString()
-                                                                }));
-                                                            }}
-                                                            disabled={parseInt(productQuantities[product._id] || "1", 10) >= product.stock}
-                                                        >
-                                                            <span className="text-sm">+</span>
-                                                        </button>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                {product.stock <= 0 ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                            Out of Stock
+                                                        </span>
                                                     </div>
+                                                ) : selectedProducts.includes(product._id) ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center">
+                                                            <button
+                                                                type="button"
+                                                                className="flex h-6 w-6 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
+                                                                    const newQuantity = Math.max(1, currentQuantity - 1);
+                                                                    setProductQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [product._id]: newQuantity.toString()
+                                                                    }));
+                                                                }}
+                                                                disabled={parseInt(productQuantities[product._id] || "1", 10) <= 1}
+                                                            >
+                                                                <span className="text-sm">-</span>
+                                                            </button>
+                                                            <div className="flex h-6 w-8 items-center justify-center border-y border-gray-300 bg-white text-xs dark:border-gray-600 dark:bg-gray-800">
+                                                                {productQuantities[product._id] || "1"}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                className="flex h-6 w-6 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const currentQuantity = parseInt(productQuantities[product._id] || "1", 10);
+                                                                    const newQuantity = Math.min(product.stock, currentQuantity + 1);
+                                                                    setProductQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [product._id]: newQuantity.toString()
+                                                                    }));
+                                                                }}
+                                                                disabled={parseInt(productQuantities[product._id] || "1", 10) >= product.stock}
+                                                            >
+                                                                <span className="text-sm">+</span>
+                                                            </button>
+                                                        </div>
+                                                        <Button
+                                                            variant="danger"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveProduct(product._id);
+                                                            }}
+                                                            className="text-xs p-2"
+                                                        >
+                                                            <FiTrash2
+                                                                size={16}
+                                                                title="Delete product"
+                                                            />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
                                                     <Button
-                                                        variant="danger"
-                                                        onClick={() => handleRemoveProduct(product._id)}
-                                                        className="text-xs p-2"
+                                                        variant="primary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSelectProduct(product);
+                                                        }}
+                                                        className="text-xs"
                                                     >
-                                                        <FiTrash2
-                                                            size={16}
-                                                            title="Delete product"
-                                                        />
+                                                        Add
                                                     </Button>
-                                                </div>
-                                            ) : (
-                                                <Button
-                                                    variant="primary"
-                                                    onClick={() => handleSelectProduct(product)}
-                                                    className="text-xs"
-                                                >
-                                                    Add
-                                                </Button>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {filteredProducts.length === 0 && (
-                                <div className="py-8 text-center">
-                                    <p className="text-gray-500 dark:text-gray-400">
-                                        No products found matching your search.
-                                    </p>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )
+                    ) : (
+                        loadingServices ? (
+                            <div className="py-4 text-center">Loading services...</div>
+                        ) : (
+                            <div className="max-h-[60vh] overflow-y-auto">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {filteredServices.map((service) => (
+                                        <div
+                                            key={service._id}
+                                            className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${selectedServices.includes(service._id)
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                                                }`}
+                                            onClick={() => {
+                                                if (selectedServices.includes(service._id)) {
+                                                    handleRemoveService(service._id);
+                                                } else {
+                                                    handleSelectService(service);
+                                                }
+                                            }}
+                                        >
+                                            <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-gray-100">
+                                                {service.images?.[0] ? (
+                                                    <Image
+                                                        src={`${process.env.NEXT_PUBLIC_API_URL}${service.images[0]}`}
+                                                        alt={service.name}
+                                                        width={64}
+                                                        height={64}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                                                        No Img
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                    {service.name}
+                                                </h4>
+                                                <div className="mt-1 flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        AU$ {service.price.toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                {selectedServices.includes(service._id) ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center">
+                                                            <button
+                                                                type="button"
+                                                                className="flex h-6 w-6 items-center justify-center rounded-l border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const currentQuantity = parseInt(serviceQuantities[service._id] || "1", 10);
+                                                                    const newQuantity = Math.max(1, currentQuantity - 1);
+                                                                    setServiceQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [service._id]: newQuantity.toString()
+                                                                    }));
+                                                                }}
+                                                                disabled={parseInt(serviceQuantities[service._id] || "1", 10) <= 1}
+                                                            >
+                                                                <span className="text-sm">-</span>
+                                                            </button>
+                                                            <div className="flex h-6 w-8 items-center justify-center border-y border-gray-300 bg-white text-xs dark:border-gray-600 dark:bg-gray-800">
+                                                                {serviceQuantities[service._id] || "1"}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                className="flex h-6 w-6 items-center justify-center rounded-r border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const currentQuantity = parseInt(serviceQuantities[service._id] || "1", 10);
+                                                                    setServiceQuantities(prev => ({
+                                                                        ...prev,
+                                                                        [service._id]: (currentQuantity + 1).toString()
+                                                                    }));
+                                                                }}
+                                                            >
+                                                                <span className="text-sm">+</span>
+                                                            </button>
+                                                        </div>
+                                                        <Button
+                                                            variant="danger"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveService(service._id);
+                                                            }}
+                                                            className="text-xs p-2"
+                                                        >
+                                                            <FiTrash2
+                                                                size={16}
+                                                                title="Delete service"
+                                                            />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        variant="primary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSelectService(service);
+                                                        }}
+                                                        className="text-xs"
+                                                    >
+                                                        Add
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )
                     )}
                 </div>
             </CommonDialog>
