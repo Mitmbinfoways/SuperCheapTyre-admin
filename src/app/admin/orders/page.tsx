@@ -172,8 +172,16 @@ const OrdersPage = () => {
     setCurrentPage(1);
   }, [debouncedSearchTerm, formatFilter, dateFilter, customStartDate, customEndDate]);
 
-  const getTotalItems = (items: OrderItem[]) =>
-    items.reduce((total, item) => total + item.quantity, 0);
+  const getTotalItems = (order: Order) => {
+    const productCount = Array.isArray(order.items)
+      ? order.items.reduce((total, item) => total + (item.quantity || 0), 0)
+      : 0;
+    const serviceCount = Array.isArray(order.serviceItems)
+      ? order.serviceItems.length
+      : 0;
+    return productCount + serviceCount;
+  };
+
 
   const columns = [
     {
@@ -215,7 +223,7 @@ const OrdersPage = () => {
       key: "itemsCount",
       width: "50px",
       render: (order: Order) => (
-        <div className="text-center">{getTotalItems(order.items)}</div>
+        <div className="text-center">{getTotalItems(order)}</div>
       ),
     },
     {

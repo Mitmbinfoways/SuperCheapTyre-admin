@@ -47,9 +47,20 @@ export interface Payment {
   _id: string;
 }
 
+export interface ServiceItem {
+  id: string;
+  quantity: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  _id: string;
+}
+
 export interface Order {
   _id: string;
   items: OrderItem[];
+  serviceItems?: ServiceItem[];
   subtotal: number;
   total: number;
   appointment: Appointment;

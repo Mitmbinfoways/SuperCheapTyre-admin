@@ -109,6 +109,43 @@ const OrderDetailsPage = () => {
         );
     };
 
+    const renderServiceImage = (imageUrl?: string) => {
+        const fullImageUrl = imageUrl
+            ? `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`
+            : null;
+
+        return fullImageUrl ? (
+            <div className="h-16 w-16 overflow-hidden rounded border border-gray-200 dark:border-gray-700">
+                <Image
+                    src={fullImageUrl}
+                    alt="Service"
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent) {
+                            const fallback = document.createElement("div");
+                            fallback.className =
+                                "h-full w-full bg-gray-100 flex items-center justify-center dark:bg-gray-800";
+                            fallback.innerHTML =
+                                '<span class="text-[10px] text-gray-500 dark:text-gray-400">No Image</span>';
+                            parent.appendChild(fallback);
+                        }
+                    }}
+                />
+            </div>
+        ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    No Image
+                </span>
+            </div>
+        );
+    };
+
 
 
     const paidAmount = order ? (Array.isArray(order.payment)
@@ -194,6 +231,30 @@ const OrderDetailsPage = () => {
                                         </p>
                                         <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
                                             Total: AU$ {(item.productDetails.price * item.quantity).toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                            {order.serviceItems?.map((item) => (
+                                <div key={item._id} className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center border border-gray-200 dark:border-gray-800 rounded-lg">
+                                    {renderServiceImage(item.image)}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                                            {item.name}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Service
+                                        </p>
+                                    </div>
+                                    <div className="text-right min-w-[100px]">
+                                        <p className="font-medium text-gray-900 dark:text-white">
+                                            AU$ {item.price.toFixed(2)}
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Qty: {item.quantity}
+                                        </p>
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
+                                            Total: AU$ {(item.price * item.quantity).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>

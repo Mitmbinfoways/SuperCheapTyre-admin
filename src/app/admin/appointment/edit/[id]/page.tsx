@@ -282,6 +282,7 @@ const EditAppointmentPage = () => {
               <FormLabel label="Date" />
               <DatePicker
                 value={date}
+                minDate={new Date()}
                 onChange={handleDateChange}
                 placeholder="Select Date"
                 className="w-full"
@@ -304,10 +305,14 @@ const EditAppointmentPage = () => {
           <div className="mb-6">
             <FormLabel label="Available Time Slots" required />
             {loadingSlots ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {[...Array(6)].map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full rounded-md" />
-                ))}
+              <div className="w-full">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i} className="h-10 w-full rounded-md overflow-hidden">
+                      <Skeleton className="h-10 w-full rounded-md" />
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : availableSlots.length > 0 ? (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">

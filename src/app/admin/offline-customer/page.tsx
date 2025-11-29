@@ -497,6 +497,7 @@ const OfflineCustomerPage = () => {
                                         onChange={handleDateChange}
                                         placeholder="Select Date"
                                         className="w-full"
+                                        minDate={new Date()}
                                     />
                                     {apptErrors.date && <p className="text-sm text-red-600">{apptErrors.date}</p>}
                                 </div>
@@ -505,10 +506,14 @@ const OfflineCustomerPage = () => {
                             <div className="mb-6">
                                 <FormLabel label="Available Time Slots" required />
                                 {loadingSlots ? (
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                                        {[...Array(6)].map((_, i) => (
-                                            <Skeleton key={i} className="h-10 w-full rounded-md" />
-                                        ))}
+                                    <div className="w-full">
+                                        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                                            {[...Array(12)].map((_, i) => (
+                                                <div key={i} className="h-10 w-full rounded-md overflow-hidden">
+                                                    <Skeleton className="h-10 w-full rounded-md" />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 ) : availableSlots.length > 0 ? (
                                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -740,7 +745,7 @@ const OfflineCustomerPage = () => {
                             <Button variant="secondary" onClick={() => setStep(1)} type="button">
                                 Back
                             </Button>
-                            <Button variant="primary" onClick={handleSubmit} type="button" disabled={loading}>
+                            <Button variant="primary" onClick={handleSubmit} type="button">
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
