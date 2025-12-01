@@ -22,6 +22,8 @@ import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Tooltip from "@/components/ui/Tooltip";
 import DatePicker from "@/components/ui/DatePicker";
+import Button from "@/components/ui/Button";
+import { formatPhoneNumber } from "@/lib/utils";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -240,7 +242,7 @@ const AppointmentsPage = () => {
     {
       title: "Phone",
       key: "phone",
-      render: (item) => item.phone || "-",
+      render: (item) => formatPhoneNumber(item.phone) || "-",
     },
     {
       title: "Appointment Date",
@@ -334,7 +336,7 @@ const AppointmentsPage = () => {
         Appointments ({dateFilter === "all" && !debounceSearch ? totalAppointments : filteredAppointments.length || 0})
       </h1>
 
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
         <div className="flex flex-col gap-1">
           <TextField
             type="text"
@@ -362,7 +364,7 @@ const AppointmentsPage = () => {
         </div>
 
         {dateFilter === "custom" && (
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-2 w-full col-span-2">
             <DatePicker
               value={customStartDate ? new Date(customStartDate) : null}
               onChange={(date: Date | null) =>
@@ -370,7 +372,6 @@ const AppointmentsPage = () => {
               }
               placeholder="Start date"
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
-
             />
             <DatePicker
               value={customEndDate ? new Date(customEndDate) : null}
@@ -383,6 +384,18 @@ const AppointmentsPage = () => {
             />
           </div>
         )}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setSearch("");
+            setDateFilter("all");
+            setCustomStartDate("");
+            setCustomEndDate("");
+            setCurrentPage(1);
+          }}
+        >
+          Reset Filters
+        </Button>
       </div>
 
       <div>
@@ -436,7 +449,7 @@ const AppointmentsPage = () => {
               <div>
                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Phone</h3>
                 <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
-                  {viewAppointment.phone || "-"}
+                  {formatPhoneNumber(viewAppointment.phone) || "-"}
                 </p>
               </div>
               <div>

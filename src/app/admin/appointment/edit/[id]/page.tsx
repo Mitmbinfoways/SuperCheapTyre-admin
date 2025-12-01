@@ -16,6 +16,7 @@ import Select from "@/components/ui/Select";
 import { GetTechnicians } from "@/services/TechnicianService";
 import Skeleton from "@/components/ui/Skeleton";
 import { FormLabel } from "@/components/ui/FormLabel";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 import { IoArrowBack } from "react-icons/io5";
 
 const EditAppointmentPage = () => {
@@ -101,7 +102,6 @@ const EditAppointmentPage = () => {
       setNotes(appt.notes || "");
       setEmployee(appt.Employee || "");
       setSlotId(appt.slotId);
-      console.log(appt)
       setTimeSlotId(appt.timeSlotId);
 
       if (appt.date) {
@@ -259,16 +259,21 @@ const EditAppointmentPage = () => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <FormLabel label="Phone" required />
-              <TextField
-                type="number"
+              <CommonPhoneInput
+                label="Phone"
+                name="phone"
                 value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
+                required
+                error={errors.phone}
+                touched={!!errors.phone}
+                onChange={(val: string) => {
+                  setPhone(val);
                   if (errors.phone) setErrors({ ...errors, phone: "" });
                 }}
-                placeholder="Enter phone number"
-                error={errors.phone}
+                onClearError={() => {
+                  if (errors.phone) setErrors({ ...errors, phone: "" });
+                }}
+                onTouch={() => { }}
               />
             </div>
           </div>

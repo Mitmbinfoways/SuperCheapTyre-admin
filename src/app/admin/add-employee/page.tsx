@@ -24,6 +24,9 @@ import Skeleton from "@/components/ui/Skeleton";
 import Select from "@/components/ui/Select";
 import Tooltip from "@/components/ui/Tooltip";
 import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
+import { formatPhoneNumber } from "@/lib/utils";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 interface Technician {
   _id: string;
@@ -75,7 +78,7 @@ const AddTechnicianPage: React.FC = () => {
     deleting: false,
   });
   const [totalItems, setTotalItems] = useState(0);
-  
+
 
   const updateLoading = (key: keyof LoadingStates, value: boolean) => {
     setLoadingStates((prev) => ({ ...prev, [key]: value }));
@@ -130,10 +133,10 @@ const AddTechnicianPage: React.FC = () => {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newError.email = "Enter a valid email";
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phone) {
       newError.phone = "Phone is required";
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      newError.phone = "Enter a valid 10-digit phone number";
+    } else if (!isValidPhoneNumber(formData.phone)) {
+      newError.phone = "Enter a valid phone number";
     }
 
     if (Object.keys(newError).length > 0) {
@@ -170,7 +173,7 @@ const AddTechnicianPage: React.FC = () => {
       await DeleteTechnician(deleteTechnicianId);
       Toast({ type: "success", message: "Technician deleted successfully!" });
       handleCloseDeleteDialog();
-      
+
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
@@ -232,7 +235,7 @@ const AddTechnicianPage: React.FC = () => {
     try {
       // Make the API call
       await UpdateTechnician({ id: technicianId, isActive: updatedStatus });
-      
+
       Toast({
         type: "success",
         message: `Technician ${updatedStatus ? "activated" : "deactivated"} successfully!`,
@@ -244,7 +247,7 @@ const AddTechnicianPage: React.FC = () => {
           tech._id === technicianId ? { ...tech, isActive: previousStatus } : tech,
         ),
       );
-      
+
       setError({
         apiError: e?.response?.data?.errorData || "Failed to toggle status",
       });
@@ -263,7 +266,7 @@ const AddTechnicianPage: React.FC = () => {
       render: (item) => item.firstName + " " + item.lastName,
     },
     { title: "Email", key: "email" },
-    { title: "Phone", key: "phone", render: (item) => item.phone },
+    { title: "Phone", key: "phone", render: (item) => formatPhoneNumber(item.phone) },
     {
       title: "Status",
       key: "isActive",
@@ -300,10 +303,10 @@ const AddTechnicianPage: React.FC = () => {
             />
           </Tooltip>
           <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
-          <ToggleSwitch
-            checked={item.isActive}
-            onChange={() => handleToggleActive(item)}
-          />
+            <ToggleSwitch
+              checked={item.isActive}
+              onChange={() => handleToggleActive(item)}
+            />
           </Tooltip>
         </div>
       ),
@@ -414,16 +417,16 @@ const AddTechnicianPage: React.FC = () => {
               />
             </div>
             <div>
-              <FormLabel label="Phone" required />
-              <TextField
-                type="number"
+              <CommonPhoneInput
+                label="Phone"
+                name="phone"
                 value={formData.phone}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="Phone"
+                required
                 error={error.phone}
-                className="w-full"
+                touched={true}
+                onChange={(val) => setFormData({ ...formData, phone: val })}
+                onClearError={() => setError((prev) => ({ ...prev, phone: undefined }))}
+                onTouch={() => { }}
               />
             </div>
           </div>

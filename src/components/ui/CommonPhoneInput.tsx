@@ -16,6 +16,7 @@ type Props = {
   onChange: (value: string) => void;
   onClearError: () => void;
   onTouch: () => void;
+  readOnly?: boolean;
 };
 
 const CommonPhoneInput: React.FC<Props> = ({
@@ -24,6 +25,7 @@ const CommonPhoneInput: React.FC<Props> = ({
   value,
   required,
   error,
+  readOnly = false,
   touched,
   placeholder = "Enter your Mobile Number",
   defaultCountry = "AU",
@@ -34,14 +36,14 @@ const CommonPhoneInput: React.FC<Props> = ({
   const showError = error && touched;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <label className="font-lexend font-normal text-black text-base">
         {label}
         {required && <span className="text-red-600">*</span>}
       </label>
 
       <div
-        className={`flex items-center w-full h-10 p-2 rounded-lg border 
+        className={`flex items-center w-full h-10 p-2 rounded-[7px] border 
         ${showError ? "border-red-600" : "border-gray-300"}
         focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500
       `}
@@ -51,16 +53,18 @@ const CommonPhoneInput: React.FC<Props> = ({
           placeholder={placeholder}
           value={value}
           onChange={(val) => {
+            if (readOnly) return;
             onChange(val || "");
             onClearError();
             onTouch();
           }}
-          onCountryChange={() => {
-            onChange("");
-            onClearError();
-          }}
+          // onCountryChange={() => {
+          //   onChange("");
+          //   onClearError();
+          // }}
           international
           limitMaxLength
+          disabled={readOnly}
           defaultCountry={defaultCountry}
           countryCallingCodeEditable={false}
           className="w-full flex items-center"

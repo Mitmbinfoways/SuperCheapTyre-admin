@@ -8,6 +8,7 @@ import Image from "next/image";
 import Button from "@/components/ui/Button";
 import { IoArrowBack } from "react-icons/io5";
 import { FiDownload } from "react-icons/fi";
+import { formatPhoneNumber } from "@/lib/utils";
 
 const OrderDetailsPage = () => {
     const params = useParams();
@@ -160,8 +161,8 @@ const OrderDetailsPage = () => {
 
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-            <div className="mb-6 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
                     <Button
                         variant="secondary"
                         className="p-2 rounded-full flex items-center justify-center"
@@ -169,27 +170,20 @@ const OrderDetailsPage = () => {
                     >
                         <IoArrowBack size={20} />
                     </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="flex flex-col">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                             Order Details
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 break-all">
                             ID: {order._id}
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    {/* <Button
-                        variant="secondary"
-                        onClick={() => downloadInvoice(order._id)}
-                        className="flex items-center gap-2"
-                    >
-                        <FiDownload size={16} />
-                        <span className="hidden sm:inline">Download Invoice</span>
-                    </Button> */}
+                <div className="flex w-full sm:w-auto justify-end sm:justify-start gap-2">
                     {!isFullPayment && (
                         <Button
                             variant="primary"
+                            className="w-full sm:w-auto"
                             onClick={() => router.push(`/admin/orders/${order._id}/edit`)}
                         >
                             Edit Invoice
@@ -197,6 +191,7 @@ const OrderDetailsPage = () => {
                     )}
                 </div>
             </div>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Column - Main Info */}
@@ -278,20 +273,22 @@ const OrderDetailsPage = () => {
 
                                         return (
                                             <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="flex items-center gap-2">
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
                                                         <h5 className="font-medium text-gray-900 dark:text-white">
                                                             Payment #{index + 1}
                                                         </h5>
                                                         <button
                                                             onClick={() => downloadInvoice(order._id, payment._id)}
-                                                            className="ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
+                                                            className="ml-0 sm:ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
                                                             title="Download Receipt"
                                                         >
                                                             <FiDownload size={16} />&nbsp; Download Invoice
                                                         </button>
                                                     </div>
-                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${statusColorClass}`}>
+                                                    <span
+                                                        className={`mt-2 sm:mt-0 px-2 py-1 rounded text-xs font-medium self-start sm:self-auto ${statusColorClass}`}
+                                                    >
                                                         {displayStatus}
                                                     </span>
                                                 </div>
@@ -376,7 +373,7 @@ const OrderDetailsPage = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                                <p className="font-medium text-gray-900 dark:text-white">{order.customer.phone}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{formatPhoneNumber(order.customer.phone)}</p>
                             </div>
                         </div>
                     </div>

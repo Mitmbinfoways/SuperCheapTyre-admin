@@ -12,6 +12,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Toast } from "@/components/ui/Toast";
 import { FiPlus } from "react-icons/fi";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 
 type LoadingStates = {
     fetchingOrders: boolean;
@@ -524,7 +525,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                             <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Customer Information</h3>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         First Name
                                     </label>
                                     <TextField
@@ -548,7 +549,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                     {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Last Name
                                     </label>
                                     <TextField
@@ -572,7 +573,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                     {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Email
                                     </label>
                                     <TextField
@@ -596,29 +597,42 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Phone
-                                    </label>
-                                    <TextField
-                                        type="tel"
+                                    <CommonPhoneInput
+                                        label="Phone"
+                                        name="phone"
+                                        required={true}
+                                        value={phone || ""}          // <= important fix
+                                        error={errors.phone}
+                                        readOnly={true}
+                                        // touched={touched.phone}
                                         placeholder="Enter phone number"
-                                        value={phone}
-                                        disabled={true}
-                                        onChange={(e) => {
-                                            setPhone(e.target.value);
-                                            // Clear error when user starts typing
+                                        defaultCountry="AU"
+                                        onChange={(value) => {
+                                            setPhone(value || "");
+
+                                            // Clear errors like your email field
                                             if (errors.phone) {
-                                                setErrors(prev => {
+                                                setErrors((prev: any) => {
                                                     const newErrors = { ...prev };
                                                     delete newErrors.phone;
                                                     return newErrors;
                                                 });
                                             }
                                         }}
-                                        className={`w-full ${errors.phone ? 'border-red-500' : ''}`}
+                                        onClearError={() => {
+                                            if (errors.phone) {
+                                                setErrors((prev: any) => {
+                                                    const newErrors = { ...prev };
+                                                    delete newErrors.phone;
+                                                    return newErrors;
+                                                });
+                                            }
+                                        }}
+                                        onTouch={() => { }}
                                     />
                                     {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                                 </div>
+
                                 <div>
                                     <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Date
@@ -962,7 +976,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                 ))}
 
                                 <div className="flex justify-end space-x-3 pt-4">
-                                    <Button variant="secondary" onClick={handleCancel}>
+                                    <Button variant="secondary" onClick={handleCancel} type="button">
                                         Cancel
                                     </Button>
                                     <Button

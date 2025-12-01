@@ -26,6 +26,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import { IoArrowBack } from "react-icons/io5";
 import { FiTrash2 } from "react-icons/fi";
 import CommonDialog from "@/components/ui/Dialogbox";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 import { SearchIcon } from "@/components/ui/icons";
 
 // Stepper Component
@@ -64,8 +65,8 @@ const Stepper = ({
                         {index < steps.length - 1 && (
                             <div
                                 className={`w-24 h-1 mx-2 ${currentStep > stepNumber
-                                        ? "bg-primary"
-                                        : "bg-gray-300"
+                                    ? "bg-primary"
+                                    : "bg-gray-300"
                                     }`}
                             ></div>
                         )}
@@ -504,7 +505,7 @@ const OfflineCustomerPage = () => {
                                 Customer Details
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col">
                                     <FormLabel label="First Name" required />
                                     <TextField
                                         value={firstname}
@@ -516,7 +517,7 @@ const OfflineCustomerPage = () => {
                                         error={apptErrors.firstname}
                                     />
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col">
                                     <FormLabel label="Last Name" required />
                                     <TextField
                                         value={lastname}
@@ -528,7 +529,7 @@ const OfflineCustomerPage = () => {
                                         error={apptErrors.lastname}
                                     />
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col">
                                     <FormLabel label="Email" required />
                                     <TextField
                                         type="email"
@@ -541,17 +542,22 @@ const OfflineCustomerPage = () => {
                                         error={apptErrors.email}
                                     />
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <FormLabel label="Phone" required />
-                                    <TextField
-                                        type="number"
+                                <div className="flex flex-col">
+                                    <CommonPhoneInput
+                                        label="Phone"
+                                        name="phone"
                                         value={phone}
-                                        onChange={(e) => {
-                                            setPhone(e.target.value);
+                                        required
+                                        error={apptErrors.phone}
+                                        touched={true}
+                                        onChange={(val: string) => {
+                                            setPhone(val);
                                             if (apptErrors.phone) setApptErrors(prev => ({ ...prev, phone: "" }));
                                         }}
-                                        placeholder="Enter phone number"
-                                        error={apptErrors.phone}
+                                        onClearError={() => {
+                                            if (apptErrors.phone) setApptErrors(prev => ({ ...prev, phone: "" }));
+                                        }}
+                                        onTouch={() => { }}
                                     />
                                 </div>
                             </div>

@@ -12,10 +12,10 @@ import { Toast } from "@/components/ui/Toast";
 import Table, { Column } from "@/components/ui/table";
 import { EyeIcon } from "@/components/Layouts/sidebar/icons";
 import EmptyState from "@/components/EmptyState";
-import Badge from "@/components/ui/Badge";
 import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Tooltip from "@/components/ui/Tooltip";
+import { formatPhoneNumber } from "@/lib/utils";
 
 interface ExtendedAppointment extends Appointment {
     Employee?: string;
@@ -108,7 +108,7 @@ const CustomerPage = () => {
         {
             title: "Phone",
             key: "phone",
-            render: (item) => item.phone || "-",
+            render: (item) => formatPhoneNumber(item.phone) || "-",
         },
         // {
         //     title: "Appointment Date",
@@ -230,7 +230,7 @@ const CustomerPage = () => {
                             <div>
                                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Phone</h3>
                                 <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
-                                    {viewCustomer.phone || "-"}
+                                    {formatPhoneNumber(viewCustomer.phone) || "-"}
                                 </p>
                             </div>
                             {/* <div>

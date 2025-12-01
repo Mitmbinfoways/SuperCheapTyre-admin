@@ -16,6 +16,7 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import DatePicker from "@/components/ui/DatePicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { formatPhoneNumber } from "@/lib/utils";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -210,7 +211,7 @@ const OrdersPage = () => {
     {
       title: "Phone",
       key: "customer.phone",
-      render: (order: Order) => order.customer.phone,
+      render: (order: Order) => formatPhoneNumber(order.customer.phone),
     },
     {
       title: "Order Date",

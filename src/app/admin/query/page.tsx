@@ -15,6 +15,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import CommonDialog from "@/components/ui/Dialogbox"; // Added CommonDialog import
 import { EyeIcon } from "@/components/Layouts/sidebar/icons"; // Added EyeIcon import
 import Tooltip from "@/components/ui/Tooltip";
+import { formatPhoneNumber } from "@/lib/utils";
 
 type Contact = ContactType;
 
@@ -50,7 +51,7 @@ const ContactList: React.FC = () => {
         </div>
       )
     },
-    { title: "Phone", key: "phone", render: (item) => item.phone },
+    { title: "Phone", key: "phone", render: (item) => formatPhoneNumber(item.phone) },
     { title: "Email", key: "email", render: (item) => item.email },
     {
       title: "Date",
@@ -180,7 +181,7 @@ const ContactList: React.FC = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</h3>
                 <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {viewContact.phone || "-"}
+                  {formatPhoneNumber(viewContact.phone) || "-"}
                 </p>
               </div>
               <div className="md:col-span-2">
