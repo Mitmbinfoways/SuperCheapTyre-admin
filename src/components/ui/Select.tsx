@@ -149,7 +149,7 @@ const Select: React.FC<SelectProps> = ({
                       setSearchTerm("");
                     }}
                   >
-                    Create "{searchTerm}"
+                    Create &quot;{searchTerm}&quot;
                   </div>
                 ) : (
                   "No options found"
