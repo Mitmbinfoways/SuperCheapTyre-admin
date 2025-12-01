@@ -18,7 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import ToggleSwitch from "@/components/ui/Toggle";
-import { getAllMasterFilters, MasterFilter } from "@/services/MasterFilterService";
+import { getAllMasterFilters, MasterFilter, createMasterFilter } from "@/services/MasterFilterService";
 import { v4 as uuidv4 } from "uuid";
 
 const Page = () => {
@@ -391,6 +391,41 @@ const Page = () => {
       }));
   };
 
+  const handleCreateMasterFilter = async (
+    subCategory: string,
+    newValue: string,
+  ) => {
+    try {
+      const payload = {
+        category: category,
+        subCategory: subCategory,
+        values: newValue,
+      };
+
+      await createMasterFilter(payload);
+
+      Toast({
+        message: `${subCategory} created successfully`,
+        type: "success",
+      });
+
+      await fetchFilterOptions();
+
+      // Auto select the new value
+      if (category === "tyre") {
+        handleSelect(`tyre.${subCategory}`, newValue);
+      } else if (category === "wheel") {
+        handleSelect(`wheel.${subCategory}`, newValue);
+      }
+    } catch (error) {
+      console.error("Failed to create filter:", error);
+      Toast({
+        message: "Failed to create option",
+        type: "error",
+      });
+    }
+  };
+
   // Tyre options
   const tyreOptions = {
     pattern: getTyreOptions("pattern"),
@@ -564,14 +599,16 @@ const Page = () => {
               </h2>
             </div>
 
-            {category === "tyre" && (
+            {category === "tyre" && ( 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Select
                   label="Pattern"
                   required
+                  searchable
                   name="tyre.pattern"
                   value={formData.tyreSpecifications.pattern}
                   onChange={(value) => handleSelect("tyre.pattern", value)}
+                  onCreate={(value) => handleCreateMasterFilter("pattern", value)}
                   error={errors["tyre.pattern"]}
                   options={tyreOptions.pattern}
                   placeholder="Select pattern"
@@ -581,8 +618,10 @@ const Page = () => {
                 <Select
                   label="Width"
                   required
+                  searchable
                   value={formData.tyreSpecifications.width}
                   onChange={(value) => handleSelect("tyre.width", value)}
+                  onCreate={(value) => handleCreateMasterFilter("width", value)}
                   error={errors["tyre.width"]}
                   options={tyreOptions.width}
                   placeholder="Select width"
@@ -592,8 +631,10 @@ const Page = () => {
                 <Select
                   label="Profile"
                   required
+                  searchable
                   value={formData.tyreSpecifications.profile}
                   onChange={(value) => handleSelect("tyre.profile", value)}
+                  onCreate={(value) => handleCreateMasterFilter("profile", value)}
                   error={errors["tyre.profile"]}
                   options={tyreOptions.profile}
                   placeholder="Select profile"
@@ -602,8 +643,10 @@ const Page = () => {
                 <Select
                   label="Diameter"
                   required
+                  searchable
                   value={formData.tyreSpecifications.diameter}
                   onChange={(value) => handleSelect("tyre.diameter", value)}
+                  onCreate={(value) => handleCreateMasterFilter("diameter", value)}
                   error={errors["tyre.diameter"]}
                   options={tyreOptions.diameter}
                   placeholder="Select diameter"
@@ -612,8 +655,10 @@ const Page = () => {
                 <Select
                   label="Load Rating"
                   required
+                  searchable
                   value={formData.tyreSpecifications.loadRating}
                   onChange={(value) => handleSelect("tyre.loadRating", value)}
+                  onCreate={(value) => handleCreateMasterFilter("loadRating", value)}
                   error={errors["tyre.loadRating"]}
                   options={tyreOptions.loadRating}
                   placeholder="Select load rating"
@@ -622,8 +667,10 @@ const Page = () => {
                 <Select
                   label="Speed Rating"
                   required
+                  searchable
                   value={formData.tyreSpecifications.speedRating}
                   onChange={(value) => handleSelect("tyre.speedRating", value)}
+                  onCreate={(value) => handleCreateMasterFilter("speedRating", value)}
                   error={errors["tyre.speedRating"]}
                   options={tyreOptions.speedRating}
                   placeholder="Select speed rating"
@@ -636,9 +683,11 @@ const Page = () => {
                 <Select
                   label="Size"
                   required
+                  searchable
                   name="wheel.size"
                   value={formData.wheelSpecifications.size}
                   onChange={(value) => handleSelect("wheel.size", value)}
+                  onCreate={(value) => handleCreateMasterFilter("size", value)}
                   error={errors["wheel.size"]}
                   options={wheelOptions.size}
                   placeholder="Select size"
@@ -647,9 +696,11 @@ const Page = () => {
                 <Select
                   label="Color"
                   required
+                  searchable
                   name="wheel.color"
                   value={formData.wheelSpecifications.color}
                   onChange={(value) => handleSelect("wheel.color", value)}
+                  onCreate={(value) => handleCreateMasterFilter("color", value)}
                   error={errors["wheel.color"]}
                   options={wheelOptions.color}
                   placeholder="Select color"
@@ -657,8 +708,10 @@ const Page = () => {
                 <Select
                   label="Diameter"
                   required
+                  searchable
                   value={formData.wheelSpecifications.diameter}
                   onChange={(value) => handleSelect("wheel.diameter", value)}
+                  onCreate={(value) => handleCreateMasterFilter("diameter", value)}
                   error={errors["wheel.diameter"]}
                   options={wheelOptions.diameter}
                   placeholder="Select diameter"
@@ -666,8 +719,10 @@ const Page = () => {
                 <Select
                   label="Fitments"
                   required
+                  searchable
                   value={formData.wheelSpecifications.fitments}
                   onChange={(value) => handleSelect("wheel.fitments", value)}
+                  onCreate={(value) => handleCreateMasterFilter("fitments", value)}
                   error={errors["wheel.fitments"]}
                   options={wheelOptions.fitments}
                   placeholder="Select fitments"
@@ -676,10 +731,12 @@ const Page = () => {
                 <Select
                   label="Staggered Options"
                   required
+                  searchable
                   value={formData.wheelSpecifications.staggeredOptions}
                   onChange={(value) =>
                     handleSelect("wheel.staggeredOptions", value)
                   }
+                  onCreate={(value) => handleCreateMasterFilter("staggeredOptions", value)}
                   error={errors["wheel.staggeredOptions"]}
                   options={wheelOptions.staggeredOptions}
                   placeholder="Select staggered option"

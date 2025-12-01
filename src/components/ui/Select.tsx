@@ -25,6 +25,7 @@ interface SelectProps {
   error?: string;
   searchable?: boolean;
   maxHeight?: string;
+  onCreate?: (value: string) => void;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -41,6 +42,7 @@ const Select: React.FC<SelectProps> = ({
   error,
   searchable = false,
   maxHeight = "200px",
+  onCreate,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -138,7 +140,20 @@ const Select: React.FC<SelectProps> = ({
           >
             {filteredOptions.length === 0 ? (
               <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                No options found
+                {onCreate && searchTerm ? (
+                  <div
+                    className="cursor-pointer text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    onClick={() => {
+                      onCreate(searchTerm);
+                      setIsOpen(false);
+                      setSearchTerm("");
+                    }}
+                  >
+                    Create "{searchTerm}"
+                  </div>
+                ) : (
+                  "No options found"
+                )}
               </div>
             ) : (
               filteredOptions.map((option) => (
@@ -159,8 +174,8 @@ const Select: React.FC<SelectProps> = ({
                   {option.icon && (
                     <div
                       className={`flex-shrink-0 ${value === option.value
-                          ? "text-indigo-600 dark:text-indigo-400"
-                          : "text-gray-400 group-hover:text-indigo-500"
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-gray-400 group-hover:text-indigo-500"
                         }`}
                     >
                       {option.icon}
@@ -172,8 +187,8 @@ const Select: React.FC<SelectProps> = ({
                     {option.description && (
                       <div
                         className={`truncate text-xs ${value === option.value
-                            ? "text-indigo-700 dark:text-indigo-300"
-                            : "text-gray-500 dark:text-gray-400"
+                          ? "text-indigo-700 dark:text-indigo-300"
+                          : "text-gray-500 dark:text-gray-400"
                           }`}
                       >
                         {option.description}
@@ -251,7 +266,6 @@ const Select: React.FC<SelectProps> = ({
         </div>
       </div>
 
-      {/* Render dropdown through portal */}
       {isOpen && createPortal(<DropdownMenu />, document.body)}
 
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

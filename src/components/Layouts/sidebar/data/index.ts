@@ -52,8 +52,8 @@ export const NAV_DATA = [
         items: []
       },
       {
-        title: "Offline Customer",
-        url: "/admin/offline-customer",
+        title: "Offline Order",
+        url: "/admin/offline-order",
         icon: Icons.User,
         items: [],
       },

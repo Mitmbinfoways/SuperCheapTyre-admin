@@ -29,41 +29,58 @@ import CommonDialog from "@/components/ui/Dialogbox";
 import { SearchIcon } from "@/components/ui/icons";
 
 // Stepper Component
-const Stepper = ({ currentStep }: { currentStep: number }) => {
+const Stepper = ({
+    currentStep,
+    steps = ["Appointment", "Order"],
+}: {
+    currentStep: number;
+    steps?: string[];
+}) => {
     return (
-        <div className="flex items-start justify-start mb-8">
-            <div className="flex items-center">
-                <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep >= 1
-                        ? "bg-primary border-primary text-white"
-                        : "border-gray-300 text-gray-500"
-                        }`}
-                >
-                    1
-                </div>
-                <div
-                    className={`w-24 h-1 ${currentStep >= 2 ? "bg-primary" : "bg-gray-300"
-                        }`}
-                ></div>
-                <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep >= 2
-                        ? "bg-primary border-primary text-white"
-                        : "border-gray-300 text-gray-500"
-                        }`}
-                >
-                    2
-                </div>
-            </div>
+        <div className="flex items-center mb-8">
+            {steps.map((label, index) => {
+                const stepNumber = index + 1;
+                const isActive = currentStep >= stepNumber;
+
+                return (
+                    <div key={index} className="flex items-center">
+                        <div className="flex flex-col items-center">
+                            <div
+                                className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
+                                ${isActive
+                                        ? "bg-primary border-primary text-white"
+                                        : "border-gray-300 text-gray-500"
+                                    }`}
+                            >
+                                {stepNumber}
+                            </div>
+                            <p
+                                className={`mt-2 text-sm font-medium ${isActive ? "text-primary" : "text-gray-500"
+                                    }`}
+                            >
+                                {label}
+                            </p>
+                        </div>
+                        {index < steps.length - 1 && (
+                            <div
+                                className={`w-24 h-1 mx-2 ${currentStep > stepNumber
+                                        ? "bg-primary"
+                                        : "bg-gray-300"
+                                    }`}
+                            ></div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 };
+
 
 const OfflineCustomerPage = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-
-    // --- Step 1 State (Appointment) ---
     const [firstname, setFirstname] = useState("");
     const [lastname, setLastname] = useState("");
     const [email, setEmail] = useState("");
@@ -424,12 +441,12 @@ const OfflineCustomerPage = () => {
 
             await createOrder(orderPayload);
 
-            Toast({ message: "Offline customer added successfully!", type: "success" });
+            Toast({ message: "Offline order added successfully!", type: "success" });
             router.push("/admin/appointment");
         } catch (error: any) {
             console.error(error);
             Toast({
-                message: error?.response?.data?.message || "Failed to create offline customer",
+                message: error?.response?.data?.message || "Failed to create offline order",
                 type: "error",
             });
         } finally {
@@ -472,7 +489,7 @@ const OfflineCustomerPage = () => {
                     <IoArrowBack size={24} />
                 </button>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Offline Customer
+                    Offline Order
                 </h1>
             </div>
 
@@ -879,7 +896,7 @@ const OfflineCustomerPage = () => {
                                         <span>Creating...</span>
                                     </div>
                                 ) : (
-                                    "Create Offline Customer"
+                                    "Create Offline Order"
                                 )}
                             </Button>
                         </div>

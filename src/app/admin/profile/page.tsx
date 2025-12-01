@@ -10,7 +10,7 @@ import { Toast } from "@/components/ui/Toast";
 import CommonDialog from "@/components/ui/Dialogbox";
 import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
-import { getAdminProfile } from "@/lib/utils";
+import { getAdminProfile, formatPhoneNumber } from "@/lib/utils";
 import { RootState } from "@/Store/Store";
 import { updateAdmin } from "@/Store/Slice/authSlice";
 import { GetContactInfo, CreateContactInfo, UpdateContactInfo } from "@/services/ContactInfoService";
@@ -139,6 +139,7 @@ const Page = () => {
   };
 
   const addOpeningHour = () => {
+    if (contactFormData.openingHours.length >= 5) return;
     setContactFormData({
       ...contactFormData,
       openingHours: [...contactFormData.openingHours, { day: "", time: "" }],
@@ -533,7 +534,7 @@ const Page = () => {
                       </p>
                       <p>
                         <span className="font-semibold">Phone:</span>{" "}
-                        {profile.phone}
+                        {formatPhoneNumber(profile.phone)}
                       </p>
                     </div>
                     <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row">
@@ -608,7 +609,14 @@ const Page = () => {
                   </div>
 
                   <div>
-                    <FormLabel label="Opening Hours" />
+                    <div className="flex items-center justify-between mb-3">
+                      <FormLabel label="Opening Hours" />
+                      {contactFormData.openingHours.length < 5 && (
+                        <Button color="gray" onClick={addOpeningHour} className="mt-2 flex items-center gap-2">
+                          <FaPlus size={16} /> Add Day
+                        </Button>
+                      )}
+                    </div>
                     {contactFormData.openingHours.map((item, index) => (
                       <div key={index} className="flex gap-2 mb-2 items-center">
                         <TextField
@@ -631,9 +639,6 @@ const Page = () => {
                         </button>
                       </div>
                     ))}
-                    <Button color="gray" onClick={addOpeningHour} className="mt-2 flex items-center gap-2">
-                      <FaPlus size={16} /> Add Day
-                    </Button>
                   </div>
 
                   {/* <div>
@@ -680,7 +685,7 @@ const Page = () => {
 
                 {contactInfo ? (
                   <div className="space-y-4 text-gray-700 dark:text-gray-300">
-                    <p><span className="font-semibold">Phone:</span> {contactInfo.phone}</p>
+                    <p><span className="font-semibold">Phone:</span> {formatPhoneNumber(contactInfo.phone)}</p>
                     <p><span className="font-semibold">Email:</span> {contactInfo.email}</p>
                     <p><span className="font-semibold">Address:</span> {contactInfo.address}</p>
 
