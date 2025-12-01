@@ -8,6 +8,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import TextField from "@/components/ui/TextField";
 import { Toast } from "@/components/ui/Toast";
 import CommonDialog from "@/components/ui/Dialogbox";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 import { GetAdminById, UpdateProfile, Admin } from "@/services/AdminService";
 import { getAdminProfile } from "@/lib/utils";
 import { RootState } from "@/Store/Store";
@@ -399,13 +400,19 @@ const Page = () => {
                   </div>
 
                   <div>
-                    <FormLabel label="Phone" required />
-                    <TextField
-                      type="number"
+                    <CommonPhoneInput
+                      label="Phone"
+                      required
                       name="phone"
                       value={formData.phone}
-                      onChange={handleChange}
+                      onChange={(value) => {
+                        setFormData({ ...formData, phone: value });
+                        setFormErrors({ ...formErrors, phone: "" });
+                      }}
+                      onClearError={() => setFormErrors({ ...formErrors, phone: "" })}
+                      onTouch={() => { }}
                       error={formErrors.phone}
+                      touched={!!formErrors.phone}
                     />
                   </div>
 
@@ -561,13 +568,19 @@ const Page = () => {
                 </h2>
                 <div className="space-y-4">
                   <div>
-                    <FormLabel label="Phone" required />
-                    <TextField
-                      type="number"
+                    <CommonPhoneInput
+                      label="Phone"
+                      required
                       name="phone"
                       value={contactFormData.phone}
-                      onChange={handleContactChange}
+                      onChange={(value) => {
+                        setContactFormData({ ...contactFormData, phone: value });
+                        setContactFormErrors({ ...contactFormErrors, phone: "" });
+                      }}
+                      onClearError={() => setContactFormErrors({ ...contactFormErrors, phone: "" })}
+                      onTouch={() => { }}
                       error={contactFormErrors.phone}
+                      touched={!!contactFormErrors.phone}
                     />
                   </div>
                   <div>

@@ -165,7 +165,7 @@ const OrderDetailsPage = () => {
                     <Button
                         variant="secondary"
                         className="p-2 rounded-full flex items-center justify-center"
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/admin/orders')}
                     >
                         <IoArrowBack size={20} />
                     </Button>
