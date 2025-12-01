@@ -240,7 +240,7 @@ const Page = () => {
         sku = `${formData.brand}-${tyre.width || ""}/${tyre.profile || ""}-${tyre.pattern || ""}-${tyre.diameter || ""}-${tyre.loadRating || ""}${tyre.speedRating || ""}`;
       } else if (category === "wheel") {
         const wheel = formData.wheelSpecifications;
-        sku = `${formData.brand}-${wheel.size || ""}-${wheel.diameter || ""}-${wheel.fitments || ""}`;
+        sku = `${formData.brand}-${wheel.size || ""}-${wheel.color || ""}-${wheel.diameter || ""}-${wheel.fitments || ""}-${wheel.staggeredOptions || ""}`;
       } else {
         sku = `${(formData.brand || "").slice(0, 10)}-${Date.now().toString().slice(-6)}`;
       }
@@ -599,7 +599,7 @@ const Page = () => {
               </h2>
             </div>
 
-            {category === "tyre" && ( 
+            {category === "tyre" && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Select
                   label="Pattern"
