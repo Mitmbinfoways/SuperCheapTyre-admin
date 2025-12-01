@@ -213,8 +213,10 @@ const CreateServicePage = () => {
                                     setFormData((prev: any) => ({ ...prev, images }))
                                 }
                                 maxFiles={5}
+                                ImageTitle="Service Image"
                                 onFilesSelected={handleFilesSelected}
                                 onRemove={handleRemoveImage}
+                                ImageRatio="Recommended: Use 4:5 aspect ratio"
                             />
                         </div>
 
