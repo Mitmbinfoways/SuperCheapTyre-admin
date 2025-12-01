@@ -38,17 +38,18 @@ const Stepper = ({
     steps?: string[];
 }) => {
     return (
-        <div className="flex items-center mb-8">
+        <div className="flex items-center mb-8 gap-4">
             {steps.map((label, index) => {
                 const stepNumber = index + 1;
                 const isActive = currentStep >= stepNumber;
 
                 return (
-                    <div key={index} className="flex items-center">
-                        <div className="flex flex-col items-center">
+                    <div key={index} className="flex items-start relative">
+                        {/* Circle + Label */}
+                        <div className="flex flex-col items-center relative">
                             <div
                                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 
-                                ${isActive
+                                    ${isActive
                                         ? "bg-primary border-primary text-white"
                                         : "border-gray-300 text-gray-500"
                                     }`}
@@ -56,19 +57,21 @@ const Stepper = ({
                                 {stepNumber}
                             </div>
                             <p
-                                className={`mt-2 text-sm font-medium ${isActive ? "text-primary" : "text-gray-500"
-                                    }`}
+                                className={`mt-2 text-sm font-medium 
+                                    ${isActive ? "text-primary" : "text-gray-500"}`}
                             >
                                 {label}
                             </p>
                         </div>
+
+                        {/* Centered Line */}
                         {index < steps.length - 1 && (
-                            <div
-                                className={`w-24 h-1 mx-2 ${currentStep > stepNumber
-                                    ? "bg-primary"
-                                    : "bg-gray-300"
-                                    }`}
-                            ></div>
+                            <div className="relative w-24 h-10">
+                                <div
+                                    className={`absolute top-1/2 -translate-y-1/2 h-1 w-full 
+                                        ${currentStep > stepNumber ? "bg-primary" : "bg-gray-300"}`}
+                                ></div>
+                            </div>
                         )}
                     </div>
                 );
@@ -180,6 +183,8 @@ const OfflineCustomerPage = () => {
     const handleDateChange = (newDate: Date | null) => {
         setDate(newDate);
         setSlotId("");
+        if (apptErrors.date) setApptErrors(prev => ({ ...prev, date: "" }));
+        if (apptErrors.slotId) setApptErrors(prev => ({ ...prev, slotId: "" }));
         if (newDate) {
             fetchSlots(newDate, timeSlotId);
         } else {
@@ -193,11 +198,18 @@ const OfflineCustomerPage = () => {
         const newErrors: { [key: string]: string } = {};
         if (!firstname.trim()) newErrors.firstname = "First name is required";
         if (!lastname.trim()) newErrors.lastname = "Last name is required";
-        if (!email.trim()) newErrors.email = "Email is required";
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (!emailRegex.test(email)) {
+            newErrors.email = "Invalid email address";
+        }
+
         if (!phone.trim()) newErrors.phone = "Phone is required";
         if (!date) newErrors.date = "Date is required";
         if (!slotId) newErrors.slotId = "Time slot is required";
-        // if (!employee) newErrors.employee = "Technician assignment is required"; // Optional?
+        if (!employee) newErrors.employee = "Technician is required";
 
         if (Object.keys(newErrors).length > 0) {
             setApptErrors(newErrors);
@@ -602,6 +614,7 @@ const OfflineCustomerPage = () => {
                                                 disabled={!slot.isAvailable}
                                                 onClick={() => {
                                                     setSlotId(slot.slotId);
+                                                    if (apptErrors.slotId) setApptErrors(prev => ({ ...prev, slotId: "" }));
                                                 }}
                                                 className={`
                           px-2 py-2 text-sm font-medium rounded-lg border transition-all
@@ -632,12 +645,16 @@ const OfflineCustomerPage = () => {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-2">
-                                    <FormLabel label="Assign Technician" />
+                                    <FormLabel label="Assign Technician" required />
                                     <Select
                                         options={technicians}
                                         value={employee}
-                                        onChange={setEmployee}
+                                        onChange={(val) => {
+                                            setEmployee(val);
+                                            if (apptErrors.employee) setApptErrors(prev => ({ ...prev, employee: "" }));
+                                        }}
                                         placeholder="Select Technician"
+                                        error={apptErrors.employee}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2 md:col-span-2">
@@ -664,7 +681,7 @@ const OfflineCustomerPage = () => {
                         <div>
                             <div className="flex justify-between items-center mb-4 border-b pb-2">
                                 <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                    Order Details
+                                    Order Details <span className="text-red-500">*</span>
                                 </h2>
                                 <Button variant="primary" onClick={handleOpenModal} type="button">
                                     Add Products
