@@ -726,7 +726,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                                             Qty: {item.quantity || 1}
                                                         </span>
                                                     </div>
-                                                    <div className="mt-2 flex justify-end">
+                                                    {/* <div className="mt-2 flex justify-end">
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -739,7 +739,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                                         >
                                                             Remove
                                                         </button>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
                                         </div>
@@ -750,7 +750,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
 
                         {/* Payment Details Section */}
                         <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-                            <div className="mb-4 flex items-center justify-between">
+                            {/* <div className="mb-4 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Payment Details</h3>
                                 <Button
                                     variant="primary"
@@ -761,7 +761,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                     <FiPlus size={16} />
                                     Add Payment
                                 </Button>
-                            </div>
+                            </div> */}
 
                             {errors.paymentTotal && (
                                 <div className="mb-4 p-2 bg-red-50 border border-red-200 rounded">

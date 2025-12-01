@@ -47,13 +47,11 @@ const CustomerPage = () => {
         setLoading(true);
         setError(null);
         try {
+            // Fetch all appointments to handle client-side deduplication for unique customers
             const res = await GetAllAppointments({
-                currentPage,
-                itemsPerPage,
                 search: debounceSearch,
             });
 
-            // Filter for unique emails
             const uniqueAppointments = res.data.items.filter((item, index, self) => {
                 if (!item.email) return true;
                 return index === self.findIndex((t) => (
@@ -61,9 +59,14 @@ const CustomerPage = () => {
                 ));
             });
 
-            setAppointments(uniqueAppointments);
-            setTotalPages(res.data.pagination.totalPages || 1);
-            setTotalCustomers(res.data.pagination.totalItems || 0);
+            setTotalCustomers(uniqueAppointments.length);
+            setTotalPages(Math.ceil(uniqueAppointments.length / itemsPerPage) || 1);
+
+            // Client-side pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = uniqueAppointments.slice(startIndex, startIndex + itemsPerPage);
+
+            setAppointments(paginatedItems);
         } catch (err: any) {
             const errorMessage =
                 err?.response?.data?.message || "Failed to load customers";
@@ -75,7 +78,7 @@ const CustomerPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentPage, itemsPerPage, debounceSearch]);
+    }, [debounceSearch]);
 
     const handleViewCustomer = (customer: ExtendedAppointment) => {
         setViewCustomer(customer);

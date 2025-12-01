@@ -936,7 +936,7 @@ const OfflineCustomerPage = () => {
                         loadingProducts ? (
                             <div className="py-4 text-center">Loading products...</div>
                         ) : (
-                            <div className="max-h-[60vh] overflow-y-auto">
+                            <div className="max-h-[60vh] overflow-y-auto no-scrollbar">
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {filteredProducts.map((product) => (
                                         <div

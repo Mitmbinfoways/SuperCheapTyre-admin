@@ -70,7 +70,7 @@ export const GetAllAppointments = async (
   filter: AppointmentFilter = {},
 ): Promise<ApiResponse<AppointmentResponse>> => {
   try {
-    const { currentPage = 1, itemsPerPage = 10, search } = filter;
+    const { currentPage, itemsPerPage, search } = filter;
 
     const params: string[] = [];
     params.push(`page=${currentPage}`);
