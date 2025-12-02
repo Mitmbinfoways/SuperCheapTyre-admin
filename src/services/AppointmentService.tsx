@@ -1,4 +1,4 @@
-import { getMethod, patchMethod, postMethod } from "./methods";
+import { getMethod, patchMethod, postMethod, deleteMethod } from "./methods";
 
 const AUTH_SERVICE_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -139,5 +139,13 @@ export const getAvailableSlots = async (
   const response = await getMethod<ApiResponse<{ date: string; slots: any[] }>>(
     url
   );
+  return response.data;
+};
+
+export const deleteAppointment = async (
+  id: string
+): Promise<ApiResponse<{}>> => {
+  const url = `${AUTH_SERVICE_BASE_URL}/api/v1/appointment/${id}`;
+  const response = await deleteMethod<ApiResponse<{}>>(url);
   return response.data;
 };

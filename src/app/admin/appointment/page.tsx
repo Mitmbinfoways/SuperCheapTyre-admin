@@ -7,6 +7,7 @@ import {
   GetAllAppointments,
   Appointment,
   updateAppointment,
+  deleteAppointment,
 } from "@/services/AppointmentService";
 import Pagination from "@/components/ui/Pagination";
 import TextField from "@/components/ui/TextField";
@@ -24,6 +25,7 @@ import Tooltip from "@/components/ui/Tooltip";
 import DatePicker from "@/components/ui/DatePicker";
 import Button from "@/components/ui/Button";
 import { formatPhoneNumber } from "@/lib/utils";
+import { FiTrash2 } from "react-icons/fi";
 
 interface ExtendedAppointment extends Appointment {
   Employee?: string;
@@ -214,6 +216,27 @@ const AppointmentsPage = () => {
     [appointments, fetchAppointments],
   );
 
+  const handleDeleteAppointment = useCallback(async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this appointment?")) {
+      return;
+    }
+    try {
+      await deleteAppointment(id);
+      Toast({
+        message: "Appointment deleted successfully",
+        type: "success",
+      });
+      fetchAppointments();
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.message || "Failed to delete appointment";
+      Toast({
+        message: errorMessage,
+        type: "error",
+      });
+    }
+  }, [fetchAppointments]);
+
   const handleViewAppointment = (appointment: ExtendedAppointment) => {
     setViewAppointment(appointment);
   };
@@ -313,6 +336,16 @@ const AppointmentsPage = () => {
               <MdModeEdit size={16} />
             </button>
           </Tooltip>
+          <Tooltip
+            content="Delete Appointment">
+            <button
+              onClick={() => handleDeleteAppointment(item._id)}
+              className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+              aria-label="Delete appointment"
+            >
+              <FiTrash2 size={16} />
+            </button>
+          </Tooltip>
         </div>
       ),
     },
@@ -332,9 +365,14 @@ const AppointmentsPage = () => {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md dark:bg-gray-900">
-      <h1 className="mb-4 text-2xl font-semibold text-primary dark:text-gray-300">
-        Appointments ({dateFilter === "all" && !debounceSearch ? totalAppointments : filteredAppointments.length || 0})
-      </h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
+          Appointments ({dateFilter === "all" && !debounceSearch ? totalAppointments : filteredAppointments.length || 0})
+        </h1>
+        <Button onClick={() => router.push("/admin/appointment/create")}>
+          Create Appointment
+        </Button>
+      </div>
 
       <div className="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
         <div className="flex flex-col gap-1">

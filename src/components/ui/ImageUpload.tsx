@@ -138,7 +138,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         </p>
         <p className="mt-1 text-xs text-gray-400 dark:text-gray-400">
           {fileTypesText}
-          {maxSizeMB}MB each)
+          {maxSizeMB}MB each
         </p>
         <input
           ref={inputRef}
@@ -160,16 +160,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             {images.map((img) => (
               <div
                 key={img.id}
-                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${
-                  !isMobile ? "w-40" : ""
-                }`}
+                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${!isMobile ? "w-40" : ""
+                  }`}
               >
-                {img.file?.type.startsWith("video/") ? (
+                {img.file?.type.startsWith("video/") ||
+                  (!img.file &&
+                    /\.(mp4|webm|ogg|mov)$/i.test(img.url.split("?")[0])) ? (
                   // Simple video preview thumbnail
                   <video
                     src={img.url}
                     className="object-cover w-full h-full"
                     muted
+                    controls
                   />
                 ) : (
                   <Image
