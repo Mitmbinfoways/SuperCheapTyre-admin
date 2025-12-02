@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { HiChevronDown, HiCheck, HiSearch } from "react-icons/hi";
 import { createPortal } from "react-dom";
+import Button from "./Button";
 
 interface SelectOption {
   label: string;
@@ -139,21 +140,24 @@ const Select: React.FC<SelectProps> = ({
             style={{ maxHeight }}
           >
             {filteredOptions.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                {onCreate && searchTerm ? (
-                  <div
-                    className="cursor-pointer text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                    onClick={() => {
-                      onCreate(searchTerm);
-                      setIsOpen(false);
-                      setSearchTerm("");
-                    }}
-                  >
-                    Create &quot;{searchTerm}&quot;
-                  </div>
-                ) : (
-                  "No options found"
-                )}
+              <div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Create New {label}</span>
+                <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  {onCreate && searchTerm ? (
+                    <div
+                      className="cursor-pointer text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      onClick={() => {
+                        onCreate(searchTerm);
+                        setIsOpen(false);
+                        setSearchTerm("");
+                      }}
+                    >
+                      <Button variant="primary">Create &quot;{searchTerm}&quot;</Button>
+                    </div>
+                  ) : (
+                    "No options found"
+                  )}
+                </div>
               </div>
             ) : (
               filteredOptions.map((option) => (
