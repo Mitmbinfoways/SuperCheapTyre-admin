@@ -376,8 +376,8 @@ const AppointmentForm = ({
                         >
                             Cancel
                         </Button>
-                        <Button variant="primary" type="submit" disabled={loading}>
-                            {loading ? "Saving..." : "Save Appointment"}
+                        <Button variant="primary" type="submit">
+                            {loading ? "Creating..." : "Create Appointment"}
                         </Button>
                     </div>
                 </form>

@@ -45,7 +45,7 @@ export function Header() {
       )}
 
       <div className="flex flex-1 items-center justify-end gap-2 min-[375px]:gap-4">
-        <ThemeToggleSwitch />
+        {/* <ThemeToggleSwitch /> */}
         <div className="shrink-0">
           <UserInfo />
         </div>

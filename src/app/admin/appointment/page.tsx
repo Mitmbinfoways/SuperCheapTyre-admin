@@ -58,6 +58,8 @@ const AppointmentsPage = () => {
   const [customEndDate, setCustomEndDate] = useState("");
   const itemsPerPage = 10;
   const [totalAppointments, setTotalAppointments] = useState<number>(0);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteAppointmentId, setDeleteAppointmentId] = useState<string | null>(null);
 
   const formatDateForInput = (date: Date): string => {
     const year = date.getFullYear();
@@ -216,26 +218,37 @@ const AppointmentsPage = () => {
     [appointments, fetchAppointments],
   );
 
-  const handleDeleteAppointment = useCallback(async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this appointment?")) {
-      return;
-    }
+  const handleCloseDeleteDialog = () => {
+    setShowDeleteDialog(false);
+    setDeleteAppointmentId(null);
+  };
+
+  const handleDeleteAppointment = (id: string) => {
+    setDeleteAppointmentId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteAppointment = async () => {
+    if (!deleteAppointmentId) return;
     try {
-      await deleteAppointment(id);
+      await deleteAppointment(deleteAppointmentId);
       Toast({
         message: "Appointment deleted successfully",
         type: "success",
       });
       fetchAppointments();
+      handleCloseDeleteDialog();
     } catch (err: any) {
+      console.log(err);
       const errorMessage =
-        err?.response?.data?.message || "Failed to delete appointment";
+        err?.response?.data?.errorData || "Failed to delete appointment";
       Toast({
         message: errorMessage,
         type: "error",
       });
+      handleCloseDeleteDialog();
     }
-  }, [fetchAppointments]);
+  };
 
   const handleViewAppointment = (appointment: ExtendedAppointment) => {
     setViewAppointment(appointment);
@@ -462,6 +475,26 @@ const AppointmentsPage = () => {
           </>
         )}
       </div>
+
+      <CommonDialog
+        isOpen={showDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        title="Confirm Delete"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={handleCloseDeleteDialog}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDeleteAppointment}>
+              Delete
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700 dark:text-gray-300">
+          Are you sure you want to delete this appointment? This action cannot be undone.
+        </p>
+      </CommonDialog>
 
       <CommonDialog
         isOpen={!!viewAppointment}

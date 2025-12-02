@@ -387,7 +387,7 @@ const OfflineCustomerPage = () => {
             await createOrder(orderPayload);
 
             Toast({ message: "Offline order added successfully!", type: "success" });
-            router.push("/admin/appointment");
+            router.push("/admin/orders");
         } catch (error: any) {
             console.error(error);
             Toast({
