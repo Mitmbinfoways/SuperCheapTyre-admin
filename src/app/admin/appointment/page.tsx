@@ -351,7 +351,7 @@ const AppointmentsPage = () => {
             value={dateFilter}
             onChange={setDateFilter}
             options={[
-              { label: "All", value: "all" },
+              { label: "All Time", value: "all" },
               { label: "Today", value: "today" },
               { label: "Yesterday", value: "yesterday" },
               { label: "Tomorrow", value: "tomorrow" },

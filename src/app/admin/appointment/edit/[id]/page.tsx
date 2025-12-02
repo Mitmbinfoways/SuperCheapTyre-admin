@@ -186,20 +186,6 @@ const EditAppointmentPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <Skeleton className="h-10 w-32 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
@@ -214,90 +200,94 @@ const EditAppointmentPage = () => {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-sm">
-        {/* Customer Details */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
-            Customer Details
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <FormLabel label="First Name" required />
-              <TextField
-                value={firstname}
-                onChange={(e) => {
-                  setFirstname(e.target.value);
-                  if (errors.firstname) setErrors({ ...errors, firstname: "" });
-                }}
-                placeholder="Enter first name"
-                error={errors.firstname}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <FormLabel label="Last Name" required />
-              <TextField
-                value={lastname}
-                onChange={(e) => {
-                  setLastname(e.target.value);
-                  if (errors.lastname) setErrors({ ...errors, lastname: "" });
-                }}
-                placeholder="Enter last name"
-                error={errors.lastname}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <FormLabel label="Email" required />
-              <TextField
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors({ ...errors, email: "" });
-                }}
-                placeholder="Enter email"
-                error={errors.email}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <CommonPhoneInput
-                label="Phone"
-                name="phone"
-                value={phone}
-                required
-                error={errors.phone}
-                touched={!!errors.phone}
-                onChange={(val: string) => {
-                  setPhone(val);
-                  if (errors.phone) setErrors({ ...errors, phone: "" });
-                }}
-                onClearError={() => {
-                  if (errors.phone) setErrors({ ...errors, phone: "" });
-                }}
-                onTouch={() => { }}
-              />
+      {loading ?
+        (<div className="flex h-[60vh] bg-white dark:bg-gray-900 rounded-2xl items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>) :
+        (<form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-sm">
+          {/* Customer Details */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+              Customer Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col">
+                <FormLabel label="First Name" required />
+                <TextField
+                  value={firstname}
+                  onChange={(e) => {
+                    setFirstname(e.target.value);
+                    if (errors.firstname) setErrors({ ...errors, firstname: "" });
+                  }}
+                  placeholder="Enter first name"
+                  error={errors.firstname}
+                />
+              </div>
+              <div className="flex flex-col">
+                <FormLabel label="Last Name" required />
+                <TextField
+                  value={lastname}
+                  onChange={(e) => {
+                    setLastname(e.target.value);
+                    if (errors.lastname) setErrors({ ...errors, lastname: "" });
+                  }}
+                  placeholder="Enter last name"
+                  error={errors.lastname}
+                />
+              </div>
+              <div className="flex flex-col">
+                <FormLabel label="Email" required />
+                <TextField
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors({ ...errors, email: "" });
+                  }}
+                  placeholder="Enter email"
+                  error={errors.email}
+                />
+              </div>
+              <div className="flex flex-col">
+                <CommonPhoneInput
+                  label="Phone"
+                  name="phone"
+                  value={phone}
+                  required
+                  error={errors.phone}
+                  touched={!!errors.phone}
+                  onChange={(val: string) => {
+                    setPhone(val);
+                    if (errors.phone) setErrors({ ...errors, phone: "" });
+                  }}
+                  onClearError={() => {
+                    if (errors.phone) setErrors({ ...errors, phone: "" });
+                  }}
+                  onTouch={() => { }}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Appointment Details */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
-            Appointment Schedule
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="flex flex-col gap-2">
-              <FormLabel label="Date" />
-              <DatePicker
-                value={date}
-                minDate={new Date()}
-                onChange={handleDateChange}
-                placeholder="Select Date"
-                className="w-full"
-              />
-              {errors.date && <p className="text-sm text-red-600">{errors.date}</p>}
-            </div>
+          {/* Appointment Details */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+              Appointment Schedule
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="flex flex-col gap-2">
+                <FormLabel label="Date" />
+                <DatePicker
+                  value={date}
+                  minDate={new Date()}
+                  onChange={handleDateChange}
+                  placeholder="Select Date"
+                  className="w-full"
+                />
+                {errors.date && <p className="text-sm text-red-600">{errors.date}</p>}
+              </div>
 
-            {/* <div className="flex flex-col gap-2">
+              {/* <div className="flex flex-col gap-2">
               <FormLabel label="Status" />
               <Select
                 options={statusOptions}
@@ -306,119 +296,119 @@ const EditAppointmentPage = () => {
                 placeholder="Select Status"
               />
             </div> */}
-          </div>
+            </div>
 
-          {/* Time Slots */}
-          <div className="mb-6">
-            <FormLabel label="Available Time Slots" required />
-            {loadingSlots ? (
-              <div className="w-full">
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                  {[...Array(12)].map((_, i) => (
-                    <div key={i} className="h-10 w-full rounded-md overflow-hidden">
-                      <Skeleton className="h-10 w-full rounded-md" />
-                    </div>
-                  ))}
+            {/* Time Slots */}
+            <div className="mb-6">
+              <FormLabel label="Available Time Slots" required />
+              {loadingSlots ? (
+                <div className="w-full">
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                    {[...Array(12)].map((_, i) => (
+                      <div key={i} className="h-10 w-full rounded-md overflow-hidden">
+                        <Skeleton className="h-10 w-full rounded-md" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : availableSlots.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {availableSlots.map((slot) => {
-                  const isSelected = slot.slotId === slotId;
-                  // If it's the current appointment's slot, it might show as unavailable in the API if we don't exclude it, 
-                  // but our backend logic for getAvailableSlots checks for booked appointments.
-                  // If we are editing, the current slot is booked by US.
-                  // The API getAvailableSlots returns isAvailable=false for booked slots.
-                  // However, we should allow selecting the CURRENT slot even if it says unavailable (because it's ours).
-                  // But wait, getAvailableSlots doesn't know about "us" (the appointment being edited).
-                  // So the current slot will likely be returned as isAvailable: false.
-                  // We need to handle this visually.
+              ) : availableSlots.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {availableSlots.map((slot) => {
+                    const isSelected = slot.slotId === slotId;
+                    // If it's the current appointment's slot, it might show as unavailable in the API if we don't exclude it, 
+                    // but our backend logic for getAvailableSlots checks for booked appointments.
+                    // If we are editing, the current slot is booked by US.
+                    // The API getAvailableSlots returns isAvailable=false for booked slots.
+                    // However, we should allow selecting the CURRENT slot even if it says unavailable (because it's ours).
+                    // But wait, getAvailableSlots doesn't know about "us" (the appointment being edited).
+                    // So the current slot will likely be returned as isAvailable: false.
+                    // We need to handle this visually.
 
-                  // Actually, if we are editing, we might want to show the current slot as selected.
-                  // If the user changes the date, then we pick a new slot.
-                  // If the date is the same, the current slot ID matches.
+                    // Actually, if we are editing, we might want to show the current slot as selected.
+                    // If the user changes the date, then we pick a new slot.
+                    // If the date is the same, the current slot ID matches.
 
-                  const isAvailable = slot.isAvailable || slot.slotId === slotId; // Allow current slot
+                    const isAvailable = slot.isAvailable || slot.slotId === slotId; // Allow current slot
 
-                  return (
-                    <button
-                      key={slot.slotId}
-                      type="button"
-                      disabled={!isAvailable}
-                      onClick={() => setSlotId(slot.slotId)}
-                      className={`
+                    return (
+                      <button
+                        key={slot.slotId}
+                        type="button"
+                        disabled={!isAvailable}
+                        onClick={() => setSlotId(slot.slotId)}
+                        className={`
                         px-2 py-2 text-sm font-medium rounded-lg border transition-all
                         ${isSelected
-                          ? "bg-primary text-white border-primary ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-900"
-                          : isAvailable
-                            ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-transparent cursor-not-allowed decoration-slice"
-                        }
+                            ? "bg-primary text-white border-primary ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-900"
+                            : isAvailable
+                              ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-transparent cursor-not-allowed decoration-slice"
+                          }
                       `}
-                    >
-                      {slot.startTime} - {slot.endTime}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-gray-500 dark:text-gray-400 text-sm italic">
-                {date ? "No slots available for this date." : "Please select a date to view slots."}
-              </div>
-            )}
-            {errors.slotId && <p className="mt-1 text-sm text-red-600">{errors.slotId}</p>}
-          </div>
-        </div>
-
-        {/* Assignment & Notes */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
-            Assignment & Notes
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <FormLabel label="Assign Technician" required />
-              <Select
-                options={technicians}
-                value={employee}
-                onChange={(val) => {
-                  setEmployee(val);
-                  if (errors.employee) setErrors({ ...errors, employee: "" });
-                }}
-                placeholder="Select Technician"
-                error={errors.employee}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <FormLabel label="Notes" />
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any notes here..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:border-gray-700 dark:text-white min-h-[100px]"
-              />
+                      >
+                        {slot.startTime} - {slot.endTime}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-gray-500 dark:text-gray-400 text-sm italic">
+                  {date ? "No slots available for this date." : "Please select a date to view slots."}
+                </div>
+              )}
+              {errors.slotId && <p className="mt-1 text-sm text-red-600">{errors.slotId}</p>}
             </div>
           </div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-4 pt-4 border-t">
-          <Button
-            variant="secondary"
-            onClick={() => router.back()}
-            type="button"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </form>
+          {/* Assignment & Notes */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+              Assignment & Notes
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2">
+                <FormLabel label="Assign Technician" required />
+                <Select
+                  options={technicians}
+                  value={employee}
+                  onChange={(val) => {
+                    setEmployee(val);
+                    if (errors.employee) setErrors({ ...errors, employee: "" });
+                  }}
+                  placeholder="Select Technician"
+                  error={errors.employee}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <FormLabel label="Notes" />
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add any notes here..."
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:border-gray-700 dark:text-white min-h-[100px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-4 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => router.back()}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>)}
     </div>
   );
 };

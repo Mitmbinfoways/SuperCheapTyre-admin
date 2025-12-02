@@ -37,14 +37,14 @@ const CommonPhoneInput: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="font-lexend font-normal text-black text-base">
+      <label className="font-lexend font-normal text-gray-900 dark:text-gray-100 text-base">
         {label}
         {required && <span className="text-red-600">*</span>}
       </label>
 
       <div
-        className={`flex items-center w-full h-10 p-2 rounded-[7px] border 
-        ${showError ? "border-red-600" : "border-gray-300"}
+        className={`flex items-center w-full h-10 p-2 rounded-[7px] border bg-white dark:bg-gray-800
+        ${showError ? "border-red-600" : "border-gray-300 dark:border-gray-700"}
         focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500
       `}
       >
@@ -54,7 +54,7 @@ const CommonPhoneInput: React.FC<Props> = ({
           value={value}
           onChange={(val) => {
             if (readOnly) return;
-            onChange(val || "");
+            onChange(val || "");  
             onClearError();
             onTouch();
           }}
@@ -106,6 +106,14 @@ const CommonPhoneInput: React.FC<Props> = ({
           width: 100%;
           height: 52px;
           color: #111827;
+        }
+        .dark .PhoneInputInput {
+          color: #f3f4f6 !important;
+          background-color: transparent;
+        }
+        .dark .PhoneInputCountrySelect {
+          color: #f3f4f6;
+          background-color: #111827;
         }
       `}</style>
 

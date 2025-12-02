@@ -11,6 +11,18 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Customer List",
+        url: "/admin/customer",
+        icon: Icons.User,
+        items: []
+      },
+      {
+        title: "Appointments",
+        url: "/admin/appointment",
+        icon: Icons.CalendarDaysIcon,
+        items: [],
+      },
+      {
         title: "Products",
         icon: Icons.ShoppingCartIcon,
         items: [
@@ -24,7 +36,6 @@ export const NAV_DATA = [
           },
         ],
       },
-
       {
         title: "Services",
         icon: Icons.PackageIcon,
@@ -40,16 +51,10 @@ export const NAV_DATA = [
         ],
       },
       {
-        title: "Appointments",
-        url: "/admin/appointment",
-        icon: Icons.CalendarDaysIcon,
+        title: "Orders",
+        url: "/admin/orders",
+        icon: Icons.OrdersIcon,
         items: [],
-      },
-      {
-        title: "Customer List",
-        url: "/admin/customer",
-        icon: Icons.User,
-        items: []
       },
       {
         title: "Offline Order",
@@ -58,9 +63,9 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Orders",
-        url: "/admin/orders",
-        icon: Icons.OrdersIcon,
+        title: "Manage Employee",
+        url: "/admin/add-employee",
+        icon: Icons.UserPlusIcon,
         items: [],
       },
       {
@@ -111,12 +116,6 @@ export const NAV_DATA = [
         title: "Manage Holidays",
         url: "/admin/add-holidays",
         icon: Icons.CalendarPlusIcon,
-        items: [],
-      },
-      {
-        title: "Manage Employee",
-        url: "/admin/add-employee",
-        icon: Icons.UserPlusIcon,
         items: [],
       },
       {
