@@ -62,7 +62,7 @@ const Tooltip: React.FC<TooltipProps> = ({
 
     const tooltip = tooltipRef.current;
     const trigger = triggerRef.current;
-    
+
     const tooltipRect = tooltip.getBoundingClientRect();
     const triggerRect = trigger.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
@@ -126,7 +126,7 @@ const Tooltip: React.FC<TooltipProps> = ({
           ref={tooltipRef}
           role="tooltip"
           className={clsx(
-            "fixed z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm dark:bg-gray-700 transition-opacity duration-150",
+            "fixed z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm dark:bg-gray-700 transition-opacity duration-150 whitespace-nowrap",
             isVisible ? "opacity-100" : "opacity-0",
             className
           )}

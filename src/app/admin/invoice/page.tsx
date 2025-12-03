@@ -386,12 +386,12 @@ const OfflineCustomerPage = () => {
 
             await createOrder(orderPayload);
 
-            Toast({ message: "Offline order added successfully!", type: "success" });
+            Toast({ message: "Invoice added successfully!", type: "success" });
             router.push("/admin/orders");
         } catch (error: any) {
             console.error(error);
             Toast({
-                message: error?.response?.data?.message || "Failed to create offline order",
+                message: error?.response?.data?.message || "Failed to create invoice",
                 type: "error",
             });
         } finally {
@@ -671,7 +671,7 @@ const OfflineCustomerPage = () => {
                                     <span>Creating...</span>
                                 </div>
                             ) : (
-                                "Create Offline Order"
+                                "Create Invoice"
                             )}
                         </Button>
                     </div>
@@ -689,45 +689,47 @@ const OfflineCustomerPage = () => {
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex border-b border-gray-200 dark:border-gray-700">
-                        <button
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "products"
-                                ? "border-primary text-primary"
-                                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                }`}
-                            onClick={() => handleTabChange("products")}
-                        >
-                            Products
-                        </button>
-                        <button
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "services"
-                                ? "border-primary text-primary"
-                                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                }`}
-                            onClick={() => handleTabChange("services")}
-                        >
-                            Services
-                        </button>
-                    </div>
-
-                    <div className="relative">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <SearchIcon className="h-5 w-5 text-gray-400" />
+                    <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pb-4">
+                        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+                            <button
+                                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "products"
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    }`}
+                                onClick={() => handleTabChange("products")}
+                            >
+                                Products
+                            </button>
+                            <button
+                                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === "services"
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    }`}
+                                onClick={() => handleTabChange("services")}
+                            >
+                                Services
+                            </button>
                         </div>
-                        <TextField
-                            type="text"
-                            placeholder={activeTab === "products" ? "Search products..." : "Search services..."}
-                            value={searchQuery}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="w-full pl-10"
-                        />
+
+                        <div className="relative">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <SearchIcon className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <TextField
+                                type="text"
+                                placeholder={activeTab === "products" ? "Search products..." : "Search services..."}
+                                value={searchQuery}
+                                onChange={(e) => handleSearch(e.target.value)}
+                                className="w-full pl-10"
+                            />
+                        </div>
                     </div>
 
                     {activeTab === "products" ? (
                         loadingProducts ? (
                             <div className="py-4 text-center">Loading products...</div>
                         ) : (
-                            <div className="max-h-[60vh] overflow-y-auto no-scrollbar">
+                            <div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {filteredProducts.map((product) => (
                                         <div
@@ -821,7 +823,7 @@ const OfflineCustomerPage = () => {
                         loadingServices ? (
                             <div className="py-4 text-center">Loading services...</div>
                         ) : (
-                            <div className="max-h-[60vh] overflow-y-auto">
+                            <div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {filteredServices.map((service) => (
                                         <div

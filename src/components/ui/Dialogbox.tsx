@@ -25,10 +25,10 @@ export default function CommonDialog({
     size === "sm"
       ? "max-w-sm"
       : size === "lg"
-      ? "max-w-3xl"
-      : size === "xl"
-      ? "max-w-5xl" 
-      : "max-w-md";
+        ? "max-w-3xl"
+        : size === "xl"
+          ? "max-w-5xl"
+          : "max-w-md";
 
   const handleDialogClick = (e: MouseEvent) => e.stopPropagation();
 
@@ -38,10 +38,10 @@ export default function CommonDialog({
       onClick={onClose}
     >
       <div
-        className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative max-h-[90vh] overflow-y-auto p-4 sm:p-6`}
+        className={`w-full rounded-xl bg-white shadow-lg dark:bg-gray-900 ${sizeClass} relative max-h-[90vh] flex flex-col p-4 sm:p-6`}
         onClick={handleDialogClick}
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between flex-shrink-0">
           {title && (
             <div className="w-full">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -59,9 +59,9 @@ export default function CommonDialog({
           </div>
         </div>
 
-        <div className="mb-4 text-gray-800 dark:text-gray-200">{children}</div>
+        <div className="mb-4 text-gray-800 dark:text-gray-200 flex-1 overflow-y-auto min-h-0">{children}</div>
 
-        {footer && <div className="flex justify-end space-x-2">{footer}</div>}
+        {footer && <div className="flex justify-end space-x-2 pt-4 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">{footer}</div>}
       </div>
     </div>,
     document.body

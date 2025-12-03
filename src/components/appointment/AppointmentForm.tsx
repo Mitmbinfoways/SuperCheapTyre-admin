@@ -377,7 +377,7 @@ const AppointmentForm = ({
                             Cancel
                         </Button>
                         <Button variant="primary" type="submit">
-                            {loading ? "Creating..." : "Create Appointment"}
+                            {loading ? isEditing ? "Updating..." : "Creating..." : isEditing ? "Update Appointment" : "Create Appointment"}
                         </Button>
                     </div>
                 </form>

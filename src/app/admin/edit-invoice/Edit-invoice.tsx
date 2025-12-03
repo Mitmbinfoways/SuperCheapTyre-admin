@@ -650,7 +650,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                         {/* Product Selection Section - Read Only */}
                         <div className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                             <div className="mb-4 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Products (Read Only)</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Selected Products</h3>
                             </div>
 
                             {selectedProducts.length === 0 && (!selectedOrder.serviceItems || selectedOrder.serviceItems.length === 0) ? (
@@ -693,15 +693,15 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <label className="text-xs text-gray-500">Qty:</label>
-                                                                <input
+                                                                <label className="text-xs text-gray-500">Qty: {quantity}</label>
+                                                                {/* <input
                                                                     type="number"
                                                                     min="1"
                                                                     max={maxQuantity}
                                                                     value={quantity}
                                                                     disabled={true} // Read-only
                                                                     className="w-16 rounded border border-gray-300 px-2 py-1 text-sm bg-gray-100 text-gray-500 cursor-not-allowed dark:border-gray-600 dark:bg-gray-800"
-                                                                />
+                                                                /> */}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -717,10 +717,11 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                             <div className="flex items-start gap-3">
                                                 {item.image && (
                                                     <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                                        <img
+                                                        <Image
                                                             src={item.image.startsWith('http') ? item.image : `${process.env.NEXT_PUBLIC_API_URL}${item.image}`}
                                                             alt={item.name}
-                                                            className="h-full w-full object-cover object-center"
+                                                            fill
+                                                            className="object-cover object-center"
                                                         />
                                                     </div>
                                                 )}

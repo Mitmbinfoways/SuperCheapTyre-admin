@@ -27,7 +27,7 @@ const DatePicker: React.FC<Props> = ({
   minDate,
   maxDate,
   disabled = false,
-  dateFormat = "yyyy-MM-dd",
+  dateFormat = "dd-MM-yyyy",
   className = "",
   isClearable = true,
   selectsStart,
