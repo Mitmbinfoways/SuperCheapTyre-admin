@@ -17,6 +17,8 @@ import Button from "@/components/ui/Button";
 import DatePicker from "@/components/ui/DatePicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatPhoneNumber } from "@/lib/utils";
+import { MdModeEdit } from "react-icons/md";
+import Link from "next/link";
 
 type LoadingStates = {
   fetchingOrders: boolean;
@@ -258,26 +260,51 @@ const OrdersPage = () => {
     {
       title: "Total (AU$)",
       key: "total",
-      render: (order: Order) => `AU$${order.total.toFixed(2)}`,
+      render: (order: Order) => `AU$${order.subtotal.toFixed(2)}`,
     },
     {
       title: "Actions",
       key: "actions",
-      render: (order: Order) => (
-        <div className="flex items-center justify-center space-x-2">
-          <Tooltip content="View Details">
-            <FiEye
-              size={18}
-              className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-              title="View Details"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/admin/orders/${order._id}`);
-              }}
-            />
-          </Tooltip>
-        </div>
-      ),
+      render: (order: Order) => {
+        const isPaymentFull = (() => {
+          const payment = order?.payment;
+          if (!payment) return false;
+          if (Array.isArray(payment)) {
+            return payment.some((p) => p?.status?.toUpperCase() === "FULL");
+          }
+          if (payment && typeof payment === "object") {
+            return payment.status?.toUpperCase() === "FULL";
+          }
+          return false;
+        })();
+
+        return (
+          <div className="flex items-center justify-center space-x-2">
+            <Tooltip content="View Details">
+              <FiEye
+                size={18}
+                className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                title="View Details"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/admin/orders/${order._id}`);
+                }}
+              />
+            </Tooltip>
+            {!isPaymentFull && (
+              <Tooltip content="Edit Invoice">
+                <Link href={`/admin/orders/${order._id}/edit`}>
+                  <MdModeEdit
+                    size={16}
+                    className="cursor-pointer text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                    title="Edit Invoice"
+                  />
+                </Link>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
