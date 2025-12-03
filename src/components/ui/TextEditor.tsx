@@ -15,7 +15,7 @@ import {
 } from "react-icons/fi";
 import { useEffect } from "react";
 
-export default function TextEditor({ value = "", onChange = (content: string) => { } }) {
+export default function TextEditor({ value = "", className = "", onChange = (content: string) => { } }) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -136,7 +136,7 @@ export default function TextEditor({ value = "", onChange = (content: string) =>
           <FiAlignRight />
         </button>
       </div>
-      <EditorContent editor={editor} className="p-3 min-h-32 prose-editor" />
+      <EditorContent editor={editor} className={`p-3 min-h-32 prose-editor ${className}`} />
     </div>
   );
 }

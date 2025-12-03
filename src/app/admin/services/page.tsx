@@ -184,8 +184,10 @@ const ServiceListPage: React.FC = () => {
             key: "name",
             width: "200px",
             render: (item) => (
-                <div className="line-clamp-2" title={item.name}>
-                    {item.name}
+                <div className="flex flex-col items-start gap-1">
+                    <div className="line-clamp-2" title={item.name}>
+                        {item.name}
+                    </div>
                 </div>
             ),
         },
@@ -195,6 +197,19 @@ const ServiceListPage: React.FC = () => {
             width: "100px",
             align: "center",
             render: (item) => <span className="font-semibold">${item.price}</span>,
+        },
+        {
+            title: "Recommended in cart",
+            key: "cart_Recommended",
+            align: "center",
+            render: (item) =>
+                <div>
+                    {item.cart_Recommended ? (
+                        <Badge label="Recommended Cart" color="purple" size="sm" />
+                    ) : (
+                        <span>-</span>
+                    )}
+                </div>
         },
         {
             title: "Status",

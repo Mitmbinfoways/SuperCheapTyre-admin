@@ -9,6 +9,7 @@ export interface Service {
     images: string[];
     price: number;
     isActive: boolean;
+    cart_Recommended?: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -19,6 +20,7 @@ export interface ServicePayload {
     images?: File[]; // For uploads
     price: number;
     isActive?: boolean;
+    cart_Recommended?: boolean;
 }
 
 export type UpdateServicePayload = Partial<ServicePayload> & {

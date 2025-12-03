@@ -30,6 +30,7 @@ const CreateServicePage = () => {
         images: [],
         description: "",
         isActive: true,
+        cart_Recommended: false,
     });
     const [errors, setErrors] = useState<any>({});
     const [apiError, setApiError] = useState<string>("");
@@ -65,6 +66,7 @@ const CreateServicePage = () => {
                     price: service.price ?? "",
                     description: service.description || "",
                     isActive: service.isActive ?? true,
+                    cart_Recommended: service.cart_Recommended ?? false,
                     images: (service.images || []).map((img: string) => {
                         const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
                         // Handle if img is already a full URL or relative path
@@ -149,6 +151,7 @@ const CreateServicePage = () => {
                 images: imageFiles,
                 price: Number(formData.price || 0),
                 isActive: formData.isActive,
+                cart_Recommended: formData.cart_Recommended,
                 keepImages: isEdit ? keepList : undefined,
             } as any;
 
@@ -255,13 +258,13 @@ const CreateServicePage = () => {
                                             />
                                         </div>
                                     </div>
-
                                     <div>
                                         <FormLabel label="Description" />
                                         <div className="mt-1">
                                             <TextEditor
                                                 value={formData.description}
                                                 onChange={handleDescriptionChange}
+                                                className="max-h-80 overflow-y-auto"
                                             />
                                         </div>
                                     </div>
@@ -277,6 +280,24 @@ const CreateServicePage = () => {
                                                 }));
                                             }}
                                         />
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="cart_Recommended"
+                                            checked={formData.cart_Recommended}
+                                            onChange={(e) => {
+                                                setFormData((prev: any) => ({
+                                                    ...prev,
+                                                    cart_Recommended: e.target.checked,
+                                                }));
+                                            }}
+                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <label htmlFor="cart_Recommended" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Recommended in Cart
+                                        </label>
                                     </div>
                                 </div>
                             </div>
