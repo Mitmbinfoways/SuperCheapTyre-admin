@@ -279,7 +279,7 @@ const OrdersPage = () => {
         })();
 
         return (
-          <div className="flex items-center justify-center space-x-2">
+          <div className="flex items-center justify-center space-x-2 px-3">
             <Tooltip content="View Details">
               <FiEye
                 size={18}
