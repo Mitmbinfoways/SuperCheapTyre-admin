@@ -53,7 +53,7 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         <div className="flex h-full flex-col py-10 pl-5 pr-2">
-          <div className="relative pr-3">
+          <div className="relative pr-3 ">
             <Link href={"/admin"}>
               <Logo />
             </Link>
@@ -90,8 +90,8 @@ export function Sidebar() {
         aria-hidden={!isOpen}
         inert={!isOpen}
       >
-        <div className="flex h-full flex-col pb-10 pl-6 pr-2 pt-4">
-          <div className="relative pr-8">
+        <div className="flex h-full flex-col pb-10">
+          <div className="relative pr-8 bg-gray-800 py-4">
             <Link
               href={"/admin"}
               onClick={() => isMobile && toggleSidebar()}
@@ -107,13 +107,13 @@ export function Sidebar() {
               >
                 <span className="sr-only">Close Menu</span>
 
-                <ArrowLeftIcon className="ml-auto size-7" />
+                <ArrowLeftIcon className="ml-auto size-7 text-gray-100" />
               </button>
             )}
           </div>
 
           {/* Navigation */}
-          <div className="custom-scrollbar mt-2 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
+          <div className="custom-scrollbar pl-6 pr-2  mt-2 flex-1 overflow-y-auto pr-3 min-[850px]:mt-6">
             {NAV_DATA.map((section) => (
               <div key={section.label} className="mb-6">
                 <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
@@ -143,7 +143,7 @@ export function Sidebar() {
                                 className={cn(
                                   "ml-auto rotate-180 transition-transform duration-200",
                                   expandedItems.includes(item.title) &&
-                                    "rotate-0",
+                                  "rotate-0",
                                 )}
                                 aria-hidden="true"
                               />
@@ -173,10 +173,10 @@ export function Sidebar() {
                             const href =
                               (item as { url?: string; title: string }).url ??
                               "/admin" +
-                                (item as { title: string }).title
-                                  .toLowerCase()
-                                  .split(" ")
-                                  .join("-");
+                              (item as { title: string }).title
+                                .toLowerCase()
+                                .split(" ")
+                                .join("-");
 
                             return (
                               <MenuItem
