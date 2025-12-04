@@ -188,10 +188,11 @@ const OrdersPage = () => {
 
   const columns = [
     {
+      title: "SR.No",
       key: "index",
       width: "80px",
       render: (_: Order, i: number) => (
-        <div className="flex items-center">
+        <div className="text-center">
           {(currentPage - 1) * pageSize + i + 1}
         </div>
       ),
@@ -219,7 +220,9 @@ const OrdersPage = () => {
       title: "Order Date",
       key: "date",
       render: (order: Order) =>
-        order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-",
+        <div className="text-center">
+          {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-"}
+        </div>
     },
     {
       title: "Product Count",
@@ -254,7 +257,7 @@ const OrdersPage = () => {
         const status = getPaymentStatus();
         const color = status === "PARTIAL" ? "yellow" : "green";
 
-        return <Badge color={color} label={status} />;
+        return <div className="text-center"><Badge color={color} label={status} /></div>;
       },
     },
     {
