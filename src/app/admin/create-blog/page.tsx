@@ -393,7 +393,7 @@ const CreateBlogPage = () => {
         <div className="mb-8">
           <div className="mb-2 gap-3">
             <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-              {isEdit ? "Edit Blog" : "Create Blog"}
+              {isEdit ? "Edit Blog" : "Create New Blog"}
             </h1>
           </div>
           <p className="text-gray-400">

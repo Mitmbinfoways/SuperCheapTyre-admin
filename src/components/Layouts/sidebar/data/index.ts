@@ -31,7 +31,7 @@ export const NAV_DATA = [
             url: "/admin/products",
           },
           {
-            title: "Create Product",
+            title: "Create New Product",
             url: "/admin/create-product",
           },
         ],
@@ -45,7 +45,7 @@ export const NAV_DATA = [
             url: "/admin/services",
           },
           {
-            title: "Create Service",
+            title: "Create New Service",
             url: "/admin/create-service",
           },
         ],
@@ -78,7 +78,7 @@ export const NAV_DATA = [
             url: "/admin/brands",
           },
           {
-            title: "Create Brand",
+            title: "Create New Brand",
             url: "/admin/create-brand",
           },
         ],
@@ -93,7 +93,7 @@ export const NAV_DATA = [
             url: "/admin/blog",
           },
           {
-            title: "Create Blog",
+            title: "Create New Blog",
             url: "/admin/create-blog",
           },
         ],
@@ -107,7 +107,7 @@ export const NAV_DATA = [
             url: "/admin/banners/list",
           },
           {
-            title: "Create Banner",
+            title: "Create New Banner",
             url: "/admin/banners",
           },
         ],
@@ -128,7 +128,7 @@ export const NAV_DATA = [
             url: "/admin/measurements/show",
           },
           {
-            title: "Add Measurement",
+            title: "Add New Measurement",
             url: "/admin/measurements",
           },
         ],

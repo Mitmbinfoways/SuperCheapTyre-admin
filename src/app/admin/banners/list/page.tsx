@@ -109,7 +109,6 @@ const BannerListPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const itemsPerPage = 10;
   const [totalBanners, setTotalBanners] = useState<number>(0);
 
   // Image preview states
@@ -244,6 +243,8 @@ const BannerListPage: React.FC = () => {
     setShowImagePreview(false);
     setPreviewBanner(null);
   };
+
+  console.log(banners)
 
   const tableData: BannerWithId[] = (banners || []).map((p) => ({
     ...p,
@@ -403,7 +404,7 @@ const BannerListPage: React.FC = () => {
                 ) : (
                   <Image
                     src={getFullImageUrl(previewBanner.laptopImage)}
-                    alt="Laptop Banner"
+                    alt="Desktop Banner"
                     width={800}
                     height={600}
                     className="max-h-[70vh] w-full rounded-lg object-contain"
@@ -463,7 +464,7 @@ const BannerListPage: React.FC = () => {
                       Sr.No
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200 w-[120px]">
-                      Laptop Image
+                      Desktop Image
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-primary dark:text-gray-200 w-[80px]">
                       Mobile Image
@@ -496,7 +497,7 @@ const BannerListPage: React.FC = () => {
                             {(item.laptopImage &&
                               item.laptopImage.includes(".mp4")) ||
                               item.laptopImage?.match(
-                                /\.(mp4|webm|ogg)$/i
+                                /\.(mp4|webm|mov|ogg)$/i
                               ) ? (
                               <video
                                 src={getFullImageUrl(item.laptopImage)}
@@ -508,7 +509,7 @@ const BannerListPage: React.FC = () => {
                             ) : (
                               <Image
                                 src={getFullImageUrl(item.laptopImage)}
-                                alt="Laptop Banner"
+                                alt="Desktop Banner"
                                 width={64}
                                 height={64}
                                 className="h-full w-full rounded object-cover"

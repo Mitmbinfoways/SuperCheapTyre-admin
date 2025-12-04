@@ -153,19 +153,34 @@ const Page = () => {
 
 
 
+  const handleCancelContactInfo = () => {
+    const filteredOpeningHours = contactFormData.openingHours.filter(
+      (item: any) => (item.day || "").trim() !== "" || (item.time || "").trim() !== ""
+    );
+    setContactFormData({ ...contactFormData, openingHours: filteredOpeningHours });
+    setIsEditingContactInfo(false);
+  };
+
   const handleSaveContactInfo = async () => {
+    const filteredOpeningHours = contactFormData.openingHours.filter(
+      (item: any) => (item.day || "").trim() !== "" || (item.time || "").trim() !== ""
+    );
+
+    const currentFormData = { ...contactFormData, openingHours: filteredOpeningHours };
+    setContactFormData(currentFormData);
+
     const errors: any = {};
-    if (!contactFormData.phone) errors.phone = "Phone is required";
-    if (!contactFormData.email) {
+    if (!currentFormData.phone) errors.phone = "Phone is required";
+    if (!currentFormData.email) {
       errors.email = "Email is required";
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(contactFormData.email)) {
+      if (!emailRegex.test(currentFormData.email)) {
         errors.email = "Please enter a valid email address";
       }
     }
-    if (!contactFormData.address) errors.address = "Address is required";
-    if (!contactFormData.mapLocation) errors.mapLocation = "Map Location URL is required";
+    if (!currentFormData.address) errors.address = "Address is required";
+    if (!currentFormData.mapLocation) errors.mapLocation = "Map Location URL is required";
 
     setContactFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
@@ -174,9 +189,9 @@ const Page = () => {
     try {
       let response;
       if (contactInfo?._id) {
-        response = await UpdateContactInfo(contactInfo._id, contactFormData);
+        response = await UpdateContactInfo(contactInfo._id, currentFormData);
       } else {
-        response = await CreateContactInfo(contactFormData);
+        response = await CreateContactInfo(currentFormData);
       }
 
       if (response.statusCode === 200 || response.statusCode === 201) {
@@ -666,7 +681,7 @@ const Page = () => {
                     <Button color="primary" onClick={handleSaveContactInfo} className="w-full sm:w-auto">
                       Save Contact Info
                     </Button>
-                    <Button color="gray" onClick={() => setIsEditingContactInfo(false)} className="w-full sm:w-auto">
+                    <Button color="gray" onClick={handleCancelContactInfo} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                   </div>

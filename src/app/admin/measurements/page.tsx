@@ -126,7 +126,7 @@ const MeasurementsPage = () => {
       <div className="mb-8">
         <div className="mb-2 gap-3">
           <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-            Add Measurement
+            Add New Measurement
           </h1>
         </div>
         <p className="text-gray-400">
@@ -198,7 +198,7 @@ const MeasurementsPage = () => {
               Cancel
             </Button>
             <Button variant="primary" type="submit">
-              {isSubmitting ? "Adding..." : "Add Measurement"}
+              {isSubmitting ? "Adding..." : "Add New Measurement"}
             </Button>
           </div>
         </form>

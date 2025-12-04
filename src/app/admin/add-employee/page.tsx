@@ -328,7 +328,7 @@ const AddTechnicianPage: React.FC = () => {
           }}
           className="w-full sm:w-auto"
         >
-          Add Employee
+          Add New Employee
         </Button>
       </div>
 

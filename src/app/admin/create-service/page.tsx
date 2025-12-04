@@ -193,7 +193,7 @@ const CreateServicePage = () => {
                 <div className="mb-8">
                     <div className="mb-2 gap-3">
                         <h1 className="text-3xl font-bold text-primary dark:text-gray-300">
-                            {isEdit ? "Edit Service" : "Create Service"}
+                            {isEdit ? "Edit Service" : "Create New Service"}
                         </h1>
                     </div>
                     <p className="text-gray-400">
@@ -319,7 +319,7 @@ const CreateServicePage = () => {
                                     : "Update Service"
                                 : isSubmitting
                                     ? "Creating..."
-                                    : "Create Service"}
+                                    : "Create New Service"}
                         </Button>
                     </div>
                 </form>

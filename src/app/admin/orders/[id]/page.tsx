@@ -274,17 +274,18 @@ const OrderDetailsPage = () => {
                                         return (
                                             <div key={index} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
-                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className="flex items-center gap-3 flex-wrap">
                                                         <h5 className="font-medium text-gray-900 dark:text-white">
                                                             Payment #{index + 1}
                                                         </h5>
-                                                        <button
+                                                        <Button
+                                                            variant="primary"
                                                             onClick={() => downloadInvoice(order._id, payment._id)}
-                                                            className="ml-0 sm:ml-2 p-2 rounded-md px-2 text-xs flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-primary hover:text-white transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary dark:hover:text-white"
-                                                            title="Download Receipt"
+                                                            className="!px-2 text-xs"
+                                                            title="Download Invoice"
                                                         >
-                                                            <FiDownload size={16} />&nbsp; Download Invoice
-                                                        </button>
+                                                            <FiDownload size={16} /> Download Invoice
+                                                        </Button>
                                                     </div>
                                                     <span
                                                         className={`mt-2 sm:mt-0 px-2 py-1 rounded text-xs font-medium self-start sm:self-auto ${statusColorClass}`}
