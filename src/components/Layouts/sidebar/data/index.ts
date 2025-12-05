@@ -140,6 +140,12 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Manage Tax",
+        url: "/admin/tax",
+        icon: Icons.TaxIcon,
+        items: [],
+      },
+      {
         title: "Manage Query",
         url: "/admin/query",
         icon: Icons.ChatBubbleLeftRightIcon,
