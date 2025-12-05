@@ -244,8 +244,6 @@ const BannerListPage: React.FC = () => {
     setPreviewBanner(null);
   };
 
-  console.log(banners)
-
   const tableData: BannerWithId[] = (banners || []).map((p) => ({
     ...p,
     id: p._id,
