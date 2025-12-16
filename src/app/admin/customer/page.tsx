@@ -55,7 +55,7 @@ const CustomerPage = () => {
             const uniqueAppointments = res.data.items.filter((item, index, self) => {
                 if (!item.email) return true;
                 return index === self.findIndex((t) => (
-                    t.email === item.email
+                    t.email.toLowerCase() === item.email.toLowerCase()
                 ));
             });
 

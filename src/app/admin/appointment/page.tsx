@@ -273,7 +273,7 @@ const AppointmentsPage = () => {
     {
       title: "Email",
       key: "email",
-      render: (item) => <div className="max-w-36 whitespace-nowrap overflow-hidden text-ellipsis">{item.email || "-"}</div>,
+      render: (item) => <div className="max-w-36 whitespace-nowrap overflow-hidden text-ellipsis">{item.email?.toLowerCase() || "-"}</div>,
     },
     {
       title: "Phone",
@@ -514,7 +514,7 @@ const AppointmentsPage = () => {
               <div>
                 <h3 className="text-base font-medium text-gray-500 dark:text-gray-400">Email</h3>
                 <p className="mt-1 text-base text-gray-900 dark:text-gray-100">
-                  {viewAppointment.email || "-"}
+                  {viewAppointment.email?.toLowerCase() || "-"}
                 </p>
               </div>
               <div>
