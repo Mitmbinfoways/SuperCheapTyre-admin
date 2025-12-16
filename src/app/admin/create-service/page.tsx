@@ -46,6 +46,8 @@ const CreateServicePage = () => {
 
         if (!formData.price) {
             newErrors.price = "Price is required";
+        } else if (Number(formData.price) < 0) {
+            newErrors.price = "Price cannot be negative";
         }
 
         setErrors(newErrors);

@@ -2,8 +2,22 @@ import { useEffect } from "react";
 
 export const useScrollToError = (errors: any) => {
     useEffect(() => {
-        const errorKeys = Object.keys(errors);
+        // Filter keys to only those with actual error messages
+        const errorKeys = Object.keys(errors).filter(key => errors[key]);
+
         if (errorKeys.length > 0) {
+            // Check if user is currently interacting with a form element
+            const activeElement = document.activeElement as HTMLElement;
+            const isUserTyping = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.tagName === 'SELECT' ||
+                activeElement.isContentEditable
+            );
+
+            // If user is typing, do not steal focus
+            if (isUserTyping) return;
+
             const elements = errorKeys
                 .map((key) => {
                     let el = document.querySelector(`[name="${key}"]`);
