@@ -26,6 +26,7 @@ interface SelectProps {
   error?: string;
   searchable?: boolean;
   maxHeight?: string;
+  isCreate?: boolean;
   onCreate?: (value: string) => void;
 }
 
@@ -43,6 +44,7 @@ const Select: React.FC<SelectProps> = ({
   error,
   searchable = false,
   maxHeight = "200px",
+  isCreate = false,
   onCreate,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -141,7 +143,7 @@ const Select: React.FC<SelectProps> = ({
           >
             {filteredOptions.length === 0 ? (
               <div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Create New {label}</span>
+                {isCreate === true && <span className="text-sm text-gray-500 dark:text-gray-400">Create New {label}</span>}
                 <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   {onCreate && searchTerm ? (
                     <div

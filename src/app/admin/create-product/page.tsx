@@ -605,6 +605,7 @@ const Page = () => {
                   label="Pattern"
                   required
                   searchable
+                  isCreate={true}
                   name="tyre.pattern"
                   value={formData.tyreSpecifications.pattern}
                   onChange={(value) => handleSelect("tyre.pattern", value)}
@@ -619,6 +620,7 @@ const Page = () => {
                   label="Width"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.tyreSpecifications.width}
                   onChange={(value) => handleSelect("tyre.width", value)}
                   onCreate={(value) => handleCreateMasterFilter("width", value)}
@@ -632,6 +634,7 @@ const Page = () => {
                   label="Profile"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.tyreSpecifications.profile}
                   onChange={(value) => handleSelect("tyre.profile", value)}
                   onCreate={(value) => handleCreateMasterFilter("profile", value)}
@@ -644,6 +647,7 @@ const Page = () => {
                   label="Diameter"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.tyreSpecifications.diameter}
                   onChange={(value) => handleSelect("tyre.diameter", value)}
                   onCreate={(value) => handleCreateMasterFilter("diameter", value)}
@@ -656,6 +660,7 @@ const Page = () => {
                   label="Load Rating"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.tyreSpecifications.loadRating}
                   onChange={(value) => handleSelect("tyre.loadRating", value)}
                   onCreate={(value) => handleCreateMasterFilter("loadRating", value)}
@@ -668,6 +673,7 @@ const Page = () => {
                   label="Speed Rating"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.tyreSpecifications.speedRating}
                   onChange={(value) => handleSelect("tyre.speedRating", value)}
                   onCreate={(value) => handleCreateMasterFilter("speedRating", value)}
@@ -684,6 +690,7 @@ const Page = () => {
                   label="Size"
                   required
                   searchable
+                  isCreate={true}
                   name="wheel.size"
                   value={formData.wheelSpecifications.size}
                   onChange={(value) => handleSelect("wheel.size", value)}
@@ -697,6 +704,7 @@ const Page = () => {
                   label="Color"
                   required
                   searchable
+                  isCreate={true}
                   name="wheel.color"
                   value={formData.wheelSpecifications.color}
                   onChange={(value) => handleSelect("wheel.color", value)}
@@ -709,6 +717,7 @@ const Page = () => {
                   label="Diameter"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.wheelSpecifications.diameter}
                   onChange={(value) => handleSelect("wheel.diameter", value)}
                   onCreate={(value) => handleCreateMasterFilter("diameter", value)}
@@ -720,6 +729,7 @@ const Page = () => {
                   label="Fitments"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.wheelSpecifications.fitments}
                   onChange={(value) => handleSelect("wheel.fitments", value)}
                   onCreate={(value) => handleCreateMasterFilter("fitments", value)}
@@ -732,6 +742,7 @@ const Page = () => {
                   label="Staggered Options"
                   required
                   searchable
+                  isCreate={true}
                   value={formData.wheelSpecifications.staggeredOptions}
                   onChange={(value) =>
                     handleSelect("wheel.staggeredOptions", value)
