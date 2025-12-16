@@ -136,7 +136,15 @@ export default function TextEditor({ value = "", className = "", onChange = (con
           <FiAlignRight />
         </button>
       </div>
-      <EditorContent editor={editor} className={`p-3 min-h-32 prose-editor ${className}`} />
+      <EditorContent
+        editor={editor}
+        className={`p-3 min-h-32 prose-editor cursor-text ${className}`}
+        onClick={() => {
+          if (!editor.isFocused) {
+            editor.chain().focus().run();
+          }
+        }}
+      />
     </div>
   );
 }
