@@ -347,7 +347,7 @@ const OrdersPage = () => {
             <span>
               AU$
               {displayOrders
-                .reduce((sum, order) => sum + order.total, 0)
+                .reduce((sum, order) => sum + order.subtotal, 0)
                 .toFixed(2)}
             </span>
           </h2>

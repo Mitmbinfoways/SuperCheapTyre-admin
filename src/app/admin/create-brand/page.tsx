@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
+import { useScrollToError } from "@/hooks/useScrollToError";
 
 const CreateBrandPage = () => {
   const router = useRouter();
@@ -31,6 +32,7 @@ const CreateBrandPage = () => {
   });
 
   const [errors, setErrors] = useState<any>({});
+  useScrollToError(errors);
   const [apiError, setApiError] = useState<string>("");
 
   const categoryOptions = [

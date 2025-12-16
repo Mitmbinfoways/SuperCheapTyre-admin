@@ -49,14 +49,21 @@ const Select: React.FC<SelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    position: "top" | "bottom";
+  } | null>(null);
+  // Ref to ignore initial scroll events that might be triggered by autoFocus
+  const ignoreScrollRef = useRef(false);
 
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const filteredOptions = options.filter(
     (option) =>
       option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      option.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      option.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -66,9 +73,12 @@ const Select: React.FC<SelectProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (!triggerRef.current) return;
 
+      // Check if click is on trigger or inside the portal
       if (
         !triggerRef.current.contains(event.target as Node) &&
-        !document.getElementById("select-portal-root")?.contains(event.target as Node)
+        !document
+          .getElementById("select-portal-root")
+          ?.contains(event.target as Node)
       ) {
         setIsOpen(false);
         setSearchTerm("");
@@ -95,28 +105,55 @@ const Select: React.FC<SelectProps> = ({
   const toggleDropdown = () => {
     if (disabled) return;
 
-    setIsOpen((prev) => !prev);
-    setSearchTerm("");
+    if (!isOpen) {
+      // Calculate position before opening
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        // Default to bottom, switch to top if tight below and ample above
+        const position =
+          spaceBelow < 200 && spaceAbove > 200 ? "top" : "bottom";
 
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (rect) setTriggerRect(rect);
+        setDropdownPosition({
+          top:
+            position === "bottom"
+              ? rect.bottom + window.scrollY + 6
+              : rect.top + window.scrollY - 6,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+          position,
+        });
+      }
+
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+      setSearchTerm("");
+    }
   };
 
   /* ------------------------------- portal dropdown ------------------------------- */
 
   const DropdownMenu = () => {
-    if (!triggerRect) return null;
+    if (!dropdownPosition) return null;
 
     const style: React.CSSProperties = {
       position: "absolute",
-      top: triggerRect.bottom + window.scrollY + 6,
-      left: triggerRect.left + window.scrollX,
-      width: triggerRect.width,
+      top: dropdownPosition.top,
+      left: dropdownPosition.left,
+      width: dropdownPosition.width,
       zIndex: 9999,
     };
 
     return (
-      <div id="select-portal-root" style={style}>
+      <div
+        id="select-portal-root"
+        style={style}
+        className={
+          dropdownPosition.position === "top" ? "-translate-y-full" : ""
+        }
+      >
         <div className="w-full rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
           {searchable && (
             <div className="border-b border-gray-200 p-3 dark:border-gray-700">
@@ -138,12 +175,17 @@ const Select: React.FC<SelectProps> = ({
           )}
 
           <div
-            className="max-h-60 space-y-1 overflow-auto p-3"
+            id="select-portal-list"
+            className="space-y-1 overflow-auto p-3"
             style={{ maxHeight }}
           >
             {filteredOptions.length === 0 ? (
               <div>
-                {isCreate === true && <span className="text-sm text-gray-500 dark:text-gray-400">Create New {label}</span>}
+                {isCreate === true && (
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Create New {label}
+                  </span>
+                )}
                 <div className="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   {onCreate && searchTerm ? (
                     <div
@@ -154,7 +196,9 @@ const Select: React.FC<SelectProps> = ({
                         setSearchTerm("");
                       }}
                     >
-                      <Button variant="primary">Create &quot;{searchTerm}&quot;</Button>
+                      <Button variant="primary">
+                        Create &quot;{searchTerm}&quot;
+                      </Button>
                     </div>
                   ) : (
                     "No options found"
@@ -215,7 +259,11 @@ const Select: React.FC<SelectProps> = ({
   };
 
   return (
-    <div className={`relative w-full ${className}`}>
+    <div
+      className={`relative w-full ${className}`}
+      data-name={name}
+      id={id || name}
+    >
       {label && (
         <label
           htmlFor={id || name}

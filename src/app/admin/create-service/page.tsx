@@ -16,6 +16,7 @@ import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import ToggleSwitch from "@/components/ui/Toggle";
 import { v4 as uuidv4 } from "uuid";
+import { useScrollToError } from "@/hooks/useScrollToError";
 
 const CreateServicePage = () => {
     const router = useRouter();
@@ -33,6 +34,7 @@ const CreateServicePage = () => {
         cart_Recommended: false,
     });
     const [errors, setErrors] = useState<any>({});
+    useScrollToError(errors);
     const [apiError, setApiError] = useState<string>("");
 
     const validateForm = () => {

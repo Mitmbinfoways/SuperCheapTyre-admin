@@ -20,6 +20,7 @@ import Button from "@/components/ui/Button";
 import ToggleSwitch from "@/components/ui/Toggle";
 import { getAllMasterFilters, MasterFilter, createMasterFilter } from "@/services/MasterFilterService";
 import { v4 as uuidv4 } from "uuid";
+import { useScrollToError } from "@/hooks/useScrollToError";
 
 const Page = () => {
   const router = useRouter();
@@ -58,6 +59,7 @@ const Page = () => {
     },
   });
   const [errors, setErrors] = useState<any>({});
+  useScrollToError(errors);
   const [apiError, setApiError] = useState<string>("");
   const [filterOptions, setFilterOptions] = useState<MasterFilter[]>([]);
 
@@ -67,7 +69,7 @@ const Page = () => {
     try {
       const res = await getAllBrands();
       const brandOptions = res.data.items
-        .filter((brand) => brand.isActive && brand.category === selectedCategory)
+        .filter((brand) => brand.isActive && (brand.category === selectedCategory || brand.category === "both"))
         .map((brand) => ({
           label: brand.name,
           value: brand.name,
@@ -160,10 +162,18 @@ const Page = () => {
           }),
           isPopular: product.isPopular || false,
           description: product.description || "",
-          tyreSpecifications:
-            product.tyreSpecifications || prev.tyreSpecifications,
-          wheelSpecifications:
-            product.wheelSpecifications || prev.wheelSpecifications,
+          tyreSpecifications: {
+            ...prev.tyreSpecifications,
+            ...(product.tyreSpecifications || {}),
+          },
+          wheelSpecifications: {
+            ...prev.wheelSpecifications,
+            ...(product.wheelSpecifications || {}),
+            staggeredOptions:
+              product.wheelSpecifications?.staggeredOptions ||
+              (product.wheelSpecifications as any)?.staggeredOption ||
+              "",
+          },
         }));
         // setExistingFilenames(product.images || []);
       } catch (error: any) {
@@ -749,7 +759,24 @@ const Page = () => {
                   }
                   onCreate={(value) => handleCreateMasterFilter("staggeredOptions", value)}
                   error={errors["wheel.staggeredOptions"]}
-                  options={wheelOptions.staggeredOptions}
+                  options={
+                    formData.wheelSpecifications.staggeredOptions &&
+                      !wheelOptions.staggeredOptions.find(
+                        (o) =>
+                          o.value ===
+                          formData.wheelSpecifications.staggeredOptions,
+                      )
+                      ? [
+                        ...wheelOptions.staggeredOptions,
+                        {
+                          label: formData.wheelSpecifications
+                            .staggeredOptions,
+                          value: formData.wheelSpecifications
+                            .staggeredOptions,
+                        },
+                      ]
+                      : wheelOptions.staggeredOptions
+                  }
                   placeholder="Select staggered option"
                 />
               </div>

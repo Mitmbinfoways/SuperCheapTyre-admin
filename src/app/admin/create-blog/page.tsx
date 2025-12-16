@@ -23,6 +23,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormLabel } from "@/components/ui/FormLabel";
 import Button from "@/components/ui/Button";
 import TextEditor from "@/components/ui/TextEditor";
+import { useScrollToError } from "@/hooks/useScrollToError";
 
 interface BlogItem {
   image: File | null;
@@ -64,6 +65,7 @@ const CreateBlogPage = () => {
   const objectUrlsRef = useRef<Record<number, string>>({});
 
   const [errors, setErrors] = useState<any>({});
+  useScrollToError(errors);
   const [apiError, setApiError] = useState<string>("");
 
   // Create a map of object URLs for File objects
