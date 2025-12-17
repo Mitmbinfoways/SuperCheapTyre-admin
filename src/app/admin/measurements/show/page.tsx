@@ -9,11 +9,12 @@ import { Toast } from "@/components/ui/Toast";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Link from "next/link";
-import { FiTrash2 } from "react-icons/fi";
+import { FiTrash2, FiEdit } from "react-icons/fi";
 import {
   getAllMasterFilters,
   getMasterFilterById,
   deleteMasterFilter,
+  updateMasterFilter,
 } from "@/services/MasterFilterService";
 import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
@@ -45,6 +46,16 @@ const ShowMeasurementsPage = () => {
 
   const debounceSearch = useDebounce<string>(search, 300);
   const [typeOptions, setTypeOptions] = useState<{ label: string; value: string }[]>([]);
+
+  // Edit State
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingMeasurement, setEditingMeasurement] = useState<MeasurementItem | null>(null);
+  const [editForm, setEditForm] = useState({
+    category: "",
+    type: "",
+    value: "",
+  });
+  const [updating, setUpdating] = useState(false);
 
   const loadMeasurements = useCallback(async () => {
     setLoading(true);
@@ -158,7 +169,7 @@ const ShowMeasurementsPage = () => {
 
       Toast({ message: "Measurement deleted successfully!", type: "success" });
       handleCloseDeleteDialog();
-      
+
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(paginatedMeasurements.length, currentPage, totalPages);
       if (newPage !== currentPage) {
@@ -176,6 +187,63 @@ const ShowMeasurementsPage = () => {
 
   const formatMeasurementType = (type: string) =>
     type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
+
+  const handleEditClick = (item: MeasurementItem) => {
+    setEditingMeasurement(item);
+    setEditForm({
+      category: item.category,
+      type: item.type,
+      value: item.value,
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+    setEditingMeasurement(null);
+    setEditForm({ category: "", type: "", value: "" });
+  };
+
+  const handleUpdate = async () => {
+    if (!editingMeasurement) return;
+
+    if (!editForm.category || !editForm.type || !editForm.value) {
+      Toast({ message: "All fields are required", type: "error" });
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      await updateMasterFilter(editingMeasurement.id, {
+        category: editForm.category,
+        subCategory: editForm.type,
+        values: editForm.value,
+      });
+
+      const updatedMeasurements = measurements.map((m) =>
+        m.id === editingMeasurement.id
+          ? {
+            ...m,
+            category: editForm.category,
+            type: editForm.type,
+            value: editForm.value,
+          }
+          : m
+      );
+
+      setMeasurements(updatedMeasurements);
+
+      Toast({ message: "Measurement updated successfully", type: "success" });
+      handleCloseEditDialog();
+    } catch (error: any) {
+      Toast({
+        message: error?.response?.data?.message || "Failed to update measurement",
+        type: "error",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const columns: Column<MeasurementItem>[] = [
     {
@@ -206,11 +274,19 @@ const ShowMeasurementsPage = () => {
       key: "actions",
       align: "center",
       render: (item) => (
-        <div onClick={() => handleDeleteClick(item.id)} className="flex justify-center">
+        <div className="flex justify-center space-x-2">
+          <Tooltip content="Edit measurement">
+            <FiEdit
+              size={16}
+              className="cursor-pointer text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-500"
+              onClick={() => handleEditClick(item)}
+            />
+          </Tooltip>
           <Tooltip content="Delete measurement">
             <FiTrash2
               size={16}
               className="cursor-pointer text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-500"
+              onClick={() => handleDeleteClick(item.id)}
             />
           </Tooltip>
         </div>
@@ -258,6 +334,61 @@ const ShowMeasurementsPage = () => {
           />
         </div>
       </div>
+
+      <CommonDialog
+        isOpen={showEditDialog}
+        onClose={handleCloseEditDialog}
+        title="Edit Measurement"
+        footer={
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={handleCloseEditDialog}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate} disabled={updating}>
+              {updating ? "Updating..." : "Update"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4 p-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Category
+            </label>
+            <Select
+              value={editForm.category}
+              onChange={(value) => setEditForm({ ...editForm, category: value })}
+              options={[
+                { label: "Tyre", value: "tyre" },
+                { label: "Wheel", value: "wheel" },
+              ]}
+              placeholder="Select category"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Type (Sub Category)
+            </label>
+            <TextField
+              type="text"
+              placeholder="e.g. Width, Diameter"
+              value={editForm.type}
+              onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Value
+            </label>
+            <TextField
+              type="text"
+              placeholder="e.g. 205, 17"
+              value={editForm.value}
+              onChange={(e) => setEditForm({ ...editForm, value: e.target.value })}
+            />
+          </div>
+        </div>
+      </CommonDialog>
       <CommonDialog
         isOpen={showDeleteDialog}
         onClose={handleCloseDeleteDialog}

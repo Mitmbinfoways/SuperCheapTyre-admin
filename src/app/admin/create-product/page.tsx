@@ -142,10 +142,34 @@ const Page = () => {
       if (!editId) return;
       setIsEdit(true);
       try {
-        const res = await getProductById(editId);
-        const product = res?.data || res;
+        const [productRes, filtersRes] = await Promise.all([
+          getProductById(editId),
+          getAllMasterFilters({ limit: 1000 })
+        ]);
+
+        const product = productRes?.data || productRes;
+        const allFilters = filtersRes?.data?.items || [];
+        setFilterOptions(allFilters);
+
         if (!product) throw new Error("Product not found");
+
         setCategory(product.category || "tyre");
+
+        // Helper to find ID by value
+        const findId = (cat: string, subCat: string, val: string | undefined | null) => {
+          if (!val) return "";
+          const filter = allFilters.find(
+            (f: any) =>
+              f.category === cat &&
+              f.subCategory.toLowerCase() === subCat.toLowerCase() &&
+              (f.values === val || f._id === val)
+          );
+          return filter?._id || val;
+        };
+
+        const tyreSpecs = product.tyreSpecifications || {};
+        const wheelSpecs = product.wheelSpecifications || {};
+
         setFormData((prev: any) => ({
           ...prev,
           name: product.name || "",
@@ -164,15 +188,20 @@ const Page = () => {
           description: product.description || "",
           tyreSpecifications: {
             ...prev.tyreSpecifications,
-            ...(product.tyreSpecifications || {}),
+            pattern: findId("tyre", "pattern", tyreSpecs.pattern),
+            width: findId("tyre", "width", tyreSpecs.width),
+            profile: findId("tyre", "profile", tyreSpecs.profile),
+            diameter: findId("tyre", "diameter", tyreSpecs.diameter),
+            loadRating: findId("tyre", "loadRating", tyreSpecs.loadRating),
+            speedRating: findId("tyre", "speedRating", tyreSpecs.speedRating),
           },
           wheelSpecifications: {
             ...prev.wheelSpecifications,
-            ...(product.wheelSpecifications || {}),
-            staggeredOptions:
-              product.wheelSpecifications?.staggeredOptions ||
-              (product.wheelSpecifications as any)?.staggeredOption ||
-              "",
+            size: findId("wheel", "size", wheelSpecs.size),
+            color: findId("wheel", "color", wheelSpecs.color),
+            diameter: findId("wheel", "diameter", wheelSpecs.diameter),
+            fitments: findId("wheel", "fitments", wheelSpecs.fitments),
+            staggeredOptions: findId("wheel", "staggeredOptions", wheelSpecs.staggeredOptions || (wheelSpecs as any)?.staggeredOption || ""),
           },
         }));
         // setExistingFilenames(product.images || []);
@@ -244,13 +273,35 @@ const Page = () => {
 
     try {
       setIsSubmitting(true);
+      // Helper to find value by ID
+      const getValue = (id: string, cat: string, subCat: string) => {
+        const filter = filterOptions.find(f => f._id === id);
+        if (filter) return filter.values;
+        // Fallback: check if id is actually a value in the list (legacy/broken link case)
+        const matchByValue = filterOptions.find(f => f.values === id && f.category === cat && f.subCategory.toLowerCase() === subCat.toLowerCase());
+        return matchByValue ? matchByValue.values : id;
+      };
+
       let sku = "";
       if (category === "tyre") {
         const tyre = formData.tyreSpecifications;
-        sku = `${formData.brand}-${tyre.width || ""}/${tyre.profile || ""}-${tyre.pattern || ""}-${tyre.diameter || ""}-${tyre.loadRating || ""}${tyre.speedRating || ""}`;
+        const width = getValue(tyre.width, "tyre", "width");
+        const profile = getValue(tyre.profile, "tyre", "profile");
+        const pattern = getValue(tyre.pattern, "tyre", "pattern");
+        const diameter = getValue(tyre.diameter, "tyre", "diameter");
+        const loadRating = getValue(tyre.loadRating, "tyre", "loadRating");
+        const speedRating = getValue(tyre.speedRating, "tyre", "speedRating");
+
+        sku = `${formData.brand}-${width || ""}/${profile || ""}-${pattern || ""}-${diameter || ""}-${loadRating || ""}${speedRating || ""}`;
       } else if (category === "wheel") {
         const wheel = formData.wheelSpecifications;
-        sku = `${formData.brand}-${wheel.size || ""}-${wheel.color || ""}-${wheel.diameter || ""}-${wheel.fitments || ""}-${wheel.staggeredOptions || ""}`;
+        const size = getValue(wheel.size, "wheel", "size");
+        const color = getValue(wheel.color, "wheel", "color");
+        const diameter = getValue(wheel.diameter, "wheel", "diameter");
+        const fitments = getValue(wheel.fitments, "wheel", "fitments");
+        const staggered = getValue(wheel.staggeredOptions, "wheel", "staggeredOptions");
+
+        sku = `${formData.brand}-${size || ""}-${color || ""}-${diameter || ""}-${fitments || ""}-${staggered || ""}`;
       } else {
         sku = `${(formData.brand || "").slice(0, 10)}-${Date.now().toString().slice(-6)}`;
       }
@@ -368,7 +419,7 @@ const Page = () => {
 
   const fetchFilterOptions = async () => {
     try {
-      const res = await getAllMasterFilters({});
+      const res = await getAllMasterFilters({ limit: 1000 });
       if (res?.data?.items?.length > 0) {
         setFilterOptions(res.data.items);
       }
@@ -384,20 +435,20 @@ const Page = () => {
   // Transform filter options for tyres
   const getTyreOptions = (subCategory: string) => {
     return filterOptions
-      .filter(item => item.category === "tyre" && item.subCategory === subCategory)
+      .filter(item => item.category === "tyre" && item.subCategory.toLowerCase() === subCategory.toLowerCase())
       .map(item => ({
         label: item.values,
-        value: item.values
+        value: item._id
       }));
   };
 
   // Transform filter options for wheels
   const getWheelOptions = (subCategory: string) => {
     return filterOptions
-      .filter(item => item.category === "wheel" && item.subCategory === subCategory)
+      .filter(item => item.category === "wheel" && item.subCategory.toLowerCase() === subCategory.toLowerCase())
       .map(item => ({
         label: item.values,
-        value: item.values
+        value: item._id
       }));
   };
 
@@ -412,7 +463,8 @@ const Page = () => {
         values: newValue,
       };
 
-      await createMasterFilter(payload);
+      const res = await createMasterFilter(payload);
+      const newId = res?.data?._id;
 
       Toast({
         message: `${subCategory} created successfully`,
@@ -421,11 +473,13 @@ const Page = () => {
 
       await fetchFilterOptions();
 
-      // Auto select the new value
-      if (category === "tyre") {
-        handleSelect(`tyre.${subCategory}`, newValue);
-      } else if (category === "wheel") {
-        handleSelect(`wheel.${subCategory}`, newValue);
+      // Auto select the new value (using ID)
+      if (newId) {
+        if (category === "tyre") {
+          handleSelect(`tyre.${subCategory}`, newId);
+        } else if (category === "wheel") {
+          handleSelect(`wheel.${subCategory}`, newId);
+        }
       }
     } catch (error) {
       console.error("Failed to create filter:", error);
