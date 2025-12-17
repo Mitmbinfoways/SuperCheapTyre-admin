@@ -49,6 +49,21 @@ const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
       return;
     }
 
+    let breakTimeData = null;
+    if (breakStart === "00:00" && breakEnd === "00:00") {
+      breakTimeData = null;
+    } else if (breakStart && breakEnd) {
+      if (breakStart >= breakEnd) {
+        setError("Please select valid Break time");
+        return;
+      }
+      if (breakStart < startTime || breakEnd > endTime) {
+        setError("Please select valid time");
+        return;
+      }
+      breakTimeData = { start: breakStart, end: breakEnd };
+    }
+
     try {
       setLoading(true);
       await createTimeSlot({
@@ -56,8 +71,7 @@ const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
         endTime,
         duration,
         isActive,
-        breakTime:
-          breakStart && breakEnd ? { start: breakStart, end: breakEnd } : null,
+        breakTime: breakTimeData,
       });
       Toast({ type: "success", message: "Time slot created successfully!" });
       onClose();
@@ -102,7 +116,7 @@ const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <FormLabel label="Break Start" />
+            <FormLabel label="Break Start" required />
             <TextField
               type="time"
               value={breakStart}
@@ -112,7 +126,7 @@ const CreateTimeSlotDialog: React.FC<CreateDialogProps> = ({
             />
           </div>
           <div>
-            <FormLabel label="Break End" />
+            <FormLabel label="Break End" required />
             <TextField
               type="time"
               value={breakEnd}
@@ -230,6 +244,21 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
       return;
     }
 
+    let breakTimeData = null;
+    if (breakStart === "00:00" && breakEnd === "00:00") {
+      breakTimeData = null;
+    } else if (breakStart && breakEnd) {
+      if (breakStart >= breakEnd) {
+        setError("Please select valid Break time");
+        return;
+      }
+      if (breakStart < startTime || breakEnd > endTime) {
+        setError("Please select valid time");
+        return;
+      }
+      breakTimeData = { start: breakStart, end: breakEnd };
+    }
+
     try {
       setLoading(true);
       await updateTimeSlot(slot._id, {
@@ -237,8 +266,7 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
         endTime,
         duration,
         isActive,
-        breakTime:
-          breakStart && breakEnd ? { start: breakStart, end: breakEnd } : null,
+        breakTime: breakTimeData,
       });
       Toast({ type: "success", message: "Time slot updated successfully!" });
       onClose();
@@ -257,7 +285,7 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
           {error}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 p-2">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <FormLabel label="Start Time" required />
@@ -281,7 +309,7 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <FormLabel label="Break Start" />
+            <FormLabel label="Break Start" required />
             <TextField
               type="time"
               name="breakStart"
@@ -290,7 +318,7 @@ const EditTimeSlotDialog: React.FC<EditDialogProps> = ({
             />
           </div>
           <div>
-            <FormLabel label="Break End" />
+            <FormLabel label="Break End" required />
             <TextField
               type="time"
               name="breakEnd"
