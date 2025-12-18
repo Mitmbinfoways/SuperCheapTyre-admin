@@ -149,7 +149,7 @@ const AddHolidayPage: React.FC = () => {
       await DeleteHoliday(deleteHolidayId);
       Toast({ type: "success", message: "Holiday deleted successfully!" });
       handleCloseDeleteDialog();
-      
+
       // Check if we're deleting the last item on the current page
       // and there are multiple pages
       if (tableData.length === 1 && currentPage > 1) {
@@ -273,7 +273,10 @@ const AddHolidayPage: React.FC = () => {
           type="text"
           placeholder="Search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           className="w-full"
         />
       </div>

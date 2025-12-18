@@ -99,7 +99,7 @@ const BrandListPage: React.FC = () => {
       await deleteBrand(deleteBrandId);
       Toast({ type: "success", message: "Brand deleted successfully!" });
       handleCloseDeleteDialog();
-      
+
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
@@ -162,7 +162,7 @@ const BrandListPage: React.FC = () => {
     try {
       // Make the API call
       await updateBrand(brandId, { isActive: updatedStatus });
-    
+
       Toast({
         type: "success",
         message: `Brand ${updatedStatus ? "activated" : "deactivated"} successfully!`,
@@ -174,7 +174,7 @@ const BrandListPage: React.FC = () => {
           p._id === brandId ? { ...p, isActive: previousStatus } : p,
         ),
       );
-    
+
       Toast({
         type: "error",
         message:
@@ -274,10 +274,10 @@ const BrandListPage: React.FC = () => {
             />
           </Tooltip>
           <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
-          <ToggleSwitch
-            checked={item.isActive}
-            onChange={() => handleToggleActive(item)}
-          />
+            <ToggleSwitch
+              checked={item.isActive}
+              onChange={() => handleToggleActive(item)}
+            />
           </Tooltip>
         </div>
       ),
@@ -306,7 +306,10 @@ const BrandListPage: React.FC = () => {
             type="text"
             placeholder="Search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full"
           />
         </div>

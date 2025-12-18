@@ -281,7 +281,7 @@ const ProductListPage: React.FC = () => {
     try {
       // Make the API call
       await updateProduct(productId, { isActive: updatedStatus });
-      
+
       Toast({
         type: "success",
         message: `Product ${updatedStatus ? "activated" : "deactivated"} successfully!`,
@@ -293,7 +293,7 @@ const ProductListPage: React.FC = () => {
           p._id === productId ? { ...p, isActive: previousStatus } : p,
         ),
       );
-      
+
       Toast({
         type: "error",
         message:
@@ -475,7 +475,10 @@ const ProductListPage: React.FC = () => {
           type="text"
           placeholder="Search products..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           className="w-full sm:w-80"
         />
         <div className="flex gap-2">

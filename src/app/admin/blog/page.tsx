@@ -118,7 +118,7 @@ const BlogListPage: React.FC = () => {
       await deleteBlog(deleteBlogId);
       Toast({ type: "success", message: "Blog deleted successfully!" });
       handleCloseDeleteDialog();
-      
+
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
@@ -232,7 +232,7 @@ const BlogListPage: React.FC = () => {
     try {
       // Make the API call
       await updateBlog(blogId, { isActive: updatedStatus });
-      
+
       Toast({
         type: "success",
         message: `Blog ${updatedStatus ? "activated" : "deactivated"} successfully!`,
@@ -244,7 +244,7 @@ const BlogListPage: React.FC = () => {
           b._id === blogId ? { ...b, isActive: previousStatus } : b,
         ),
       );
-      
+
       Toast({
         type: "error",
         message: e?.response?.data?.errorData || "Failed to update blog status",
@@ -374,10 +374,10 @@ const BlogListPage: React.FC = () => {
             />
           </Tooltip>
           <Tooltip content={item.isActive ? "Activate" : "Deactivate"}>
-          <ToggleSwitch
-            checked={item.isActive}
-            onChange={() => handleToggleActive(item)}
-          />
+            <ToggleSwitch
+              checked={item.isActive}
+              onChange={() => handleToggleActive(item)}
+            />
           </Tooltip>
         </div>
       ),
@@ -405,7 +405,10 @@ const BlogListPage: React.FC = () => {
             type="text"
             placeholder="Search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full"
           />
         </div>
