@@ -26,6 +26,7 @@ const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+  const returnPage = searchParams.get("page");
   const [category, setCategory] = useState<string>("tyre");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   // const [existingFilenames, setExistingFilenames] = useState<string[]>([]);
@@ -378,7 +379,11 @@ const Page = () => {
           },
         }));
         setImageFiles([]);
-        router.push("/admin/products");
+        if (returnPage) {
+          router.push(`/admin/products?page=${returnPage}`);
+        } else {
+          router.push("/admin/products");
+        }
       } else {
         Toast({
           message: res?.message || "Failed to create product",
@@ -843,7 +848,13 @@ const Page = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/admin/products")}
+                onClick={() => {
+                  if (returnPage) {
+                    router.push(`/admin/products?page=${returnPage}`);
+                  } else {
+                    router.push("/admin/products");
+                  }
+                }}
               >
                 Cancel
               </Button>

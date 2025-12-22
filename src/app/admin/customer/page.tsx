@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import useDebounce from "@/hooks/useDebounce";
 import {
@@ -31,10 +32,13 @@ interface ExtendedAppointment extends Appointment {
 }
 
 const CustomerPage = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const [appointments, setAppointments] = useState<ExtendedAppointment[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const currentPage = Number(searchParams.get("page")) || 1;
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState("");
     const [viewCustomer, setViewCustomer] = useState<ExtendedAppointment | null>(null);
@@ -159,7 +163,11 @@ const CustomerPage = () => {
     }, [fetchCustomers]);
 
     useEffect(() => {
-        setCurrentPage(1);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        if (current.get("page") !== "1") {
+            current.set("page", "1");
+            router.push(`${pathname}?${current.toString()}`);
+        }
     }, [debounceSearch]);
 
     return (
@@ -199,7 +207,11 @@ const CustomerPage = () => {
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}
-                                onPageChange={setCurrentPage}
+                                onPageChange={(page) => {
+                                    const current = new URLSearchParams(Array.from(searchParams.entries()));
+                                    current.set("page", String(page));
+                                    router.push(`${pathname}?${current.toString()}`);
+                                }}
                             />
                         </div>
                     </>

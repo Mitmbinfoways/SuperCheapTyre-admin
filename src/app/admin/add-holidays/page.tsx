@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, ChangeEvent, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { MdModeEdit } from "react-icons/md";
 import { FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
@@ -37,6 +38,9 @@ type LoadingStates = {
 };
 
 const AddHolidayPage: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [date, setDate] = useState<Date | null>(null);
   const [reason, setReason] = useState<string>("");
   const [error, setError] = useState<{
@@ -49,7 +53,7 @@ const AddHolidayPage: React.FC = () => {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteHolidayId, setDeleteHolidayId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
   const [search, setSearch] = useState<string>("");
@@ -154,7 +158,10 @@ const AddHolidayPage: React.FC = () => {
       // and there are multiple pages
       if (tableData.length === 1 && currentPage > 1) {
         // If we're deleting the last item, go to the previous page
-        setCurrentPage(prev => prev - 1);
+        const newPage = currentPage - 1;
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       } else {
         // Otherwise, reload the current page
         await loadHolidays();
@@ -176,7 +183,11 @@ const AddHolidayPage: React.FC = () => {
     setError({});
   };
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", String(page));
+    router.push(`${pathname}?${current.toString()}`);
+  }
 
   const handleCloseForm = () => {
     setShowForm(false);
@@ -275,7 +286,10 @@ const AddHolidayPage: React.FC = () => {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setCurrentPage(1);
+            setSearch(e.target.value);
+            const current = new URLSearchParams(Array.from(searchParams.entries()));
+            current.set("page", "1");
+            router.push(`${pathname}?${current.toString()}`);
           }}
           className="w-full"
         />

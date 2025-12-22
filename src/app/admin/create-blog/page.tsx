@@ -35,6 +35,7 @@ const CreateBlogPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+  const returnPage = searchParams.get("page");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [format, setFormat] = useState<
@@ -363,7 +364,11 @@ const CreateBlogPage = () => {
           type: "success",
         });
 
-        router.push("/admin/blog");
+        if (returnPage) {
+          router.push(`/admin/blog?page=${returnPage}`);
+        } else {
+          router.push("/admin/blog");
+        }
       } else {
         Toast({
           message: res?.message || "Failed to create blog",
@@ -749,7 +754,13 @@ const CreateBlogPage = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/admin/blog")}
+                onClick={() => {
+                  if (returnPage) {
+                    router.push(`/admin/blog?page=${returnPage}`);
+                  } else {
+                    router.push("/admin/blog");
+                  }
+                }}
               >
                 Cancel
               </Button>

@@ -16,7 +16,7 @@ import {
 } from "@/services/CreateProductService";
 import Image from "next/image";
 import { getProductImageUrl } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
@@ -49,7 +49,9 @@ const ProductListPage: React.FC = () => {
   const [lowStockFilter, setLowStockFilter] = useState<boolean | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<{ label: string, value: string }[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
   const [totalProduct, setTotalProduct] = useState<number>(0);
@@ -152,7 +154,7 @@ const ProductListPage: React.FC = () => {
   }, [loadProducts]);
 
   const handleEditProduct = (product: ServiceProduct) => {
-    router.push(`/admin/create-product?id=${product._id}`);
+    router.push(`/admin/create-product?id=${product._id}&page=${currentPage}`);
   };
 
   // confirm delete
@@ -167,7 +169,9 @@ const ProductListPage: React.FC = () => {
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
-        setCurrentPage(newPage);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       } else {
         await loadProducts();
       }
@@ -181,7 +185,11 @@ const ProductListPage: React.FC = () => {
     }
   };
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", String(page));
+    router.push(`${pathname}?${current.toString()}`);
+  }
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
@@ -215,7 +223,10 @@ const ProductListPage: React.FC = () => {
     setShowFilterPopup(false);
 
     // Reset to first page when filters change
-    setCurrentPage(1);
+    // Reset to first page when filters change
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", "1");
+    router.push(`${pathname}?${current.toString()}`);
   };
 
   const handleResetFilters = () => {
@@ -236,7 +247,10 @@ const ProductListPage: React.FC = () => {
     setLowStockFilter(null);
 
     // Reset to first page when filters change
-    setCurrentPage(1);
+    // Reset to first page when filters change
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", "1");
+    router.push(`${pathname}?${current.toString()}`);
   };
 
   // Image preview handlers
@@ -477,7 +491,9 @@ const ProductListPage: React.FC = () => {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setCurrentPage(1);
+            const current = new URLSearchParams(Array.from(searchParams.entries()));
+            current.set("page", "1");
+            router.push(`${pathname}?${current.toString()}`);
           }}
           className="w-full sm:w-80"
         />

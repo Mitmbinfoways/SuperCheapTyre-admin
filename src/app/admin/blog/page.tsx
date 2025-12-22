@@ -10,7 +10,7 @@ import CommonDialog from "@/components/ui/Dialogbox";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
 import { getAllBlogs, deleteBlog, updateBlog } from "@/services/BlogService";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
@@ -51,7 +51,9 @@ const BlogListPage: React.FC = () => {
   const [search, setSearch] = useState("");
   const [formatFilter, setFormatFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState<number>(1);
   const [viewBlog, setViewBlog] = useState<Blog | null>(null); // Added state for view blog
   const itemsPerPage = 10;
@@ -122,7 +124,9 @@ const BlogListPage: React.FC = () => {
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
-        setCurrentPage(newPage);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       } else {
         await loadBlogs();
       }
@@ -137,10 +141,14 @@ const BlogListPage: React.FC = () => {
   };
 
   const handleEditBlog = (blog: Blog) => {
-    router.push(`/admin/create-blog?id=${blog._id}`);
+    router.push(`/admin/create-blog?id=${blog._id}&page=${currentPage}`);
   };
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", String(page));
+    router.push(`${pathname}?${current.toString()}`);
+  }
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
@@ -407,7 +415,10 @@ const BlogListPage: React.FC = () => {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
+              setSearch(e.target.value);
+              const current = new URLSearchParams(Array.from(searchParams.entries()));
+              current.set("page", "1");
+              router.push(`${pathname}?${current.toString()}`);
             }}
             className="w-full"
           />

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getOrderById, Order } from "@/services/OrderServices";
 import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
@@ -13,6 +13,8 @@ import { formatPhoneNumber } from "@/lib/utils";
 const OrderDetailsPage = () => {
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const returnPage = searchParams.get("page");
     const { id } = params;
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
@@ -166,7 +168,13 @@ const OrderDetailsPage = () => {
                     <Button
                         variant="secondary"
                         className="p-2 rounded-full flex items-center justify-center"
-                        onClick={() => router.push('/admin/orders')}
+                        onClick={() => {
+                            if (returnPage) {
+                                router.push(`/admin/orders?page=${returnPage}`);
+                            } else {
+                                router.push('/admin/orders');
+                            }
+                        }}
                     >
                         <IoArrowBack size={20} />
                     </Button>

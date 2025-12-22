@@ -20,6 +20,7 @@ const CreateBrandPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+  const returnPage = searchParams.get("page");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -140,7 +141,11 @@ const CreateBrandPage = () => {
           images: [],
         });
         setImageFile(null);
-        router.push("/admin/brands");
+        if (returnPage) {
+          router.push(`/admin/brands?page=${returnPage}`);
+        } else {
+          router.push("/admin/brands");
+        }
       } else {
         Toast({
           message: res?.message || "Failed to create brand",
@@ -245,7 +250,13 @@ const CreateBrandPage = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => router.push("/admin/brands")}
+                onClick={() => {
+                  if (returnPage) {
+                    router.push(`/admin/brands?page=${returnPage}`);
+                  } else {
+                    router.push("/admin/brands");
+                  }
+                }}
               >
                 Cancel
               </Button>

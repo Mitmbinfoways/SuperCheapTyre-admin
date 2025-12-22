@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Table, { Column } from "@/components/ui/table";
 import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
@@ -20,10 +21,13 @@ import { formatPhoneNumber } from "@/lib/utils";
 type Contact = ContactType;
 
 const ContactList: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [viewContact, setViewContact] = useState<Contact | null>(null); // Added state for view contact
@@ -131,7 +135,10 @@ const ContactList: React.FC = () => {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setCurrentPage(1);
+            setSearch(e.target.value);
+            const current = new URLSearchParams(Array.from(searchParams.entries()));
+            current.set("page", "1");
+            router.push(`${pathname}?${current.toString()}`);
           }}
           className="w-full"
         />
@@ -158,7 +165,11 @@ const ContactList: React.FC = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={(page) => {
+                  const current = new URLSearchParams(Array.from(searchParams.entries()));
+                  current.set("page", String(page));
+                  router.push(`${pathname}?${current.toString()}`);
+                }}
               />
             </div>
           </>

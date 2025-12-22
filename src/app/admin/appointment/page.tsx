@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import useDebounce from "@/hooks/useDebounce";
 import {
   GetAllAppointments,
@@ -42,10 +42,12 @@ interface ExtendedAppointment extends Appointment {
 
 const AppointmentsPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [appointments, setAppointments] = useState<ExtendedAppointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -372,8 +374,34 @@ const AppointmentsPage = () => {
     fetchAppointments();
   }, [fetchAppointments]);
 
+  const prevFilters = useRef({
+    search: debounceSearch,
+    date: dateFilter,
+    start: customStartDate,
+    end: customEndDate,
+  });
+
   useEffect(() => {
-    setCurrentPage(1);
+    const hasChanged =
+      debounceSearch !== prevFilters.current.search ||
+      dateFilter !== prevFilters.current.date ||
+      customStartDate !== prevFilters.current.start ||
+      customEndDate !== prevFilters.current.end;
+
+    if (hasChanged) {
+      prevFilters.current = {
+        search: debounceSearch,
+        date: dateFilter,
+        start: customStartDate,
+        end: customEndDate,
+      };
+
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      if (current.get("page") !== "1") {
+        current.set("page", "1");
+        router.push(`${pathname}?${current.toString()}`);
+      }
+    }
   }, [debounceSearch, dateFilter, customStartDate, customEndDate]);
 
   return (
@@ -442,7 +470,10 @@ const AppointmentsPage = () => {
             setDateFilter("all");
             setCustomStartDate("");
             setCustomEndDate("");
-            setCurrentPage(1);
+            setCustomEndDate("");
+            const current = new URLSearchParams(Array.from(searchParams.entries()));
+            current.set("page", "1");
+            router.push(`${pathname}?${current.toString()}`);
           }}
         >
           Reset Filters
@@ -469,7 +500,11 @@ const AppointmentsPage = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={dateFilter === "all" && !debounceSearch ? totalPages : filteredTotalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={(page) => {
+                  const current = new URLSearchParams(Array.from(searchParams.entries()));
+                  current.set("page", String(page));
+                  router.push(`${pathname}?${current.toString()}`);
+                }}
               />
             </div>
           </>

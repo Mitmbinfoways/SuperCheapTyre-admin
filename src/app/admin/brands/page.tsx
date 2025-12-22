@@ -15,7 +15,7 @@ import {
   Brand,
 } from "@/services/BrandService";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import ToggleSwitch from "@/components/ui/Toggle";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
@@ -36,13 +36,15 @@ type LoadingStates = {
 
 const BrandListPage: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteBrandId, setDeleteBrandId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -103,7 +105,9 @@ const BrandListPage: React.FC = () => {
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
-        setCurrentPage(newPage);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       } else {
         await loadBrands();
       }
@@ -118,10 +122,14 @@ const BrandListPage: React.FC = () => {
   };
 
   const handleEditBrand = (brand: Brand) => {
-    router.push(`/admin/create-brand?id=${brand._id}`);
+    router.push(`/admin/create-brand?id=${brand._id}&page=${currentPage}`);
   };
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", String(page));
+    router.push(`${pathname}?${current.toString()}`);
+  }
 
   const handleCloseDeleteDialog = () => {
     setShowDeleteDialog(false);
@@ -308,7 +316,10 @@ const BrandListPage: React.FC = () => {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
+              setSearch(e.target.value);
+              const current = new URLSearchParams(Array.from(searchParams.entries()));
+              current.set("page", "1");
+              router.push(`${pathname}?${current.toString()}`);
             }}
             className="w-full"
           />

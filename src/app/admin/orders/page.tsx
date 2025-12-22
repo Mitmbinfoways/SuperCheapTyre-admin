@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { getAllOrders, Order, OrderItem } from "@/services/OrderServices";
 import Pagination from "@/components/ui/Pagination";
 
@@ -28,7 +28,9 @@ type LoadingStates = {
 const OrdersPage = () => {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
   const [formatFilter, setFormatFilter] = useState<string>("All");
@@ -171,8 +173,38 @@ const OrdersPage = () => {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Store previous values of filters to avoid resetting page on mount
+  const prevFilters = React.useRef({
+    search: debouncedSearchTerm,
+    format: formatFilter,
+    date: dateFilter,
+    start: customStartDate,
+    end: customEndDate,
+  });
+
   useEffect(() => {
-    setCurrentPage(1);
+    const hasChanged =
+      debouncedSearchTerm !== prevFilters.current.search ||
+      formatFilter !== prevFilters.current.format ||
+      dateFilter !== prevFilters.current.date ||
+      customStartDate !== prevFilters.current.start ||
+      customEndDate !== prevFilters.current.end;
+
+    if (hasChanged) {
+      prevFilters.current = {
+        search: debouncedSearchTerm,
+        format: formatFilter,
+        date: dateFilter,
+        start: customStartDate,
+        end: customEndDate,
+      };
+
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      if (current.get("page") !== "1") {
+        current.set("page", "1");
+        router.push(`${pathname}?${current.toString()}`);
+      }
+    }
   }, [debouncedSearchTerm, formatFilter, dateFilter, customStartDate, customEndDate]);
 
   const getTotalItems = (order: Order) => {
@@ -290,7 +322,7 @@ const OrdersPage = () => {
                 title="View Details"
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/admin/orders/${order._id}`);
+                  router.push(`/admin/orders/${order._id}?page=${currentPage}`);
                 }}
               />
             </Tooltip>
@@ -427,7 +459,9 @@ const OrdersPage = () => {
               setDateFilter("All Time");
               setCustomStartDate(null);
               setCustomEndDate(null);
-              setCurrentPage(1);
+              const current = new URLSearchParams(Array.from(searchParams.entries()));
+              current.set("page", "1");
+              router.push(`${pathname}?${current.toString()}`);
             }}
           >
             Reset Filters
@@ -485,7 +519,11 @@ const OrdersPage = () => {
                 <Pagination
                   currentPage={currentPage}
                   totalPages={displayTotalPages}
-                  onPageChange={setCurrentPage}
+                  onPageChange={(page) => {
+                    const current = new URLSearchParams(Array.from(searchParams.entries()));
+                    current.set("page", String(page));
+                    router.push(`${pathname}?${current.toString()}`);
+                  }}
                 />
               </div>
             )}

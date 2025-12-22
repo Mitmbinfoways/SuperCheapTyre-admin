@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { MdModeEdit } from "react-icons/md";
 import { FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
@@ -53,6 +54,9 @@ type FormErrors = {
 };
 
 const AddTechnicianPage: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -67,7 +71,7 @@ const AddTechnicianPage: React.FC = () => {
   const [deleteTechnicianId, setDeleteTechnicianId] = useState<string | null>(
     null,
   );
-  const [currentPage, setCurrentPage] = useState(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
   const [search, setSearch] = useState("");
@@ -177,7 +181,9 @@ const AddTechnicianPage: React.FC = () => {
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(tableData.length, currentPage, totalPages);
       if (newPage !== currentPage) {
-        setCurrentPage(newPage);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       } else {
         await loadTechnicians();
       }
@@ -341,7 +347,10 @@ const AddTechnicianPage: React.FC = () => {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setCurrentPage(1);
+              setSearch(e.target.value);
+              const current = new URLSearchParams(Array.from(searchParams.entries()));
+              current.set("page", "1");
+              router.push(`${pathname}?${current.toString()}`);
             }}
             className="w-full"
           />
@@ -495,7 +504,11 @@ const AddTechnicianPage: React.FC = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={(p) => setCurrentPage(p)}
+                onPageChange={(p) => {
+                  const current = new URLSearchParams(Array.from(searchParams.entries()));
+                  current.set("page", String(p));
+                  router.push(`${pathname}?${current.toString()}`);
+                }}
               />
             </div>
           </>

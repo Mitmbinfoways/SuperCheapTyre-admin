@@ -9,6 +9,7 @@ import { Toast } from "@/components/ui/Toast";
 import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Link from "next/link";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FiTrash2, FiEdit } from "react-icons/fi";
 import {
   getAllMasterFilters,
@@ -30,6 +31,9 @@ interface MeasurementItem {
 }
 
 const ShowMeasurementsPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [measurements, setMeasurements] = useState<MeasurementItem[]>([]);
   const [filteredMeasurements, setFilteredMeasurements] = useState<MeasurementItem[]>([]);
   const [paginatedMeasurements, setPaginatedMeasurements] = useState<MeasurementItem[]>([]);
@@ -40,7 +44,7 @@ const ShowMeasurementsPage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteMeasurementId, setDeleteMeasurementId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
 
@@ -109,6 +113,12 @@ const ShowMeasurementsPage = () => {
     setTypeFilter(""); // Reset type filter when category changes
   }, [categoryFilter, measurements]);
 
+  const prevFilters = React.useRef({
+    search: debounceSearch,
+    category: categoryFilter,
+    type: typeFilter,
+  });
+
   useEffect(() => {
     let result = measurements;
 
@@ -130,7 +140,26 @@ const ShowMeasurementsPage = () => {
     }
 
     setFilteredMeasurements(result);
-    setCurrentPage(1);
+
+    // Reset to first page when filters change
+    const hasFiltersChanged =
+      debounceSearch !== prevFilters.current.search ||
+      categoryFilter !== prevFilters.current.category ||
+      typeFilter !== prevFilters.current.type;
+
+    if (hasFiltersChanged) {
+      prevFilters.current = {
+        search: debounceSearch,
+        category: categoryFilter,
+        type: typeFilter,
+      };
+
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      if (current.get("page") !== "1") {
+        current.set("page", "1");
+        router.push(`${pathname}?${current.toString()}`);
+      }
+    }
   }, [debounceSearch, categoryFilter, typeFilter, measurements]);
 
   useEffect(() => {
@@ -140,7 +169,11 @@ const ShowMeasurementsPage = () => {
     setTotalPages(Math.ceil(filteredMeasurements.length / itemsPerPage));
   }, [filteredMeasurements, currentPage]);
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    current.set("page", String(page));
+    router.push(`${pathname}?${current.toString()}`);
+  }
 
   const handleDeleteClick = (id: string) => {
     setDeleteMeasurementId(id);
@@ -173,7 +206,9 @@ const ShowMeasurementsPage = () => {
       // Check if we need to navigate to the previous page
       const newPage = calculatePageAfterDeletion(paginatedMeasurements.length, currentPage, totalPages);
       if (newPage !== currentPage) {
-        setCurrentPage(newPage);
+        const current = new URLSearchParams(Array.from(searchParams.entries()));
+        current.set("page", String(newPage));
+        router.push(`${pathname}?${current.toString()}`);
       }
     } catch (error: any) {
       Toast({
