@@ -582,6 +582,7 @@ const Page = () => {
                     <Select
                       label="Brand"
                       name="brand"
+                      searchable
                       value={formData.brand}
                       onChange={handleBrandChange}
                       options={brands}
