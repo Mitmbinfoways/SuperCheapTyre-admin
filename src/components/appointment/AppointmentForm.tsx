@@ -26,6 +26,12 @@ interface AppointmentFormProps {
     isEditing?: boolean;
 }
 
+const getMelbourneDate = () => {
+    const now = new Date();
+    const melbourneTimeStr = now.toLocaleString("en-US", { timeZone: "Australia/Melbourne" });
+    return new Date(melbourneTimeStr);
+};
+
 const AppointmentForm = ({
     initialData,
     onSubmit,
@@ -100,7 +106,30 @@ const AppointmentForm = ({
             setLoadingSlots(true);
             const dateStr = formatDateForInput(selectedDate);
             const res = await getAvailableSlots(dateStr, tSlotId);
-            setAvailableSlots(res.data.slots || []);
+            const slotsData = res.data.slots || [];
+
+            // Filter slots using Melbourne time
+            const melbourneDate = getMelbourneDate();
+            const isToday = selectedDate.getDate() === melbourneDate.getDate() &&
+                selectedDate.getMonth() === melbourneDate.getMonth() &&
+                selectedDate.getFullYear() === melbourneDate.getFullYear();
+
+            const processedSlots = slotsData.map((slot: any) => {
+                let isAvailable = !!slot.isAvailable;
+
+                if (isToday && isAvailable) {
+                    const [slotHour, slotMinute] = slot.startTime.split(':').map(Number);
+                    const currentHour = melbourneDate.getHours();
+                    const currentMinute = melbourneDate.getMinutes();
+
+                    if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) {
+                        isAvailable = false;
+                    }
+                }
+                return { ...slot, isAvailable };
+            });
+
+            setAvailableSlots(processedSlots);
         } catch (error) {
             console.error("Failed to load slots", error);
             Toast({ message: "Failed to load time slots", type: "error" });
@@ -280,7 +309,7 @@ const AppointmentForm = ({
                                     onChange={handleDateChange}
                                     placeholder="Select Date"
                                     className="w-full"
-                                    minDate={new Date()}
+                                    minDate={getMelbourneDate()}
                                 />
                                 {errors.date && <p className="text-sm text-red-600">{errors.date}</p>}
                             </div>

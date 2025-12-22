@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import PhoneInput, { Country } from "react-phone-number-input";
+import React, { useState } from "react";
+import PhoneInput, { Country, getCountryCallingCode } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
 type Props = {
@@ -34,6 +34,23 @@ const CommonPhoneInput: React.FC<Props> = ({
   onTouch,
 }) => {
   const showError = error && touched;
+  const [selectedCountry, setSelectedCountry] = useState<Country>(defaultCountry);
+
+  const handleCursorPosition = (e: any) => {
+    if (e.target.tagName !== "INPUT" || !selectedCountry) return;
+    try {
+      const callingCode = getCountryCallingCode(selectedCountry);
+      const prefix = `+${callingCode}`;
+      if (e.target.value.startsWith(prefix)) {
+        const minPos = prefix.length;
+        if (e.target.selectionStart < minPos) {
+          e.target.setSelectionRange(minPos, minPos);
+        }
+      }
+    } catch (err) {
+      console.error("Error handling phone input cursor:", err);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-1">
@@ -54,20 +71,27 @@ const CommonPhoneInput: React.FC<Props> = ({
           value={value}
           onChange={(val) => {
             if (readOnly) return;
-            onChange(val || "");  
+            onChange(val || "");
             onClearError();
             onTouch();
           }}
-          // onCountryChange={() => {
-          //   onChange("");
-          //   onClearError();
-          // }}
+          onCountryChange={(country) => {
+            if (country) {
+              setSelectedCountry(country);
+              onChange(""); // Clear value on country change to match other components
+              onClearError();
+            }
+          }}
           international
           limitMaxLength
           disabled={readOnly}
           defaultCountry={defaultCountry}
+          country={selectedCountry}
           countryCallingCodeEditable={false}
           className="w-full flex items-center"
+          onClick={handleCursorPosition}
+          onKeyUp={handleCursorPosition}
+          onFocus={handleCursorPosition}
         />
       </div>
 
