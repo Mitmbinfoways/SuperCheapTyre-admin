@@ -6,19 +6,19 @@ export const NAV_DATA = [
     items: [
       {
         title: "Dashboard",
-        url: "/admin",
+        url: "/",
         icon: Icons.FourCircle,
         items: [],
       },
       {
         title: "Customer List",
-        url: "/admin/customer",
+        url: "/customer",
         icon: Icons.User,
         items: []
       },
       {
         title: "Appointments",
-        url: "/admin/appointment",
+        url: "/appointment",
         icon: Icons.CalendarDaysIcon,
         items: [],
       },
@@ -28,11 +28,11 @@ export const NAV_DATA = [
         items: [
           {
             title: "Manage Products",
-            url: "/admin/products",
+            url: "/products",
           },
           {
             title: "Create New Product",
-            url: "/admin/create-product",
+            url: "/create-product",
           },
         ],
       },
@@ -42,59 +42,59 @@ export const NAV_DATA = [
         items: [
           {
             title: "Manage Services",
-            url: "/admin/services",
+            url: "/services",
           },
           {
             title: "Create New Service",
-            url: "/admin/create-service",
+            url: "/create-service",
           },
         ],
       },
       {
         title: "Orders",
-        url: "/admin/orders",
+        url: "/orders",
         icon: Icons.OrdersIcon,
         items: [],
       },
       {
         title: "Invoice",
-        url: "/admin/invoice",
+        url: "/invoice",
         icon: Icons.User,
         items: [],
       },
       {
         title: "Manage Employee",
-        url: "/admin/add-employee",
+        url: "/add-employee",
         icon: Icons.UserPlusIcon,
         items: [],
       },
       {
         title: "Brands",
-        url: "/admin/brands",
+        url: "/brands",
         icon: Icons.StoreIcon,
         items: [
           {
             title: "Manage Brands",
-            url: "/admin/brands",
+            url: "/brands",
           },
           {
             title: "Create New Brand",
-            url: "/admin/create-brand",
+            url: "/create-brand",
           },
         ],
       },
       {
         title: "Blog",
-        url: "/admin/blog",
+        url: "/blog",
         icon: Icons.Alphabet,
         items: [
           {
             title: "Manage Blog",
-            url: "/admin/blog",
+            url: "/blog",
           },
           {
             title: "Create New Blog",
-            url: "/admin/create-blog",
+            url: "/create-blog",
           },
         ],
       },
@@ -104,50 +104,50 @@ export const NAV_DATA = [
         items: [
           {
             title: "Manage Banners",
-            url: "/admin/banners/list",
+            url: "/banners/list",
           },
           {
             title: "Create New Banner",
-            url: "/admin/banners",
+            url: "/banners",
           },
         ],
       },
       {
         title: "Manage Holidays",
-        url: "/admin/add-holidays",
+        url: "/add-holidays",
         icon: Icons.CalendarPlusIcon,
         items: [],
       },
       {
         title: "Measurements",
-        url: "/admin/measurements",
+        url: "/measurements",
         icon: Icons.RulerIcon,
         items: [
           {
             title: "Measurements List",
-            url: "/admin/measurements/show",
+            url: "/measurements/show",
           },
           {
             title: "Add New Measurement",
-            url: "/admin/measurements",
+            url: "/measurements",
           },
         ],
       },
       {
         title: "Manage TimeSlot",
-        url: "/admin/add-timeslot",
+        url: "/add-timeslot",
         icon: Icons.ClockIcon,
         items: [],
       },
       {
         title: "Manage Tax",
-        url: "/admin/tax",
+        url: "/tax",
         icon: Icons.TaxIcon,
         items: [],
       },
       {
         title: "Manage Query",
-        url: "/admin/query",
+        url: "/query",
         icon: Icons.ChatBubbleLeftRightIcon,
         items: [],
       },

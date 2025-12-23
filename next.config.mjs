@@ -1,6 +1,5 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  basePath: "/admin",
 
   images: {
     remotePatterns: [
@@ -11,11 +10,7 @@ const nextConfig = {
 
   async redirects() {
     return [
-      {
-        source: "/",
-        destination: "/admin",
-        permanent: false,
-      },
+      /* Redirect removed */
     ];
   },
 };

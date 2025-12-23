@@ -24,7 +24,7 @@ export function Header() {
       </button>
 
       {isMobile && (
-        <Link href="/admin" className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
+        <Link href="/" className="ml-2 max-[430px]:hidden min-[375px]:ml-4">
           <Image
             src={logo}
             alt="logo"

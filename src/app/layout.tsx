@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     default: "SuperCheapTyre Admin",
   },
   icons: {
-    icon: "/admin/favicon.png"
+    icon: "/favicon.png"
   }
 };
 

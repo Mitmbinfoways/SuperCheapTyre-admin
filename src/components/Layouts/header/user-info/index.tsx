@@ -32,7 +32,7 @@ export function UserInfo() {
       console.log("failed to logout");
     } finally {
       setIsOpen(false);
-      router.replace("/admin/signin");
+      router.replace("/signin");
     }
   };
 
@@ -89,9 +89,9 @@ export function UserInfo() {
           />
 
           <figcaption className="text-base font-medium overflow-hidden">
-              <div className="leading-none text-dark dark:text-gray-300">
-                {admin.name}
-              </div>
+            <div className="leading-none text-dark dark:text-gray-300">
+              {admin.name}
+            </div>
             <div className="leading-none text-wrap text-gray-6 py-2">{admin.email}</div>
           </figcaption>
         </figure>
@@ -100,7 +100,7 @@ export function UserInfo() {
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6 [&>*]:cursor-pointer">
           <Link
-            href={"/admin/profile"}
+            href={"/profile"}
             onClick={() => setIsOpen(false)}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
           >
