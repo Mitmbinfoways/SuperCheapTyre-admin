@@ -526,7 +526,7 @@ const ProductListPage: React.FC = () => {
         title="Filter Products"
         size="md"
       >
-        <div className="space-y-4 dark:text-gray-200 dark:bg-gray-900">
+        <div className="space-y-4 dark:text-gray-200 dark:bg-gray-900 p-2">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Category

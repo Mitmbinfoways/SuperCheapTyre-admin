@@ -10,7 +10,7 @@ import EmptyState from "@/components/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { FiTrash2, FiEdit } from "react-icons/fi";
+import { FiTrash2 } from "react-icons/fi";
 import {
   getAllMasterFilters,
   getMasterFilterById,
@@ -22,6 +22,7 @@ import Pagination from "@/components/ui/Pagination";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
 import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
+import { MdModeEdit } from "react-icons/md";
 
 interface MeasurementItem {
   id: string;
@@ -311,7 +312,7 @@ const ShowMeasurementsPage = () => {
       render: (item) => (
         <div className="flex justify-center space-x-2">
           <Tooltip content="Edit measurement">
-            <FiEdit
+            <MdModeEdit
               size={16}
               className="cursor-pointer text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-500"
               onClick={() => handleEditClick(item)}
@@ -339,7 +340,7 @@ const ShowMeasurementsPage = () => {
           <Button className="w-full sm:w-auto">Add New Measurement</Button>
         </Link>
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="w-full">
           <TextField
             type="text"
@@ -367,6 +368,21 @@ const ShowMeasurementsPage = () => {
             options={[{ label: "All Types", value: "" }, ...typeOptions]}
             placeholder="Select type"
           />
+        </div>
+        <div className="w-full">
+          {(search || categoryFilter || typeFilter) && (
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => {
+                setSearch("");
+                setCategoryFilter("");
+                setTypeFilter("");
+              }}
+            >
+              Reset Filters
+            </Button>
+          )}
         </div>
       </div>
 

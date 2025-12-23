@@ -305,7 +305,7 @@ const AddHolidayPage: React.FC = () => {
             {error.apiError}
           </div>
         )}
-        <form className="space-y-4" onSubmit={handleAddHoliday}>
+        <form className="space-y-4 p-2" onSubmit={handleAddHoliday}>
           <div>
             <FormLabel label="Date" required />
             <DatePicker

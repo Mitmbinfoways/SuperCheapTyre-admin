@@ -430,7 +430,7 @@ const BannerListPage: React.FC = () => {
             </div>
 
             <div className="mt-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
-              {imageType === "laptop" ? "Laptop" : "Mobile"}{" "}
+              {imageType === "laptop" ? "Desktop" : "Mobile"}{" "}
               {previewBanner.laptopImage.match(/\.(mp4|webm|ogg|mov)$/i) ||
                 previewBanner.mobileImage.match(/\.(mp4|webm|ogg|mov)$/i)
                 ? "Video"
