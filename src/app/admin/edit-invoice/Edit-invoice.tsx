@@ -13,6 +13,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Toast } from "@/components/ui/Toast";
 import { FiPlus } from "react-icons/fi";
 import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
+import { parsePhoneNumber } from "react-phone-number-input";
 
 type LoadingStates = {
     fetchingOrders: boolean;
@@ -33,6 +34,15 @@ interface PaymentDetail {
     amount: string;
     note: string;
 }
+
+const getCountryFromPhone = (phone: string | undefined): any => {
+    if (!phone) return "AU";
+    try {
+        return parsePhoneNumber(phone)?.country || "AU";
+    } catch {
+        return "AU";
+    }
+};
 
 const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disableOrderSelect = false }) => {
     const router = useRouter();
@@ -606,7 +616,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                         readOnly={true}
                                         // touched={touched.phone}
                                         placeholder="Enter phone number"
-                                        defaultCountry="AU"
+                                        defaultCountry={getCountryFromPhone(phone)}
                                         onChange={(value) => {
                                             setPhone(value || "");
 

@@ -17,6 +17,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { IoArrowBack } from "react-icons/io5";
 import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
+import { parsePhoneNumber } from "react-phone-number-input";
 
 interface AppointmentFormProps {
     initialData?: Partial<Appointment>;
@@ -30,6 +31,15 @@ const getMelbourneDate = () => {
     const now = new Date();
     const melbourneTimeStr = now.toLocaleString("en-US", { timeZone: "Australia/Melbourne" });
     return new Date(melbourneTimeStr);
+};
+
+const getCountryFromPhone = (phone: string | undefined): any => {
+    if (!phone) return "AU";
+    try {
+        return parsePhoneNumber(phone)?.country || "AU";
+    } catch {
+        return "AU";
+    }
 };
 
 const AppointmentForm = ({
@@ -282,6 +292,7 @@ const AppointmentForm = ({
                                     name="phone"
                                     value={phone}
                                     required
+                                    defaultCountry={getCountryFromPhone(initialData?.phone)}
                                     error={errors.phone}
                                     touched={true}
                                     onChange={(val: string) => {
