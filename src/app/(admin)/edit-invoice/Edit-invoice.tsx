@@ -230,8 +230,8 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
             return total + amount;
         }, 0);
 
-        return subTotal - previousPaymentsTotal - currentPaymentsTotal;
-    }, [subtotal, previousPayments, paymentDetails]);
+        return (subTotal + (selectedOrder?.charges || 0)) - previousPaymentsTotal - currentPaymentsTotal;
+    }, [subtotal, previousPayments, paymentDetails, selectedOrder]);
 
     // Payment details handlers
     const addPaymentDetail = () => {
@@ -344,7 +344,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 // Calculate what the amount *should* be for a full payment
                 // We subtract previous payments and any *other* current payments that came before this one (if any)
                 // For simplicity, if we have multiple payments, "Full" usually implies "the rest".
-                const remaining = Math.max(0, currentSubtotal - previousPaymentsTotal - runningTotalPayment);
+                const remaining = Math.max(0, (currentSubtotal + (selectedOrder?.charges || 0)) - previousPaymentsTotal - runningTotalPayment);
                 return { ...payment, amount: remaining.toFixed(2) };
             }
             runningTotalPayment += parseFloat(payment.amount) || 0;
@@ -415,7 +415,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                 note: primaryPayment.note,
                 serviceItems: selectedOrder?.serviceItems || [],
                 subtotal: currentSubtotal,
-                total: currentSubtotal
+                total: currentSubtotal + (selectedOrder?.charges || 0)
             };
 
             // Only include items if they have changed. 
@@ -799,8 +799,8 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                                         <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Subtotal</p>
-                                            <p className="font-medium">AU$ {subtotal().toFixed(2)}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Total (Inc. Charges)</p>
+                                            <p className="font-medium">AU$ {(subtotal() + (selectedOrder?.charges || 0)).toFixed(2)}</p>
                                         </div>
                                         <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Previous Payments</p>
@@ -814,7 +814,7 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
                                         <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Remaining Balance</p>
                                             <p className="font-medium">
-                                                AU$ {(subtotal() - previousPayments.reduce((total, payment) => {
+                                                AU$ {(subtotal() + (selectedOrder?.charges || 0) - previousPayments.reduce((total, payment) => {
                                                     const amount = parseFloat(payment.amount) || 0;
                                                     return total + amount;
                                                 }, 0) - paymentDetails.reduce((total, payment) => {

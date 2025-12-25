@@ -67,6 +67,10 @@ export interface Order {
   createdAt: string;
   customer: Customer;
   payment: Payment;
+  charges?: number;
+  tax?: number;
+  taxAmount: number;
+  taxName?: string;
 }
 
 export interface Pagination {

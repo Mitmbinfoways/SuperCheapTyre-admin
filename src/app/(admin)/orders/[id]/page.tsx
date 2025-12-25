@@ -155,7 +155,7 @@ const OrderDetailsPage = () => {
         ? order.payment.reduce((sum, p) => sum + (p.amount || 0), 0)
         : (order.payment?.amount || 0)) : 0;
 
-    const effectiveTotal = order ? Math.max(order.subtotal, order.total) : 0;
+    const effectiveTotal = order ? (order.subtotal + (order.charges || 0)) : 0;
 
     const isPartial = order ? paidAmount < order.total - 0.01 : false;
 
@@ -416,17 +416,37 @@ const OrderDetailsPage = () => {
                             <h2 className="font-semibold text-gray-900 dark:text-white">Order Summary</h2>
                         </div>
                         <div className="p-4 space-y-3">
+                            {/* Subtotal (Excl. Tax) */}
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
-                                <span className="font-medium text-gray-900 dark:text-white">AU$ {order.subtotal.toFixed(2)}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                    AU$ {(order.subtotal - (order.taxAmount || 0)).toFixed(2)}
+                                </span>
                             </div>
+
+                            {/* Tax */}
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500 dark:text-gray-400">{order.taxName || "Tax"}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                    AU$ {(order.taxAmount || 0).toFixed(2)}
+                                </span>
+                            </div>
+
+                            {/* Transaction Fees */}
+                            {order.charges ? (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400">Transaction Fees</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">AU$ {order.charges.toFixed(2)}</span>
+                                </div>
+                            ) : null}
+
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500 dark:text-gray-400">Paid Amount</span>
                                 <span className="font-medium text-green-600 dark:text-green-400">AU$ {paidAmount.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-500 dark:text-gray-400">Unpaid Amount</span>
-                                <span className="font-medium text-red-600 dark:text-red-400">AU$ {(effectiveTotal - paidAmount).toFixed(2)}</span>
+                                <span className="font-medium text-red-600 dark:text-red-400">AU$ {Math.max(0, effectiveTotal - paidAmount).toFixed(2)}</span>
                             </div>
                             <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex justify-between items-center">
                                 <span className="font-bold text-gray-900 dark:text-white">Total</span>

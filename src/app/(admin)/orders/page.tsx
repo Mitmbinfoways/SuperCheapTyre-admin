@@ -295,7 +295,7 @@ const OrdersPage = () => {
     {
       title: "Total (AU$)",
       key: "total",
-      render: (order: Order) => `AU$${order.subtotal.toFixed(2)}`,
+      render: (order: Order) => `AU$${(order.subtotal + (order.charges || 0)).toFixed(2)}`,
     },
     {
       title: "Actions",
