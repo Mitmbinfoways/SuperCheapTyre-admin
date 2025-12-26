@@ -336,20 +336,11 @@ const EditInvoice: React.FC<EditInvoiceProps> = ({ onBack, initialOrderId, disab
         // Pre-process payments: Auto-adjust 'Full' payments to match the current remaining balance
         // This prevents validation errors if the subtotal decreased (e.g. removed service item)
         const currentSubtotal = subtotal();
-        const previousPaymentsTotal = previousPayments.reduce((total, payment) => total + (parseFloat(payment.amount) || 0), 0);
-        let runningTotalPayment = 0;
 
-        const processedPaymentDetails = paymentDetails.map(payment => {
-            if (payment.status === 'full') {
-                // Calculate what the amount *should* be for a full payment
-                // We subtract previous payments and any *other* current payments that came before this one (if any)
-                // For simplicity, if we have multiple payments, "Full" usually implies "the rest".
-                const remaining = Math.max(0, (currentSubtotal + (selectedOrder?.charges || 0)) - previousPaymentsTotal - runningTotalPayment);
-                return { ...payment, amount: remaining.toFixed(2) };
-            }
-            runningTotalPayment += parseFloat(payment.amount) || 0;
-            return payment;
-        });
+        // We use paymentDetails directly to respect user input. 
+        // Although "Full" status implies full payment, users might manually edit the amount.
+        // The backend will correct the status to "Partial" if the amount is insufficient.
+        const processedPaymentDetails = paymentDetails;
 
         // Validate payment details using the processed (auto-adjusted) values
         let totalPaymentAmount = 0;
