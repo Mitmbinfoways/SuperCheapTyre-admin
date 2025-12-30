@@ -124,11 +124,26 @@ const AppointmentForm = ({
                 selectedDate.getMonth() === melbourneDate.getMonth() &&
                 selectedDate.getFullYear() === melbourneDate.getFullYear();
 
-            const processedSlots = slotsData.map((slot: any) => {
+            const isSaturday = selectedDate.getDay() === 6;
+
+            const processedSlots = slotsData.reduce((acc: any[], slot: any) => {
                 let isAvailable = !!slot.isAvailable;
+                const [slotHour, slotMinute] = slot.startTime.split(':').map(Number);
+
+                if (isSaturday) {
+                    // Check start time (must be >= 9)
+                    if (slotHour < 9) {
+                        return acc;
+                    }
+
+                    // Check end time (must be <= 15:00)
+                    const [endHour, endMinute] = slot.endTime.split(':').map(Number);
+                    if (endHour > 15 || (endHour === 15 && endMinute > 0)) {
+                        return acc;
+                    }
+                }
 
                 if (isToday && isAvailable) {
-                    const [slotHour, slotMinute] = slot.startTime.split(':').map(Number);
                     const currentHour = melbourneDate.getHours();
                     const currentMinute = melbourneDate.getMinutes();
 
@@ -136,8 +151,9 @@ const AppointmentForm = ({
                         isAvailable = false;
                     }
                 }
-                return { ...slot, isAvailable };
-            });
+                acc.push({ ...slot, isAvailable });
+                return acc;
+            }, []);
 
             setAvailableSlots(processedSlots);
         } catch (error) {
