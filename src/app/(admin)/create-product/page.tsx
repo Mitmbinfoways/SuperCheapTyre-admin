@@ -539,9 +539,13 @@ const Page = () => {
             <div className="flex-1">
               <ImageUploader
                 images={formData.images}
-                onChange={(images) =>
-                  setFormData((prev: any) => ({ ...prev, images }))
-                }
+                onChange={(images) => {
+                  setFormData((prev: any) => ({ ...prev, images }));
+                  const newFiles = images
+                    .filter((img) => img.file)
+                    .map((img) => img.file as File);
+                  setImageFiles(newFiles);
+                }}
                 maxFiles={5}
                 onFilesSelected={handleFilesSelected}
                 onRemove={handleRemoveImage}

@@ -8,6 +8,7 @@ import {
 } from "@/services/AppointmentService";
 import { GetTechnicians } from "@/services/TechnicianService";
 import { getAllTimeSlots } from "@/services/TimeSlotService";
+import { GetHolidays, Holiday } from "@/services/HolidayService";
 import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
@@ -66,6 +67,7 @@ const AppointmentForm = ({
     const [availableSlots, setAvailableSlots] = useState<any[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [holidays, setHolidays] = useState<Holiday[]>([]);
 
     const fetchTechnicians = useCallback(async () => {
         try {
@@ -84,6 +86,17 @@ const AppointmentForm = ({
 
     useEffect(() => {
         fetchTechnicians();
+
+        // Fetch holidays
+        const fetchHolidays = async () => {
+            try {
+                const res = await GetHolidays({});
+                setHolidays(res.data.items || []);
+            } catch (error) {
+                console.error("Failed to fetch holidays", error);
+            }
+        };
+        fetchHolidays();
 
         // Only fetch active time slot if creating new, or if we need it for some reason.
         // Actually the edit page didn't fetch this explicitly unless it was missing?
@@ -189,6 +202,22 @@ const AppointmentForm = ({
         } else {
             setAvailableSlots([]);
         }
+    };
+
+    // Filter function to block Sundays and holidays
+    const filterDate = (date: Date): boolean => {
+        // Block Sundays (day 0)
+        if (date.getDay() === 0) return false;
+
+        // Block holidays
+        const isHoliday = holidays.some(holiday => {
+            const holidayDate = new Date(holiday.date);
+            return holidayDate.getFullYear() === date.getFullYear() &&
+                holidayDate.getMonth() === date.getMonth() &&
+                holidayDate.getDate() === date.getDate();
+        });
+
+        return !isHoliday;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -337,6 +366,7 @@ const AppointmentForm = ({
                                     placeholder="Select Date"
                                     className="w-full"
                                     minDate={getMelbourneDate()}
+                                    filterDate={filterDate}
                                 />
                                 {errors.date && <p className="text-sm text-red-600">{errors.date}</p>}
                             </div>

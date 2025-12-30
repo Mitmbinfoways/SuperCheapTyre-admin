@@ -6,6 +6,23 @@ import { IoMdClose } from "react-icons/io";
 import { CiImageOn } from "react-icons/ci";
 import Image from "next/image";
 import { v4 as uuidv4 } from "uuid";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface ImageItem {
   id: string;
@@ -30,6 +47,79 @@ interface ImageUploaderProps {
   video?: boolean;
 }
 
+const SortableImageItem = ({
+  item,
+  height,
+  isMobile,
+  video,
+  onRemove,
+}: {
+  item: ImageItem;
+  height: string;
+  isMobile: boolean;
+  video: boolean;
+  onRemove: (id: string) => void;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`group relative flex-shrink-0 cursor-grab overflow-hidden rounded-lg border border-gray-200 bg-gray-50 active:cursor-grabbing dark:border-gray-700 dark:bg-gray-700 ${height} ${!isMobile ? "w-40" : ""
+        }`}
+    >
+      {item.file?.type.startsWith("video/") ||
+        (!item.file &&
+          /\.(mp4|webm|ogg|mov)$/i.test(item.url.split("?")[0])) ? (
+        // Simple video preview thumbnail
+        <video
+          src={item.url}
+          className="h-full w-full object-cover"
+          muted
+          controls // Restore controls
+        />
+      ) : (
+        <Image
+          src={item.url}
+          alt="Preview"
+          fill
+          className="object-cover"
+          draggable={false} // Prevent default HTML5 drag
+        />
+      )}
+
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start when clicking remove
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onRemove(item.id);
+        }}
+        className="absolute right-2 top-2 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity duration-200 hover:bg-red-600 group-hover:opacity-100"
+      >
+        <IoMdClose className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
+
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   images,
   onChange,
@@ -46,6 +136,29 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   video = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = images.findIndex((item) => item.id === active.id);
+      const newIndex = images.findIndex((item) => item.id === over.id);
+
+      const newImages = arrayMove(images, oldIndex, newIndex);
+      onChange(newImages);
+    }
+  };
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -77,7 +190,10 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const finalImages = replaceImages ? newImages : [...images, ...newImages];
     onChange(finalImages.slice(0, maxFiles));
 
-    const remainingSlots = Math.max(0, maxFiles - (replaceImages ? 0 : images.length));
+    const remainingSlots = Math.max(
+      0,
+      maxFiles - (replaceImages ? 0 : images.length)
+    );
     if (onFilesSelected && validFileObjects.length) {
       onFilesSelected(validFileObjects.slice(0, remainingSlots));
     }
@@ -97,7 +213,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     e.preventDefault();
   };
 
-  const handleRemove = (id: string) => {
+  const handleRemoveItem = (id: string) => {
     const removedIndex = images.findIndex((img) => img.id === id);
     if (removedIndex === -1) return;
     if (onRemove) onRemove(removedIndex);
@@ -133,8 +249,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       >
         <FiUpload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-300" />
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-300">
-          Click to upload {multiple ? (video ? "images or videos" : "images") : "file"}{" "}
-          or drag and drop
+          Click to upload{" "}
+          {multiple ? (video ? "images or videos" : "images") : "file"} or
+          drag and drop
         </p>
         <p className="mt-1 text-xs text-gray-400 dark:text-gray-400">
           {fileTypesText}
@@ -156,46 +273,29 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             Uploaded Files ({images.length})
           </h3>
 
-          <div className="grid grid-cols-3 gap-4">
-            {images.map((img) => (
-              <div
-                key={img.id}
-                className={`group relative flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-700 ${height} ${!isMobile ? "w-40" : ""
-                  }`}
-              >
-                {img.file?.type.startsWith("video/") ||
-                  (!img.file &&
-                    /\.(mp4|webm|ogg|mov)$/i.test(img.url.split("?")[0])) ? (
-                  // Simple video preview thumbnail
-                  <video
-                    src={img.url}
-                    className="object-cover w-full h-full"
-                    muted
-                    controls
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={images.map((img) => img.id)}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-3 gap-4">
+                {images.map((img) => (
+                  <SortableImageItem
+                    key={img.id}
+                    item={img}
+                    height={height}
+                    isMobile={isMobile}
+                    video={video}
+                    onRemove={handleRemoveItem}
                   />
-                ) : (
-                  <Image
-                    src={img.url}
-                    alt="Preview"
-                    fill
-                    className="object-cover"
-                  />
-                )}
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    handleRemove(img.id);
-                  }}
-                  className="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity duration-200 hover:bg-red-600 group-hover:opacity-100"
-                >
-                  <IoMdClose className="h-4 w-4" />
-                </button>
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         </div>
       )}
     </div>

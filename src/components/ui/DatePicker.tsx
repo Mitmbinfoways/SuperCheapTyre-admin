@@ -18,6 +18,7 @@ type Props = {
   selectsEnd?: boolean;
   startDate?: Date | null;
   endDate?: Date | null;
+  filterDate?: (date: Date) => boolean;
 };
 
 const DatePicker: React.FC<Props> = ({
@@ -33,7 +34,8 @@ const DatePicker: React.FC<Props> = ({
   selectsStart,
   selectsEnd,
   startDate,
-  endDate
+  endDate,
+  filterDate
 }) => {
   // Handle change to ensure only date (without time) is passed
   const handleChange = (date: Date | null) => {
@@ -64,6 +66,7 @@ const DatePicker: React.FC<Props> = ({
       selectsEnd={selectsEnd}
       startDate={startDate}
       endDate={endDate}
+      filterDate={filterDate}
       // Allow opening the date picker but prevent manual typing
       onKeyDown={(e) => {
         // Prevent typing but allow navigation keys

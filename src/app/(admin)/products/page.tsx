@@ -66,6 +66,8 @@ const ProductListPage: React.FC = () => {
   const [tempStatusFilter, setTempStatusFilter] = useState("all");
   const [tempIsPopularFilter, setTempIsPopularFilter] = useState<boolean | null>(null);
   const [tempLowStockFilter, setTempLowStockFilter] = useState<boolean | null>(null);
+  const [outOfStockFilter, setOutOfStockFilter] = useState<boolean | null>(null);
+  const [tempOutOfStockFilter, setTempOutOfStockFilter] = useState<boolean | null>(null);
 
   // Check if any filters are currently applied
   const areFiltersApplied = () => {
@@ -74,7 +76,8 @@ const ProductListPage: React.FC = () => {
       brandFilter !== "" ||
       statusFilter !== "all" ||
       isPopularFilter !== null ||
-      lowStockFilter !== null
+      lowStockFilter !== null ||
+      outOfStockFilter !== null
     );
   };
 
@@ -129,7 +132,7 @@ const ProductListPage: React.FC = () => {
         brand: brandFilter || undefined,
         isActive: statusFilter === "all" ? undefined : statusFilter === "active",
         isPopular: isPopularFilter !== null ? isPopularFilter : undefined,
-        stock: lowStockFilter === true ? "low-stock" : undefined,
+        stock: outOfStockFilter === true ? "out-of-stock" : lowStockFilter === true ? "low-stock" : undefined,
       };
       const data = await getAllProducts(filter);
       const { items, pagination } = data.data;
@@ -147,7 +150,7 @@ const ProductListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, brandFilter, statusFilter, isPopularFilter, lowStockFilter]);
+  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, brandFilter, statusFilter, isPopularFilter, lowStockFilter, outOfStockFilter]);
 
   useEffect(() => {
     loadProducts();
@@ -205,6 +208,7 @@ const ProductListPage: React.FC = () => {
     setTempStatusFilter(statusFilter);
     setTempIsPopularFilter(isPopularFilter);
     setTempLowStockFilter(lowStockFilter);
+    setTempOutOfStockFilter(outOfStockFilter);
     setShowFilterPopup(true);
   };
 
@@ -220,6 +224,7 @@ const ProductListPage: React.FC = () => {
     setStatusFilter(tempStatusFilter);
     setIsPopularFilter(tempIsPopularFilter);
     setLowStockFilter(tempLowStockFilter);
+    setOutOfStockFilter(tempOutOfStockFilter);
     setShowFilterPopup(false);
 
     // Reset to first page when filters change
@@ -237,6 +242,7 @@ const ProductListPage: React.FC = () => {
     setTempStatusFilter("all");
     setTempIsPopularFilter(null);
     setTempLowStockFilter(null);
+    setTempOutOfStockFilter(null);
 
     // Also reset the actual filter state
     setSearch("");
@@ -245,6 +251,7 @@ const ProductListPage: React.FC = () => {
     setStatusFilter("all");
     setIsPopularFilter(null);
     setLowStockFilter(null);
+    setOutOfStockFilter(null);
 
     // Reset to first page when filters change
     // Reset to first page when filters change
@@ -599,7 +606,10 @@ const ProductListPage: React.FC = () => {
               type="checkbox"
               id="lowStock"
               checked={tempLowStockFilter === true}
-              onChange={(e) => setTempLowStockFilter(e.target.checked ? true : null)}
+              onChange={(e) => {
+                setTempLowStockFilter(e.target.checked ? true : null);
+                if (e.target.checked) setTempOutOfStockFilter(null); // Uncheck "Out of Stock" if "Low Stock" is checked
+              }}
               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-indigo-600"
             />
             <label
@@ -607,6 +617,25 @@ const ProductListPage: React.FC = () => {
               className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
             >
               Low Stock (2 or less)
+            </label>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="outOfStock"
+              checked={tempOutOfStockFilter === true}
+              onChange={(e) => {
+                setTempOutOfStockFilter(e.target.checked ? true : null);
+                if (e.target.checked) setTempLowStockFilter(null); // Uncheck "Low Stock" if "Out of Stock" is checked
+              }}
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-indigo-600"
+            />
+            <label
+              htmlFor="outOfStock"
+              className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+            >
+              Out of Stock
             </label>
           </div>
         </div>
