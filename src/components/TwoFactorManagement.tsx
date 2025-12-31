@@ -188,7 +188,7 @@ export default function TwoFactorManagement({ isEnabled, onUpdate }: TwoFactorMa
                         </p>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Confirm Password
+                                Password
                             </label>
                             <TextField
                                 type="password"

@@ -60,3 +60,13 @@ export const disable2FA = async (password: string) => {
     );
     return response.data;
 };
+
+// Request 2FA Reset (Forgot OTP)
+export const request2FAReset = async (tempToken: string) => {
+    const url = `${AUTH_SERVICE_BASE_URL}/api/v1/admin/2fa/forgot`;
+    const response = await postMethod<{ statusCode: number; message: string }>(
+        url,
+        { tempToken }
+    );
+    return response;
+};
