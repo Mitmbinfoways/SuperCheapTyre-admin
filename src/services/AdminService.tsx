@@ -17,6 +17,7 @@ export interface Admin {
   createdAt: string;
   updatedAt: string;
   lastLogin?: string;
+  twoFactorEnabled?: boolean;
   __v?: number;
 }
 

@@ -7,6 +7,7 @@ import TextField from "@/components/ui/TextField";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import { signIn } from "@/services/SignInService";
+import { verify2FALogin } from "@/services/TwoFactorService";
 import { Toast } from "@/components/ui/Toast";
 import logo from "../../../../public/logo_dark.svg";
 import Darklogo from "../../../../public/logo_light.svg";
@@ -17,14 +18,20 @@ import Link from "next/link";
 interface FieldErrors {
   email?: string;
   password?: string;
+  otp?: string;
 }
 
 export default function LoginPage() {
+  const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [tempToken, setTempToken] = useState<string | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -44,6 +51,7 @@ export default function LoginPage() {
 
     if (field === "email") setEmail(value);
     if (field === "password") setPassword(value);
+    if (field === "otp") setOtp(value);
 
     if (fieldErrors[field]) {
       setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -53,15 +61,21 @@ export default function LoginPage() {
   const validateFields = (): FieldErrors => {
     const errors: FieldErrors = {};
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      errors.email = "Email is required";
-    } else if (!emailRegex.test(email)) {
-      errors.email = "Please enter a valid email address";
-    }
+    if (step === 1) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email.trim()) {
+        errors.email = "Email is required";
+      } else if (!emailRegex.test(email)) {
+        errors.email = "Please enter a valid email address";
+      }
 
-    if (!password.trim()) {
-      errors.password = "Password is required";
+      if (!password.trim()) {
+        errors.password = "Password is required";
+      }
+    } else {
+      if (!otp.trim() || otp.length < 6) {
+        errors.otp = "Please enter a valid 6-digit code";
+      }
     }
     return errors;
   };
@@ -77,27 +91,62 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-    try {
-      const response = await signIn({ email, password });
 
-      const token = response?.data?.token;
-      const admin = response?.data?.admin;
+    if (step === 1) {
+      // Step 1: Initial Login
+      try {
+        const response = await signIn({ email, password });
 
-      if (token && admin) {
-        dispatch(setCredentials({ admin, token }));
+        // Check for 2FA requirement (custom response structure)
+        if ((response.data as any).requires2FA) {
+          setTempToken((response.data as any).tempToken);
+          setStep(2);
+          setIsLoading(false);
+          return;
+        }
+
+        const token = response?.data?.token;
+        const admin = response?.data?.admin;
+
+        if (token && admin) {
+          dispatch(setCredentials({ admin, token }));
+          Toast({
+            message: response?.message || "Login successful",
+            type: "success",
+          });
+          router.replace("/");
+        }
+      } catch (error: any) {
+        const apiMessage = error.response?.data?.errorData || error.response?.data?.message || "Failed to sign in";
+        setErrorMessage(apiMessage);
+        setIsLoading(false);
       }
+    } else {
+      // Step 2: Verify 2FA
+      try {
+        if (!tempToken) {
+          setStep(1);
+          return;
+        }
+        const response = await verify2FALogin(tempToken, otp);
 
-      Toast({
-        message: response?.message || "Login successful",
-        type: "success",
-      });
+        const token = response?.data?.token;
+        const admin = response?.data?.admin;
 
-      router.replace("/");
-    } catch (error: any) {
-      const apiMessage = error.response?.data?.errorData || "Failed to sign in";
-      setErrorMessage(apiMessage);
-    } finally {
-      setIsLoading(false);
+        if (token && admin) {
+          dispatch(setCredentials({ admin, token }));
+          Toast({
+            message: response?.message || "Login successful",
+            type: "success",
+          });
+          router.replace("/");
+        }
+      } catch (error: any) {
+        const apiMessage = error.response?.data?.errorData || error.response?.data?.message || "Verification failed";
+        setErrorMessage(apiMessage);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -124,43 +173,67 @@ export default function LoginPage() {
         </div>
         <div className="p-8 pt-2">
           <h2 className="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Sign in to SuperCheapTyre
+            {step === 1 ? "Sign in to SuperCheapTyre" : "Two-Factor Authentication"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            <div>
-              <FormLabel label="Email address" required />
-              <TextField
-                name="email"
-                type="email"
-                value={email}
-                onChange={(e) => handleChange(e, "email")}
-                placeholder="Enter your email"
-                error={fieldErrors.email}
-              />
-            </div>
 
-            <div>
-              <div className="flex items-center justify-between">
-                <FormLabel label="Password" required />
-                <div className="mb-2 text-sm">
-                  <Link
-                    href="/forgot-password"
-                    className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  >
-                    Forgot password?
-                  </Link>
+            {step === 1 && (
+              <>
+                <div>
+                  <FormLabel label="Email address" required />
+                  <TextField
+                    name="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleChange(e, "email")}
+                    placeholder="Enter your email"
+                    error={fieldErrors.email}
+                  />
                 </div>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <FormLabel label="Password" required />
+                    <div className="mb-2 text-sm">
+                      <Link
+                        href="/forgot-password"
+                        className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  </div>
+                  <TextField
+                    name="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => handleChange(e, "password")}
+                    placeholder="Enter your password"
+                    error={fieldErrors.password}
+                  />
+                </div>
+              </>
+            )}
+
+            {step === 2 && (
+              <div>
+                <div className="text-center mb-4 text-sm text-gray-600 dark:text-gray-400">
+                  Enter the 6-digit code from your authenticator app
+                </div>
+                <FormLabel label="Authentication Code" required />
+                <TextField
+                  name="otp"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => handleChange(e, "otp")}
+                  placeholder="000000"
+                  error={fieldErrors.otp}
+                  maxLength={6}
+                  className="text-center tracking-widest text-lg"
+                />
               </div>
-              <TextField
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => handleChange(e, "password")}
-                placeholder="Enter your password"
-                error={fieldErrors.password}
-              />
-            </div>
+            )}
 
             {errorMessage && (
               <p className="text-sm text-red-600 dark:text-red-400" role="alert">
@@ -173,8 +246,18 @@ export default function LoginPage() {
               className="w-full"
               type="submit"
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Verifying..." : (step === 1 ? "Sign in" : "Verify")}
             </Button>
+
+            {step === 2 && (
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="w-full text-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 mt-2"
+              >
+                Back to Login
+              </button>
+            )}
           </form>
         </div>
       </div>

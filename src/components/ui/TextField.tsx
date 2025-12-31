@@ -12,6 +12,7 @@ interface TextFieldProps {
   name?: string;
   min?: number;
   max?: number;
+  maxLength?: number;
   error?: string;
 }
 
@@ -25,6 +26,7 @@ const TextField: React.FC<TextFieldProps> = ({
   name = "",
   min,
   max,
+  maxLength,
   error,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +55,7 @@ const TextField: React.FC<TextFieldProps> = ({
           disabled={disabled}
           min={min}
           max={max}
+          maxLength={maxLength}
           onWheel={(e) => type === "number" && e.currentTarget.blur()}
           onKeyDown={handleKeyDown}
           className={`border border-gray-300 w-full rounded-lg bg-white px-3 py-2 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 ${type === "number" ? "no-spinner" : ""

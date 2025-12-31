@@ -9,6 +9,7 @@ export type AdminUser = {
   createdAt?: string;
   updatedAt?: string;
   lastLogin?: string;
+  twoFactorEnabled?: boolean;
 };
 
 export interface AuthState {

@@ -15,6 +15,7 @@ import { RootState } from "@/Store/Store";
 import { updateAdmin } from "@/Store/Slice/authSlice";
 import { GetContactInfo, CreateContactInfo, UpdateContactInfo } from "@/services/ContactInfoService";
 import { FaTrash, FaPlus } from "react-icons/fa";
+import TwoFactorManagement from "@/components/TwoFactorManagement";
 
 const Page = () => {
   const dispatch = useDispatch();
@@ -384,7 +385,7 @@ const Page = () => {
         </div>
       ) : (
         <>
-          <div className="w-full max-w-lg">
+          <div className="w-full max-w-lg flex flex-col gap-6">
             {isEditing ? (
               <div className="rounded-xl p-6 shadow bg-white dark:bg-gray-800">
                 <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
@@ -567,6 +568,13 @@ const Page = () => {
                 </div>
               )
             )}
+
+            {!isEditing && !isChangingPassword && profile && (
+              <TwoFactorManagement
+                isEnabled={!!profile.twoFactorEnabled}
+                onUpdate={fetchProfile}
+              />
+            )}
           </div>
 
           {/* Contact Info Section */}
@@ -704,7 +712,7 @@ const Page = () => {
                     <p><span className="font-semibold">Email:</span> {contactInfo.email}</p>
                     <p><span className="font-semibold">Address:</span> {contactInfo.address}</p>
 
-                    <div>
+                    <div> 
                       <p className="font-semibold mb-1">Opening Hours:</p>
                       <ul className="list-disc pl-5">
                         {contactInfo.openingHours?.map((item: any, idx: number) => (
