@@ -7,7 +7,7 @@ import Pagination from "@/components/ui/Pagination";
 import { Toast } from "@/components/ui/Toast";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/EmptyState";
-import { FiEye } from "react-icons/fi";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import TextField from "@/components/ui/TextField";
 import useDebounce from "@/hooks/useDebounce";
 import Tooltip from "@/components/ui/Tooltip";
@@ -40,6 +40,7 @@ const OrdersPage = () => {
   const [customStartDate, setCustomStartDate] = useState<Date | null>(null);
   const [customEndDate, setCustomEndDate] = useState<Date | null>(null);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [showTotal, setShowTotal] = useState(true);
 
   const [loadingStates, setLoadingStates] = useState<LoadingStates>({
     fetchingOrders: false,
@@ -374,15 +375,27 @@ const OrdersPage = () => {
           <h1 className="text-2xl font-semibold text-primary dark:text-gray-300">
             Orders ({totalOrders})
           </h1>
-          <h2 className="text-xl font-semibold text-primary dark:text-gray-300">
-            Total Amount:{" "}
-            <span>
-              AU$
-              {displayOrders
-                .reduce((sum, order) => sum + order.subtotal, 0)
-                .toFixed(2)}
-            </span>
-          </h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setShowTotal(!showTotal)}
+              aria-label="Toggle amount visibility"
+              className="!p-2"
+            >
+              {showTotal ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+            </Button>
+            <h2 className="text-xl font-semibold text-primary dark:text-gray-300">
+              Total Amount:{" "}
+              <span>
+                {showTotal
+                  ? `AU$${displayOrders
+                    .reduce((sum, order) => sum + order.subtotal, 0)
+                    .toFixed(2)}`
+                  : "AU$ ****"}
+              </span>
+            </h2>
+
+          </div>
         </div>
 
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-end">

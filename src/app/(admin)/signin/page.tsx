@@ -248,7 +248,7 @@ export default function LoginPage() {
                   }}
                   className="w-full text-end text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 mt-2"
                 >
-                  Forgot OTP?
+                  Get Reset Link?
                 </button>
               </div>
 
