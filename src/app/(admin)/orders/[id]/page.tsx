@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import { IoArrowBack } from "react-icons/io5";
 import { FiDownload } from "react-icons/fi";
 import { formatPhoneNumber } from "@/lib/utils";
+import { FaWhatsapp } from "react-icons/fa";
 
 const OrderDetailsPage = () => {
     const params = useParams();
@@ -188,6 +189,19 @@ const OrderDetailsPage = () => {
                     </div>
                 </div>
                 <div className="flex w-full sm:w-auto justify-end sm:justify-start gap-2">
+                    <Button
+                        variant="primary"
+                        className="w-full sm:w-auto !bg-[#25D366] !hover:bg-[#128C7E] !text-white !border-none"
+                        onClick={() => {
+                            if (order.customer.phone) {
+                                const phone = order.customer.phone.replace(/[^0-9]/g, "");
+                                window.open(`https://wa.me/${phone}?text=Hello`, "_blank");
+                            }
+                        }}
+                    >
+                        <FaWhatsapp size={18} className="mr-2" />
+                        WhatsApp
+                    </Button>
                     {!isFullPayment && (
                         <Button
                             variant="primary"
