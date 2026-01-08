@@ -634,7 +634,7 @@ const Page = () => {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <FormLabel label="Opening Hours" />
-                      {contactFormData.openingHours.length < 5 && (
+                      {contactFormData.openingHours.length < 7 && (
                         <Button color="gray" onClick={addOpeningHour} className="mt-2 flex items-center gap-2">
                           <FaPlus size={16} /> Add Day
                         </Button>

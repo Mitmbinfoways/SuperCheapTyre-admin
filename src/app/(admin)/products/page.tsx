@@ -26,6 +26,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import Select from "@/components/ui/Select";
 import { getAllBrands } from "@/services/BrandService";
+import { getAllMasterFilters } from "@/services/MasterFilterService";
 import Tooltip from "@/components/ui/Tooltip";
 import { calculatePageAfterDeletion } from "@/utils/paginationUtils";
 
@@ -42,7 +43,10 @@ const ProductListPage: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("tyre");
+  const [widthFilter, setWidthFilter] = useState("");
+  const [diameterFilter, setDiameterFilter] = useState("");
+  const [profileFilter, setProfileFilter] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isPopularFilter, setIsPopularFilter] = useState<boolean | null>(null);
@@ -55,6 +59,16 @@ const ProductListPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 10;
   const [totalProduct, setTotalProduct] = useState<number>(0);
+  const [widthOptions, setWidthOptions] = useState<{ label: string, value: string }[]>([]);
+  const [profileOptions, setProfileOptions] = useState<{ label: string, value: string }[]>([]);
+  const [diameterOptions, setDiameterOptions] = useState<{ label: string, value: string }[]>([]);
+
+  // Wheel specific filters
+  const [sizeFilter, setSizeFilter] = useState("");
+  const [fitmentFilter, setFitmentFilter] = useState("");
+  const [sizeOptions, setSizeOptions] = useState<{ label: string, value: string }[]>([]);
+  const [fitmentOptions, setFitmentOptions] = useState<{ label: string, value: string }[]>([]);
+  const [wheelDiameterOptions, setWheelDiameterOptions] = useState<{ label: string, value: string }[]>([]);
 
   // Filter popup state
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -96,6 +110,11 @@ const ProductListPage: React.FC = () => {
   };
 
   const debounceSearch = useDebounce<string>(search, 300);
+  const debounceWidth = useDebounce<string>(widthFilter, 300);
+  const debounceDiameter = useDebounce<string>(diameterFilter, 300);
+  const debounceProfile = useDebounce<string>(profileFilter, 300);
+  const debounceSize = useDebounce<string>(sizeFilter, 300);
+  const debounceFitment = useDebounce<string>(fitmentFilter, 300);
 
 
   const fetchBrands = async () => {
@@ -121,6 +140,61 @@ const ProductListPage: React.FC = () => {
     fetchBrands();
   }, []);
 
+  const fetchMasterFilters = async () => {
+    try {
+      const res = await getAllMasterFilters();
+      const allFilters = res.data.items;
+      const tyreFilters = allFilters.filter((f) => f.category.toLowerCase() === "tyre");
+
+      const widths = tyreFilters
+        .filter((f) => f.subCategory.toLowerCase() === "width")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setWidthOptions(widths);
+
+      const profiles = tyreFilters
+        .filter((f) => f.subCategory.toLowerCase() === "profile")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setProfileOptions(profiles);
+
+      const diameters = tyreFilters
+        .filter((f) => f.subCategory.toLowerCase() === "diameter")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setDiameterOptions(diameters);
+
+
+      // Wheel Filters
+      const wheelFilters = allFilters.filter((f) => f.category.toLowerCase() === "wheel");
+
+      const sizes = wheelFilters
+        .filter((f) => f.subCategory.toLowerCase() === "size")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setSizeOptions(sizes);
+
+      const fitments = wheelFilters
+        .filter((f) => f.subCategory.toLowerCase() === "fitments")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setFitmentOptions(fitments);
+
+      const wheelDiameters = wheelFilters
+        .filter((f) => f.subCategory.toLowerCase() === "diameter")
+        .map((f) => ({ label: f.values, value: f._id }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+      setWheelDiameterOptions(wheelDiameters);
+
+    } catch (error) {
+      console.error("Failed to fetch master filters:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMasterFilters();
+  }, []);
+
   const loadProducts = useCallback(async () => {
     updateLoadingState("fetchingProducts", true);
     try {
@@ -129,6 +203,11 @@ const ProductListPage: React.FC = () => {
         limit: itemsPerPage,
         search: debounceSearch,
         category: categoryFilter || undefined,
+        width: debounceWidth || undefined,
+        diameter: categoryFilter === "wheel" ? (debounceDiameter || undefined) : (debounceDiameter || undefined),
+        profile: debounceProfile || undefined,
+        size: debounceSize || undefined,
+        fitments: debounceFitment || undefined,
         brand: brandFilter || undefined,
         isActive: statusFilter === "all" ? undefined : statusFilter === "active",
         isPopular: isPopularFilter !== null ? isPopularFilter : undefined,
@@ -150,7 +229,7 @@ const ProductListPage: React.FC = () => {
     } finally {
       updateLoadingState("fetchingProducts", false);
     }
-  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, brandFilter, statusFilter, isPopularFilter, lowStockFilter, outOfStockFilter]);
+  }, [currentPage, itemsPerPage, debounceSearch, categoryFilter, debounceWidth, debounceDiameter, debounceProfile, debounceSize, debounceFitment, brandFilter, statusFilter, isPopularFilter, lowStockFilter, outOfStockFilter]);
 
   useEffect(() => {
     loadProducts();
@@ -246,7 +325,12 @@ const ProductListPage: React.FC = () => {
 
     // Also reset the actual filter state
     setSearch("");
-    setCategoryFilter("");
+    setCategoryFilter("tyre");
+    setWidthFilter("");
+    setDiameterFilter("");
+    setProfileFilter("");
+    setSizeFilter("");
+    setFitmentFilter("");
     setBrandFilter("");
     setStatusFilter("all");
     setIsPopularFilter(null);
@@ -484,6 +568,14 @@ const ProductListPage: React.FC = () => {
           Manage Products  ({totalProduct || 0})
         </h1>
         <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={handleOpenFilterPopup}
+            className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 w-full sm:w-auto"
+          >
+            <FiFilter className="mr-1" size={16} />
+            Filters
+          </Button>
           <Button className="w-full sm:w-auto" onClick={() => router.push("/create-product")}>
             Create New Product
           </Button>
@@ -491,7 +583,7 @@ const ProductListPage: React.FC = () => {
       </div>
 
       {/* External Search Bar */}
-      <div className="mb-4 flex justify-between items-center gap-2">
+      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 items-center">
         <TextField
           type="text"
           placeholder="Search products..."
@@ -502,21 +594,87 @@ const ProductListPage: React.FC = () => {
             current.set("page", "1");
             router.push(`${pathname}?${current.toString()}`);
           }}
-          className="w-full sm:w-80"
+          className="w-full"
         />
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            onClick={handleOpenFilterPopup}
-            className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
-          >
-            <FiFilter className="mr-1" size={16} />
-            Filters
-          </Button>
+        <div className="w-full">
+          <Select
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={[
+              { label: "All Categories", value: "" },
+              { label: "Tyre", value: "tyre" },
+              { label: "Wheel", value: "wheel" },
+              ...categories.filter(cat => cat !== "tyre" && cat !== "wheel").map(cat => ({
+                label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                value: cat
+              }))
+            ]}
+            placeholder="Category"
+          />
+        </div>
+
+        {categoryFilter === "tyre" && (
+          <>
+            <div className="w-full">
+              <Select
+                value={widthFilter}
+                onChange={setWidthFilter}
+                options={[{ label: "Width", value: "" }, ...widthOptions]}
+                placeholder="Width"
+              />
+            </div>
+            <div className="w-full">
+              <Select
+                value={profileFilter}
+                onChange={setProfileFilter}
+                options={[{ label: "Profile", value: "" }, ...profileOptions]}
+                placeholder="Profile"
+              />
+            </div>
+            <div className="w-full">
+              <Select
+                value={diameterFilter}
+                onChange={setDiameterFilter}
+                options={[{ label: "Diameter", value: "" }, ...diameterOptions]}
+                placeholder="Diameter"
+              />
+            </div>
+          </>
+        )}
+
+        {categoryFilter === "wheel" && (
+          <>
+            <div className="w-full">
+              <Select
+                value={sizeFilter}
+                onChange={setSizeFilter}
+                options={[{ label: "Size", value: "" }, ...sizeOptions]}
+                placeholder="Size"
+              />
+            </div>
+            <div className="w-full">
+              <Select
+                value={diameterFilter}
+                onChange={setDiameterFilter}
+                options={[{ label: "Diameter", value: "" }, ...wheelDiameterOptions]}
+                placeholder="Diameter"
+              />
+            </div>
+            <div className="w-full">
+              <Select
+                value={fitmentFilter}
+                onChange={setFitmentFilter}
+                options={[{ label: "Fitments", value: "" }, ...fitmentOptions]}
+                placeholder="Fitments"
+              />
+            </div>
+          </>
+        )}
+        <div className="flex gap-2 w-full justify-end xl:justify-start">
           {areFiltersApplied() && (
             <Button
               variant="secondary"
-              className="text-nowrap dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+              className="text-nowrap dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700 w-full sm:w-auto"
               onClick={handleResetFilters}
             >
               Reset Filters

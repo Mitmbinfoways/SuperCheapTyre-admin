@@ -25,7 +25,7 @@ export interface Product {
   category: string;
   brand: string;
   description?: string;
-  pricetext?: string;  
+  pricetext?: string;
   images: string[];
   sku: string;
   price: number;
@@ -76,7 +76,7 @@ type ProductRes = {
 };
 
 export const getAllProducts = async (
-  filter: { page?: number; limit?: number; search?: string; category?: string; brand?: string; isActive?: boolean; isPopular?: boolean; stock?: string } = {},
+  filter: { page?: number; limit?: number; search?: string; category?: string; brand?: string; isActive?: boolean; isPopular?: boolean; stock?: string; width?: string; diameter?: string; profile?: string; size?: string; fitments?: string } = {},
 ): Promise<ApiResponse<ProductRes>> => {
   const params: string[] = [];
   if (filter.page !== undefined) params.push(`page=${filter.page}`);
@@ -87,6 +87,11 @@ export const getAllProducts = async (
   if (filter.isActive !== undefined) params.push(`isActive=${filter.isActive}`);
   if (filter.isPopular !== undefined) params.push(`isPopular=${filter.isPopular}`);
   if (filter.stock) params.push(`stock=${encodeURIComponent(filter.stock)}`);
+  if (filter.width) params.push(`width=${encodeURIComponent(filter.width)}`);
+  if (filter.diameter) params.push(`diameter=${encodeURIComponent(filter.diameter)}`);
+  if (filter.profile) params.push(`profile=${encodeURIComponent(filter.profile)}`);
+  if (filter.size) params.push(`size=${encodeURIComponent(filter.size)}`);
+  if (filter.fitments) params.push(`fitments=${encodeURIComponent(filter.fitments)}`);
 
   const url = `${AUTH_SERVICE_BASE_URL}/api/v1/product${params.length ? `?${params.join("&")}` : ""}`;
 
