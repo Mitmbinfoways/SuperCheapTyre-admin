@@ -280,7 +280,6 @@ const ProductListPage: React.FC = () => {
 
   // Filter popup handlers
   const handleOpenFilterPopup = () => {
-    // Initialize temporary filter state with current values
     setTempSearch(search);
     setTempCategoryFilter(categoryFilter);
     setTempBrandFilter(brandFilter);
@@ -306,7 +305,6 @@ const ProductListPage: React.FC = () => {
     setOutOfStockFilter(tempOutOfStockFilter);
     setShowFilterPopup(false);
 
-    // Reset to first page when filters change
     // Reset to first page when filters change
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set("page", "1");
@@ -337,7 +335,6 @@ const ProductListPage: React.FC = () => {
     setLowStockFilter(null);
     setOutOfStockFilter(null);
 
-    // Reset to first page when filters change
     // Reset to first page when filters change
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set("page", "1");
@@ -384,7 +381,6 @@ const ProductListPage: React.FC = () => {
     );
 
     try {
-      // Make the API call
       await updateProduct(productId, { isActive: updatedStatus });
 
       Toast({
