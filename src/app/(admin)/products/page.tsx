@@ -304,15 +304,12 @@ const ProductListPage: React.FC = () => {
     setLowStockFilter(tempLowStockFilter);
     setOutOfStockFilter(tempOutOfStockFilter);
     setShowFilterPopup(false);
-
-    // Reset to first page when filters change
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set("page", "1");
     router.push(`${pathname}?${current.toString()}`);
   };
 
   const handleResetFilters = () => {
-    // Reset temporary filter state
     setTempSearch("");
     setTempCategoryFilter("");
     setTempBrandFilter("");
@@ -320,8 +317,6 @@ const ProductListPage: React.FC = () => {
     setTempIsPopularFilter(null);
     setTempLowStockFilter(null);
     setTempOutOfStockFilter(null);
-
-    // Also reset the actual filter state
     setSearch("");
     setCategoryFilter("tyre");
     setWidthFilter("");
@@ -334,8 +329,6 @@ const ProductListPage: React.FC = () => {
     setIsPopularFilter(null);
     setLowStockFilter(null);
     setOutOfStockFilter(null);
-
-    // Reset to first page when filters change
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set("page", "1");
     router.push(`${pathname}?${current.toString()}`);
@@ -373,7 +366,6 @@ const ProductListPage: React.FC = () => {
     const previousStatus = product.isActive;
     const updatedStatus = !previousStatus;
 
-    // Optimistic UI update - immediately update the UI
     setProducts((prev) =>
       prev.map((p) =>
         p._id === productId ? { ...p, isActive: updatedStatus } : p,
@@ -388,7 +380,6 @@ const ProductListPage: React.FC = () => {
         message: `Product ${updatedStatus ? "activated" : "deactivated"} successfully!`,
       });
     } catch (e: any) {
-      // Revert the optimistic update if the API call fails
       setProducts((prev) =>
         prev.map((p) =>
           p._id === productId ? { ...p, isActive: previousStatus } : p,
