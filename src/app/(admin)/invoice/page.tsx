@@ -22,6 +22,7 @@ import CommonDialog from "@/components/ui/Dialogbox";
 import TextField from "@/components/ui/TextField";
 import { FormLabel } from "@/components/ui/FormLabel";
 import { SearchIcon } from "@/components/ui/icons";
+import CommonPhoneInput from "@/components/ui/CommonPhoneInput";
 
 // --- Helper Components ---
 
@@ -102,6 +103,12 @@ const OfflineCustomerPage = () => {
     const [serviceQuantities, setServiceQuantities] = useState<Record<string, string>>({});
     const [loadingServices, setLoadingServices] = useState(false);
     const [activeTab, setActiveTab] = useState<"products" | "services">("products");
+
+    // --- Invoice Type State ---
+    const [isInvoiceTypeModalOpen, setIsInvoiceTypeModalOpen] = useState(false);
+    const [invoiceWithoutAppointment, setInvoiceWithoutAppointment] = useState(false);
+    const [tempInvoiceWithoutAppointment, setTempInvoiceWithoutAppointment] = useState(true);
+    const [manualCustomer, setManualCustomer] = useState({ name: "", email: "", phone: "" });
 
     // Fetch Appointments
     const fetchAppointments = useCallback(async () => {
@@ -309,8 +316,15 @@ const OfflineCustomerPage = () => {
     const handleSubmit = async () => {
         // Validate
         const newErrors: Record<string, string> = {};
-        if (!selectedAppointmentId || !selectedAppointment) {
-            newErrors.appointment = "Please select an appointment";
+
+        if (invoiceWithoutAppointment) {
+            if (!manualCustomer.name.trim()) newErrors.customerName = "Customer Name is required";
+            if (!manualCustomer.email.trim()) newErrors.customerEmail = "Email is required";
+            if (!manualCustomer.phone.trim()) newErrors.customerPhone = "Phone Number is required";
+        } else {
+            if (!selectedAppointmentId || !selectedAppointment) {
+                newErrors.appointment = "Please select an appointment";
+            }
         }
 
         if (selectedProducts.length === 0 && selectedServices.length === 0) {
@@ -369,7 +383,11 @@ const OfflineCustomerPage = () => {
                 serviceItems,
                 subtotal,
                 total,
-                customer: {
+                customer: invoiceWithoutAppointment ? {
+                    name: manualCustomer.name,
+                    phone: manualCustomer.phone,
+                    email: manualCustomer.email,
+                } : {
                     name: `${selectedAppointment!.firstname} ${selectedAppointment!.lastname}`,
                     phone: selectedAppointment!.phone,
                     email: selectedAppointment!.email,
@@ -381,7 +399,7 @@ const OfflineCustomerPage = () => {
                     note: paymentNotes,
                     currency: "AU$",
                 },
-                appointmentId: selectedAppointmentId,
+                appointmentId: invoiceWithoutAppointment ? undefined : selectedAppointmentId,
             };
 
             await createOrder(orderPayload);
@@ -445,37 +463,102 @@ const OfflineCustomerPage = () => {
 
     return (
         <div className="p-6">
-            <div className="flex items-center gap-4 mb-6">
-                <button
-                    onClick={() => router.back()}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-                >
-                    <IoArrowBack size={24} />
-                </button>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Invoice
-                </h1>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4 ">
+                    <Button
+                        variant="secondary"
+                        onClick={() => router.back()}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                    >
+                        <IoArrowBack size={24} />
+                    </Button>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Invoice
+                    </h1>
+                </div>
+                <div>
+                    <Button variant="primary" onClick={() => {
+                        setTempInvoiceWithoutAppointment(true); // Default to Yes
+                        setIsInvoiceTypeModalOpen(true);
+                    }}>Create New Invoice</Button>
+                </div>
             </div>
 
             <div className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-sm">
                 <div className="space-y-8">
                     {/* Appointment Selection */}
                     <div>
-                        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
-                            Select Appointment <span className="text-red-500">*</span>
-                        </h2>
-                        <div className="max-w-lg">
-                            <Select
-                                searchable={true}
-                                options={appointmentOptions}
-                                value={selectedAppointmentId}
-                                onChange={handleAppointmentChange}
-                                placeholder="Search & Select Appointment"
-                            />
-                            {orderErrors.appointment && (
-                                <p className="mt-1 text-sm text-red-600">{orderErrors.appointment}</p>
-                            )}
-                        </div>
+                        {!invoiceWithoutAppointment && (
+                            <>
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+                                    Select Appointment <span className="text-red-500">*</span>
+                                </h2>
+                                <div className="max-w-lg">
+                                    <Select
+                                        searchable={true}
+                                        options={appointmentOptions}
+                                        value={selectedAppointmentId}
+                                        onChange={handleAppointmentChange}
+                                        placeholder="Search & Select Appointment"
+                                    />
+                                    {orderErrors.appointment && (
+                                        <p className="mt-1 text-sm text-red-600">{orderErrors.appointment}</p>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                        {invoiceWithoutAppointment && (
+                            <div>
+                                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
+                                    Customer Details <span className="text-red-500">*</span>
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="flex flex-col gap-1">
+                                        <FormLabel label="Customer Name" required />
+                                        <TextField
+                                            value={manualCustomer.name}
+                                            onChange={(e) => {
+                                                setManualCustomer({ ...manualCustomer, name: e.target.value });
+                                                if (orderErrors.customerName) setOrderErrors(prev => { const n = { ...prev }; delete n.customerName; return n; });
+                                            }}
+                                            placeholder="Enter Name"
+                                            error={orderErrors.customerName}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <FormLabel label="Email ID" required />
+                                        <TextField
+                                            value={manualCustomer.email}
+                                            onChange={(e) => {
+                                                setManualCustomer({ ...manualCustomer, email: e.target.value });
+                                                if (orderErrors.customerEmail) setOrderErrors(prev => { const n = { ...prev }; delete n.customerEmail; return n; });
+                                            }}
+                                            placeholder="Enter Email"
+                                            error={orderErrors.customerEmail}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <FormLabel label="Phone Number" required/>
+                                        <CommonPhoneInput
+                                            label=""
+                                            name="phone"
+                                            value={manualCustomer.phone}
+                                            defaultCountry="AU"
+                                            error={orderErrors.customerPhone}
+                                            touched={true}
+                                            onChange={(val: string) => {
+                                                setManualCustomer({ ...manualCustomer, phone: val });
+                                                if (orderErrors.customerPhone) setOrderErrors(prev => { const n = { ...prev }; delete n.customerPhone; return n; });
+                                            }}
+                                            onClearError={() => {
+                                                if (orderErrors.customerPhone) setOrderErrors(prev => { const n = { ...prev }; delete n.customerPhone; return n; });
+                                            }}
+                                            onTouch={() => { }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {selectedAppointment && (
                             <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h3 className="font-medium text-gray-900 dark:text-gray-100">Customer Details</h3>
@@ -677,6 +760,64 @@ const OfflineCustomerPage = () => {
                     </div>
                 </div>
             </div>
+
+            <CommonDialog
+                isOpen={isInvoiceTypeModalOpen}
+                onClose={() => setIsInvoiceTypeModalOpen(false)}
+                title="Create Invoice"
+                size="md"
+                footer={
+                    <div className="flex justify-end gap-3">
+                        <Button variant="secondary" onClick={() => setIsInvoiceTypeModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="primary" onClick={() => {
+                            setInvoiceWithoutAppointment(tempInvoiceWithoutAppointment);
+                            if (tempInvoiceWithoutAppointment) {
+                                setSelectedAppointmentId("");
+                                setSelectedAppointment(null);
+                                setOrderErrors({});
+                            } else {
+                                // If switching back to appointment mode, maybe keep existing selection or reset?
+                                // User didn't specify, but resetting makes sense if we want to start fresh or keep previous if "No" meant "Cancel"? 
+                                // Actually "No" means "Invoice WITH appointment".
+                                setOrderErrors({});
+                            }
+                            setIsInvoiceTypeModalOpen(false);
+                        }}>
+                            Confirm
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="py-4">
+                    <p className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">
+                        Do you want to create an invoice without appointment?
+                    </p>
+                    <div className="flex gap-3">
+                        <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <input
+                                type="radio"
+                                name="invoiceType"
+                                checked={tempInvoiceWithoutAppointment === true}
+                                onChange={() => setTempInvoiceWithoutAppointment(true)}
+                                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="text-gray-900 dark:text-white">Yes</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <input
+                                type="radio"
+                                name="invoiceType"
+                                checked={tempInvoiceWithoutAppointment === false}
+                                onChange={() => setTempInvoiceWithoutAppointment(false)}
+                                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="text-gray-900 dark:text-white">No</span>
+                        </label>
+                    </div>
+                </div>
+            </CommonDialog>
             <CommonDialog
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

@@ -140,7 +140,7 @@ const Page = () => {
   };
 
   const addOpeningHour = () => {
-    if (contactFormData.openingHours.length >= 5) return;
+    if (contactFormData.openingHours.length >= 7) return;
     setContactFormData({
       ...contactFormData,
       openingHours: [...contactFormData.openingHours, { day: "", time: "" }],
