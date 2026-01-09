@@ -108,7 +108,7 @@ const OfflineCustomerPage = () => {
     const [isInvoiceTypeModalOpen, setIsInvoiceTypeModalOpen] = useState(false);
     const [invoiceWithoutAppointment, setInvoiceWithoutAppointment] = useState(false);
     const [tempInvoiceWithoutAppointment, setTempInvoiceWithoutAppointment] = useState(true);
-    const [manualCustomer, setManualCustomer] = useState({ name: "", email: "", phone: "" });
+    const [manualCustomer, setManualCustomer] = useState({ firstName: "", lastName: "", email: "", phone: "" });
 
     // Fetch Appointments
     const fetchAppointments = useCallback(async () => {
@@ -318,7 +318,8 @@ const OfflineCustomerPage = () => {
         const newErrors: Record<string, string> = {};
 
         if (invoiceWithoutAppointment) {
-            if (!manualCustomer.name.trim()) newErrors.customerName = "Customer Name is required";
+            if (!manualCustomer.firstName.trim()) newErrors.customerFirstName = "First Name is required";
+            if (!manualCustomer.lastName.trim()) newErrors.customerLastName = "Last Name is required";
             if (!manualCustomer.email.trim()) newErrors.customerEmail = "Email is required";
             if (!manualCustomer.phone.trim()) newErrors.customerPhone = "Phone Number is required";
         } else {
@@ -384,7 +385,7 @@ const OfflineCustomerPage = () => {
                 subtotal,
                 total,
                 customer: invoiceWithoutAppointment ? {
-                    name: manualCustomer.name,
+                    name: `${manualCustomer.firstName} ${manualCustomer.lastName}`,
                     phone: manualCustomer.phone,
                     email: manualCustomer.email,
                 } : {
@@ -512,17 +513,29 @@ const OfflineCustomerPage = () => {
                                 <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b pb-2">
                                     Customer Details <span className="text-red-500">*</span>
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="flex flex-col gap-1">
-                                        <FormLabel label="Customer Name" required />
+                                        <FormLabel label="First Name" required />
                                         <TextField
-                                            value={manualCustomer.name}
+                                            value={manualCustomer.firstName}
                                             onChange={(e) => {
-                                                setManualCustomer({ ...manualCustomer, name: e.target.value });
-                                                if (orderErrors.customerName) setOrderErrors(prev => { const n = { ...prev }; delete n.customerName; return n; });
+                                                setManualCustomer({ ...manualCustomer, firstName: e.target.value });
+                                                if (orderErrors.customerFirstName) setOrderErrors(prev => { const n = { ...prev }; delete n.customerFirstName; return n; });
                                             }}
-                                            placeholder="Enter Name"
-                                            error={orderErrors.customerName}
+                                            placeholder="Enter First Name"
+                                            error={orderErrors.customerFirstName}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <FormLabel label="Last Name" required />
+                                        <TextField
+                                            value={manualCustomer.lastName}
+                                            onChange={(e) => {
+                                                setManualCustomer({ ...manualCustomer, lastName: e.target.value });
+                                                if (orderErrors.customerLastName) setOrderErrors(prev => { const n = { ...prev }; delete n.customerLastName; return n; });
+                                            }}
+                                            placeholder="Enter Last Name"
+                                            error={orderErrors.customerLastName}
                                         />
                                     </div>
                                     <div className="flex flex-col gap-1">
@@ -538,7 +551,7 @@ const OfflineCustomerPage = () => {
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <FormLabel label="Phone Number" required/>
+                                        <FormLabel label="Phone Number" required />
                                         <CommonPhoneInput
                                             label=""
                                             name="phone"
