@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { MdModeEdit } from "react-icons/md";
 import { FiFilter, FiTrash2 } from "react-icons/fi";
 import Table, { Column } from "@/components/ui/table";
@@ -195,24 +195,35 @@ const ProductListPage: React.FC = () => {
     fetchMasterFilters();
   }, []);
 
-  const loadProducts = useCallback(async () => {
+  const lastFilterRef = useRef<any>(null);
+
+  const loadProducts = useCallback(async (force = false) => {
+
+    const filter = {
+      page: currentPage,
+      limit: itemsPerPage,
+      search: debounceSearch,
+      category: categoryFilter || undefined,
+      width: categoryFilter === "tyre" ? (debounceWidth || undefined) : undefined,
+      diameter: (categoryFilter === "wheel" || categoryFilter === "tyre") ? (debounceDiameter || undefined) : undefined,
+      profile: categoryFilter === "tyre" ? (debounceProfile || undefined) : undefined,
+      size: categoryFilter === "wheel" ? (debounceSize || undefined) : undefined,
+      fitments: categoryFilter === "wheel" ? (debounceFitment || undefined) : undefined,
+      brand: brandFilter || undefined,
+      isActive: statusFilter === "all" ? undefined : statusFilter === "active",
+      isPopular: isPopularFilter !== null ? isPopularFilter : undefined,
+      stock: outOfStockFilter === true ? "out-of-stock" : lowStockFilter === true ? "low-stock" : undefined,
+    };
+
+    const filterString = JSON.stringify(filter);
+
+    if (!force && lastFilterRef.current === filterString) {
+      return;
+    }
+    lastFilterRef.current = filterString;
+
     updateLoadingState("fetchingProducts", true);
     try {
-      const filter = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debounceSearch,
-        category: categoryFilter || undefined,
-        width: categoryFilter === "tyre" ? (debounceWidth || undefined) : undefined,
-        diameter: categoryFilter === "wheel" ? (debounceDiameter || undefined) : (debounceDiameter || undefined),
-        profile: categoryFilter === "tyre" ? (debounceProfile || undefined) : undefined,
-        size: categoryFilter === "wheel" ? (debounceSize || undefined) : undefined,
-        fitments: categoryFilter === "wheel" ? (debounceFitment || undefined) : undefined,
-        brand: brandFilter || undefined,
-        isActive: statusFilter === "all" ? undefined : statusFilter === "active",
-        isPopular: isPopularFilter !== null ? isPopularFilter : undefined,
-        stock: outOfStockFilter === true ? "out-of-stock" : lowStockFilter === true ? "low-stock" : undefined,
-      };
       const data = await getAllProducts(filter);
       const { items, pagination } = data.data;
       setProducts(items);
@@ -255,7 +266,7 @@ const ProductListPage: React.FC = () => {
         current.set("page", String(newPage));
         router.push(`${pathname}?${current.toString()}`);
       } else {
-        await loadProducts();
+        await loadProducts(true);
       }
     } catch (e: any) {
       Toast({
@@ -586,7 +597,16 @@ const ProductListPage: React.FC = () => {
         <div className="w-full">
           <Select
             value={categoryFilter}
-            onChange={setCategoryFilter}
+            onChange={(val) => {
+              setCategoryFilter(val);
+              if (val === "") {
+                setWidthFilter("");
+                setDiameterFilter("");
+                setProfileFilter("");
+                setSizeFilter("");
+                setFitmentFilter("");
+              }
+            }}
             options={[
               { label: "All Categories", value: "" },
               { label: "Tyre", value: "tyre" },
