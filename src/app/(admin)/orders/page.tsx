@@ -55,11 +55,15 @@ const OrdersPage = () => {
 
     // Apply search filter
     if (debouncedSearchTerm) {
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(order =>
-        (order.customer.name && order.customer.name.toLowerCase().includes(searchLower)) ||
-        (order.customer.email && order.customer.email.toLowerCase().includes(searchLower)) ||
-        (order.customer.phone && order.customer.phone.includes(searchLower))
+      const normalize = (str: string | undefined | null) =>
+        (str || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+      const searchNormalized = normalize(debouncedSearchTerm);
+
+      filtered = filtered.filter((order) =>
+        normalize(order.customer.name).includes(searchNormalized) ||
+        normalize(order.customer.email).includes(searchNormalized) ||
+        normalize(order.customer.phone).includes(searchNormalized)
       );
     }
 

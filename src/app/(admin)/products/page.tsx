@@ -116,6 +116,17 @@ const ProductListPage: React.FC = () => {
   const debounceSize = useDebounce<string>(sizeFilter, 300);
   const debounceFitment = useDebounce<string>(fitmentFilter, 300);
 
+  const prevSearchRef = useRef(search);
+
+  useEffect(() => {
+    if (debounceSearch !== prevSearchRef.current) {
+      prevSearchRef.current = debounceSearch;
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      current.set("page", "1");
+      router.push(`${pathname}?${current.toString()}`);
+    }
+  }, [debounceSearch, pathname, router, searchParams]);
+
 
   const fetchBrands = async () => {
     try {
@@ -588,9 +599,6 @@ const ProductListPage: React.FC = () => {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            const current = new URLSearchParams(Array.from(searchParams.entries()));
-            current.set("page", "1");
-            router.push(`${pathname}?${current.toString()}`);
           }}
           className="w-full"
         />
